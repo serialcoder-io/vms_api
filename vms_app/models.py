@@ -16,7 +16,12 @@ class Shop(models.Model):
 
 class User(AbstractUser):
     REQUIRED_FIELDS = ['email']
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='users', null=True)
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name='users',
+        null=True
+    )
 
     def __str__(self):
         return self.username
@@ -44,16 +49,29 @@ class VoucherRequest(models.Model):
         related_name='user_voucher_requests',
         null=False, blank=False
     )
-    approved_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='approved_requests', null=True)
+    approved_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='approved_requests',
+        null=True
+    )
     request_ref = models.TextField(unique=True)
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='client_voucher_requests')
-    date_time_captured = models.DateTimeField(auto_now_add=True)
-    date_time_approved = models.DateTimeField(null=True)
+    client = models.ForeignKey(
+        Client,
+        on_delete=models.CASCADE,
+        related_name='client_voucher_requests'
+    )
     request_status = models.CharField(
         max_length=20,
         choices=RequestStatus.choices,
         default=RequestStatus.PENDING
     )
+    date_time_captured = models.DateTimeField(auto_now_add=True)
+    date_time_approved = models.DateTimeField(null=True)
+
+    def __str__(self):
+        return f"ref: {self.request_ref} captured by: {self.user.username}"
+
 
 class Voucher(models.Model):
     class VoucherStatus(models.TextChoices):
@@ -63,19 +81,21 @@ class Voucher(models.Model):
         REDEEMDED = 'redeemed', 'Redeemed'
         CANCELLED = 'cancelled', 'Cancelled'
 
-
     voucher_request = models.ForeignKey(VoucherRequest, on_delete=models.CASCADE, related_name='vouchers')
     voucher_ref = models.TextField(unique=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
     expiry_date = models.DateField(blank=False, null=False)
     extention_date = models.DateField(null=True)
+    redeemed_on = models.DateTimeField(null=True)
     voucher_status = models.CharField(
         max_length=20,
         choices=VoucherStatus.choices,
         default=VoucherStatus.PROVISIONAL
     )
-    redeemed_on = models.DateTimeField(null=True)
+
+    def __str__(self):
+        return f"ref: {self.voucher_ref} amount: {self.amount}"
 
 
 class Redemption(models.Model):
@@ -93,6 +113,11 @@ class Redemption(models.Model):
     redemption_date = models.DateTimeField(auto_now_add=True)
     till_no = models.IntegerField(blank=False, null=True)
 
+    def __str__(self):
+        return (f"voucher_ref: {self.voucher.voucher_ref}, "
+            f"redeemed_on: {self.redemption_date}, "
+            f"shop: {self.shop.company.company_name} {self.shop.location}")
+
 
 class AuditTrails(models.Model):
     class AuditTrailsAction(models.TextChoices):
@@ -102,11 +127,14 @@ class AuditTrails(models.Model):
 
     datetime = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='audit_trails')
+    table_name = models.CharField(max_length=20)
+    object_id = models.IntegerField()
+    description = models.TextField()
     action = models.CharField(
         max_length=10,
         choices=AuditTrailsAction.choices,
         null=True, blank=False
     )
-    table_name = models.CharField(max_length=20)
-    object_id = models.IntegerField()
-    description = models.TextField()
+
+    def __str__(self):
+        return f"user: {self.user.username}, table_name: {self.table_name}, action: {self.action}"
