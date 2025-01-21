@@ -16,7 +16,7 @@ class Shop(models.Model):
 
 class User(AbstractUser):
     REQUIRED_FIELDS = ['email']
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='users')
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='users', null=True)
 
     def __str__(self):
         return self.username

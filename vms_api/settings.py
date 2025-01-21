@@ -82,7 +82,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': config('DB_NAME'),
         'USER': config('DB_USER'),
-        'PASSWORD': config('PASSWSORD'),
+        'PASSWORD': config('PASSWORD'),
         'HOST': config('HOST'),
         'PORT': config('PORT'),
         'OPTIONS': {
@@ -91,6 +91,8 @@ DATABASES = {
     }
 }
 
+# user model
+AUTH_USER_MODEL = 'vms_app.User'
 
 
 # Password validation
