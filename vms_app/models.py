@@ -55,19 +55,14 @@ class VoucherRequest(models.Model):
         default=RequestStatus.PENDING
     )
 
-
-class PendingVoucher(models.Model):
-    voucher_request = models.ForeignKey(VoucherRequest, on_delete=models.CASCADE, related_name='pending_vouchers')
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    quantity = models.IntegerField(default=1)
-    expiration_date = models.DateField()
-
-
 class Voucher(models.Model):
     class VoucherStatus(models.TextChoices):
-        ACTIVE = 'active', 'Active'
-        EXPIRED= 'expired', 'Expired'
+        PROVISIONAL = 'provisional', 'Provisional'
+        ISSUED = 'issued', 'Issued'
+        EXPIRED = 'expired', 'Expired'
         REDEEMDED = 'redeemed', 'Redeemed'
+        CANCELLED = 'cancelled', 'Cancelled'
+
 
     voucher_request = models.ForeignKey(VoucherRequest, on_delete=models.CASCADE, related_name='vouchers')
     voucher_ref = models.TextField(unique=True)
@@ -78,9 +73,9 @@ class Voucher(models.Model):
     voucher_status = models.CharField(
         max_length=20,
         choices=VoucherStatus.choices,
-        default=VoucherStatus.ACTIVE
+        default=VoucherStatus.PROVISIONAL
     )
-    redeem_on = models.DateTimeField(null=True)
+    redeemed_on = models.DateTimeField(null=True)
 
 
 class Redemption(models.Model):
