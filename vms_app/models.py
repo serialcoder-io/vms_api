@@ -44,8 +44,8 @@ class VoucherRequest(models.Model):
         related_name='user_voucher_requests',
         null=False, blank=False
     )
-    approver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='approved_requests', null=True)
-    request_code = models.CharField(max_length=255, unique=True)
+    approved_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='approved_requests', null=True)
+    request_ref = models.TextField(unique=True)
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='client_voucher_requests')
     date_time_captured = models.DateTimeField(auto_now_add=True)
     date_time_approved = models.DateTimeField(null=True)
@@ -56,22 +56,31 @@ class VoucherRequest(models.Model):
     )
 
 
+class PendingVoucher(models.Model):
+    voucher_request = models.ForeignKey(VoucherRequest, on_delete=models.CASCADE, related_name='pending_vouchers')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.IntegerField(default=1)
+    expiration_date = models.DateField()
+
+
 class Voucher(models.Model):
     class VoucherStatus(models.TextChoices):
         ACTIVE = 'active', 'Active'
         EXPIRED= 'expired', 'Expired'
         REDEEMDED = 'redeemed', 'Redeemed'
 
-    voucher_code = models.CharField(max_length=255)
     voucher_request = models.ForeignKey(VoucherRequest, on_delete=models.CASCADE, related_name='vouchers')
+    voucher_ref = models.TextField(unique=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    expiry_date = models.DateTimeField(blank=False, null=False)
-    extention_date = models.DateTimeField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expiry_date = models.DateField(blank=False, null=False)
+    extention_date = models.DateField(null=True)
     voucher_status = models.CharField(
         max_length=20,
         choices=VoucherStatus.choices,
         default=VoucherStatus.ACTIVE
     )
+    redeem_on = models.DateTimeField(null=True)
 
 
 class Redemption(models.Model):
