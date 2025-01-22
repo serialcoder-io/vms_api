@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from vms_app.models import User
+from vms_app.models import User, Client
 
 
 class UsersSerializer(serializers.ModelSerializer):
@@ -39,3 +39,10 @@ class RegisterUserSerializer(serializers.ModelSerializer):
         user.set_password(password) # hash password
         user.save()
         return user
+
+
+class ClientSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Client
+        fields = "__all__"

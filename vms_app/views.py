@@ -4,16 +4,32 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.generics import GenericAPIView
 
-from vms_app.serializers import UsersSerializer, RegisterUserSerializer
+from vms_app.serializers import (
+    UsersSerializer,
+    RegisterUserSerializer,
+    ClientSerializer
+)
 from rest_framework import viewsets, permissions #, status
 # from django_filters.rest_framework import DjangoFilterBackend
-from .models import User
+from .models import User, Client
 # from .paginations import UsersPagination
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UsersSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        permissions.DjangoModelPermissions
+    ]
+
+
+class ClientViewSet(viewsets.ModelViewSet):
+    queryset = Client.objects.all()
+    serializer_class = ClientSerializer
+    permission_classes = [
+        permissions.IsAuthenticated,
+        permissions.DjangoModelPermissions
+    ]
 
 
 class UserRegisterView(GenericAPIView):

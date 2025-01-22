@@ -31,8 +31,8 @@ class Client(models.Model):
     firstname = models.CharField(max_length=70)
     lastname = models.CharField(max_length=70)
     email = models.EmailField(max_length=50)
-    contact = models.CharField(max_length=13)
-    logo = models.URLField(max_length=255)
+    contact = models.CharField(max_length=20)
+    logo = models.URLField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return f"{self.firstname} {self.lastname}"

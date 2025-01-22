@@ -5,9 +5,10 @@ from rest_framework_simplejwt.views import (
 )
 
 from rest_framework.routers import DefaultRouter
-from .views import UserViewSet, UserRegisterView
+from .views import UserViewSet, UserRegisterView, ClientViewSet
 router = DefaultRouter()
 router.register('users', UserViewSet)
+router.register('clients', ClientViewSet)
 
 from django.urls import path, include
 urlpatterns = [
