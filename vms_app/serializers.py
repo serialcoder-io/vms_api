@@ -18,7 +18,7 @@ class UsersSerializer(serializers.ModelSerializer):
 
 
 class RegisterUserSerializer(serializers.ModelSerializer):
-    """create a new user"""
+    """create an account"""
 
     password = serializers.CharField(write_only=True)
     class Meta:

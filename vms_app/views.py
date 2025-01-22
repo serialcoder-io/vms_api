@@ -1,4 +1,6 @@
+from django.db.models import Max
 from django.shortcuts import render
+from rest_framework.decorators import api_view
 
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -41,3 +43,13 @@ class UserRegisterView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=201)
+
+
+@api_view(['GET'])
+def get_latest_id(request):
+    latest_id = User.objects.aggregate(Max('id'))['id__max']
+    return Response(
+        {
+            "latest_id": latest_id
+        }
+    )

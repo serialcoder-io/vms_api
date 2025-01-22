@@ -55,7 +55,7 @@ class VoucherRequest(models.Model):
         related_name='approved_requests',
         null=True
     )
-    request_ref = models.TextField(unique=True)
+    request_ref = models.TextField(unique=True, blank=True, null=True)
     client = models.ForeignKey(
         Client,
         on_delete=models.CASCADE,
@@ -67,6 +67,7 @@ class VoucherRequest(models.Model):
         default=RequestStatus.PENDING
     )
     date_time_captured = models.DateTimeField(auto_now_add=True)
+    quantity_of_vouchers = models.IntegerField(blank=False, null=False, default=1)
     date_time_approved = models.DateTimeField(null=True)
 
     def __str__(self):
@@ -82,7 +83,7 @@ class Voucher(models.Model):
         CANCELLED = 'cancelled', 'Cancelled'
 
     voucher_request = models.ForeignKey(VoucherRequest, on_delete=models.CASCADE, related_name='vouchers')
-    voucher_ref = models.TextField(unique=True)
+    voucher_ref = models.TextField(unique=True, null=True, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
     expiry_date = models.DateField(blank=False, null=False)
