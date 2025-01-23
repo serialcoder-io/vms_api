@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import VoucherRequest, Client
+from .models import VoucherRequest, Voucher, Client
 
 class VoucherRequestAdmin(admin.ModelAdmin):
     list_display = ['request_ref', 'date_time_recorded', 'quantity_of_vouchers']
@@ -13,9 +13,13 @@ class VoucherRequestAdmin(admin.ModelAdmin):
         obj.save()
 
 
+class VoucherAdmin(admin.ModelAdmin):
+    list_display = ['voucher_ref', 'date_time_created', 'amount']
+
 class ClientAdmin(admin.ModelAdmin):
     list_display = ['firstname', 'lastname', 'email']
 
 
 admin.site.register(VoucherRequest, VoucherRequestAdmin)
+admin.site.register(Voucher, VoucherAdmin)
 admin.site.register(Client, ClientAdmin)
