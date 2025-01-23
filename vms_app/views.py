@@ -9,6 +9,7 @@ from rest_framework.generics import GenericAPIView
 from rest_framework import viewsets, permissions #, status
 from rest_framework.viewsets import ViewSet
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
 
 from vms_app.serializers import (
     UsersSerializer,
@@ -38,6 +39,8 @@ class ClientViewSet(viewsets.ModelViewSet):
     """
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['email', 'id']
     permission_classes = [
         permissions.IsAuthenticated,
         permissions.DjangoModelPermissions
@@ -64,7 +67,8 @@ class VoucherRequestViewSet(viewsets.ModelViewSet):
     queryset = VoucherRequest.objects.all()
     serializer_class = VoucherRequestSerializer
     pagination_class = VoucherRequestPagination
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ['request_ref', 'id']
     filterset_fields = ['request_status', 'date_time_recorded']
     permission_classes = [
         permissions.IsAuthenticated,

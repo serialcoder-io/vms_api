@@ -1,7 +1,7 @@
 from django.contrib.auth.models import Group
 from rest_framework import serializers
 from rest_framework.permissions import SAFE_METHODS
-from vms_app.models import User, Client, VoucherRequest, Voucher  # , Voucher
+from vms_app.models import User, Client, VoucherRequest, Voucher
 
 
 class UsersSerializer(serializers.ModelSerializer):
@@ -65,3 +65,10 @@ class VoucherRequestSerializer(serializers.ModelSerializer):
         model = VoucherRequest
         fields = "__all__"
         read_only_fields = ['date_time_recorded']
+
+
+class VoucherSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Voucher
+        fields = "__all__"
+        read_only_fields = ['created_at']

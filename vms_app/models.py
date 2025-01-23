@@ -59,7 +59,8 @@ class VoucherRequest(models.Model):
     client = models.ForeignKey(
         Client,
         on_delete=models.CASCADE,
-        related_name='client_voucher_requests'
+        related_name='client_voucher_requests',
+        null=True, blank=True
     )
     request_status = models.CharField(
         max_length=20,
@@ -85,7 +86,7 @@ class Voucher(models.Model):
     voucher_request = models.ForeignKey(VoucherRequest, on_delete=models.CASCADE, related_name='vouchers')
     voucher_ref = models.TextField(unique=True, null=True, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    created_at = models.DateTimeField(auto_now_add=True)
+    date_time_created = models.DateTimeField(auto_now_add=True)
     expiry_date = models.DateField(blank=False, null=False)
     extention_date = models.DateField(null=True)
     redeemed_on = models.DateTimeField(null=True)
