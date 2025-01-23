@@ -44,7 +44,7 @@ class VoucherRequest(models.Model):
         APPROVED = 'approved', 'Approved'
         REJECTED = 'rejected', 'Rejected'
 
-    user = models.ForeignKey(
+    recorded_by = models.ForeignKey(
         User, on_delete=models.CASCADE,
         related_name='user_voucher_requests',
         null=False, blank=False
