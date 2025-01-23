@@ -97,7 +97,7 @@ class Voucher(models.Model):
     )
 
     def __str__(self):
-        return f"ref: {self.voucher_ref} amount: {self.amount}"
+        return f"Ref: {self.voucher_ref}; Amount: {self.amount} MUR"
 
 
 class Redemption(models.Model):
