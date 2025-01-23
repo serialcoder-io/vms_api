@@ -64,11 +64,21 @@ class VoucherRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = VoucherRequest
         fields = "__all__"
-        read_only_fields = ['date_time_recorded']
+        read_only_fields = ['date_time_recorded', 'request_ref']
+
+    def create(self, validated_data):
+        instance = super().create(validated_data)
+        instance.refresh_from_db()
+        return instance
 
 
 class VoucherSerializer(serializers.ModelSerializer):
     class Meta:
         model = Voucher
         fields = "__all__"
-        read_only_fields = ['created_at']
+        read_only_fields = ['date_time_created', 'voucher_ref']
+
+    def create(self, validated_data):
+        instance = super().create(validated_data)
+        instance.refresh_from_db()
+        return instance

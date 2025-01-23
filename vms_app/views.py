@@ -1,13 +1,13 @@
 from django.db.models import Max
-from django.shortcuts import render
+# from django.shortcuts import render
 
 from rest_framework.decorators import api_view
-from rest_framework.exceptions import ValidationError
+# from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import DjangoModelPermissions
 from rest_framework.response import Response
 from rest_framework.generics import GenericAPIView
 from rest_framework import viewsets, permissions #, status
-from rest_framework.viewsets import ViewSet
+# from rest_framework.viewsets import ViewSet
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 
@@ -15,11 +15,13 @@ from vms_app.serializers import (
     UsersSerializer,
     RegisterUserSerializer,
     ClientSerializer,
-    VoucherRequestSerializer
+    VoucherRequestSerializer,
+    VoucherSerializer
 )
 
-from .models import User, Client, VoucherRequest
-from .paginations import VoucherRequestPagination
+from .models import User, Client, VoucherRequest, Voucher
+from .paginations import VoucherRequestPagination, VoucherPagination
+
 
 class UserViewSet(viewsets.ModelViewSet):
     """created, read, update, delete users:
@@ -75,6 +77,24 @@ class VoucherRequestViewSet(viewsets.ModelViewSet):
         DjangoModelPermissions
     ]
 
+    def perform_create(self, serializer):
+        serializer.save(recorded_by=self.request.user)
+
+class VoucherViewSet(viewsets.ModelViewSet):
+    """
+        created, read, update, delete Vouchers:
+        view only for authenticated users with right permissions
+    """
+    queryset = Voucher.objects.all()
+    serializer_class = VoucherSerializer
+    pagination_class = VoucherPagination
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ['voucher_ref', 'id']
+    filterset_fields = ['voucher_status', 'date_time_created']
+    permission_classes = [
+        permissions.IsAuthenticated,
+        DjangoModelPermissions
+    ]
 
 @api_view(['GET'])
 def get_latest_id(request):

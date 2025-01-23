@@ -5,10 +5,19 @@ from rest_framework_simplejwt.views import (
 )
 
 from rest_framework.routers import DefaultRouter
-from .views import UserViewSet, UserRegisterView, ClientViewSet
+from .views import (
+    UserViewSet,
+    UserRegisterView,
+    ClientViewSet,
+    VoucherViewSet,
+    VoucherRequestViewSet
+)
+
 router = DefaultRouter()
 router.register('users', UserViewSet)
 router.register('clients', ClientViewSet)
+router.register('vouchers', VoucherViewSet)
+router.register('voucher_requests', VoucherRequestViewSet)
 
 from django.urls import path, include
 from . import views

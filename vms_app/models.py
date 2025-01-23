@@ -47,13 +47,13 @@ class VoucherRequest(models.Model):
     recorded_by = models.ForeignKey(
         User, on_delete=models.CASCADE,
         related_name='user_voucher_requests',
-        null=False, blank=False
+        null=True, blank=True
     )
     approved_by = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='approved_requests',
-        null=True
+        null=True, blank=True
     )
     request_ref = models.TextField(unique=True, blank=True, null=True)
     client = models.ForeignKey(
@@ -67,12 +67,12 @@ class VoucherRequest(models.Model):
         choices=RequestStatus.choices,
         default=RequestStatus.PENDING
     )
-    date_time_recorded = models.DateTimeField(auto_now_add=True)
+    date_time_recorded = models.DateTimeField(auto_now_add=True, blank=True)
     quantity_of_vouchers = models.IntegerField(blank=False, null=False, default=1)
-    date_time_approved = models.DateTimeField(null=True)
+    date_time_approved = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"ref: {self.request_ref} captured by: {self.recorded_by.username}"
+        return f"ref: {self.request_ref}"
 
 
 class Voucher(models.Model):
