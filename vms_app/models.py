@@ -71,7 +71,7 @@ class VoucherRequest(models.Model):
     date_time_approved = models.DateTimeField(null=True)
 
     def __str__(self):
-        return f"ref: {self.request_ref} captured by: {self.user.username}"
+        return f"ref: {self.request_ref} captured by: {self.recorded_by.username}"
 
 
 class Voucher(models.Model):
