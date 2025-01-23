@@ -1,22 +1,29 @@
 from django.db.models import Max
 from django.shortcuts import render
-from rest_framework.decorators import api_view
 
+from rest_framework.decorators import api_view
 from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import DjangoModelPermissions
 from rest_framework.response import Response
 from rest_framework.generics import GenericAPIView
+from rest_framework import viewsets, permissions #, status
+from rest_framework.viewsets import ViewSet
+from django_filters.rest_framework import DjangoFilterBackend
 
 from vms_app.serializers import (
     UsersSerializer,
     RegisterUserSerializer,
-    ClientSerializer
+    ClientSerializer,
+    VoucherRequestSerializer
 )
-from rest_framework import viewsets, permissions #, status
-# from django_filters.rest_framework import DjangoFilterBackend
-from .models import User, Client
-# from .paginations import UsersPagination
+
+from .models import User, Client, VoucherRequest
+from .paginations import VoucherRequestPagination
 
 class UserViewSet(viewsets.ModelViewSet):
+    """created, read, update, delete users:
+    view only for authenticated users with right permissions
+    """
     queryset = User.objects.all()
     serializer_class = UsersSerializer
     permission_classes = [
@@ -26,6 +33,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class ClientViewSet(viewsets.ModelViewSet):
+    """created, read, update, delete Clients information:
+    view only for authenticated users with right permissions
+    """
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
     permission_classes = [
@@ -35,6 +45,7 @@ class ClientViewSet(viewsets.ModelViewSet):
 
 
 class UserRegisterView(GenericAPIView):
+    """create an account for supervisor"""
     serializer_class = RegisterUserSerializer
     permission_classes = [permissions.AllowAny]
 
@@ -43,6 +54,22 @@ class UserRegisterView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=201)
+
+
+class VoucherRequestViewSet(viewsets.ModelViewSet):
+    """
+        created, read, update, delete Voucher_requests:
+        view only for authenticated users with right permissions
+    """
+    queryset = VoucherRequest.objects.all()
+    serializer_class = VoucherRequestSerializer
+    pagination_class = VoucherRequestPagination
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['request_status', 'date_time_recorded']
+    permission_classes = [
+        permissions.IsAuthenticated,
+        DjangoModelPermissions
+    ]
 
 
 @api_view(['GET'])

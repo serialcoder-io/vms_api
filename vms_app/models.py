@@ -66,7 +66,7 @@ class VoucherRequest(models.Model):
         choices=RequestStatus.choices,
         default=RequestStatus.PENDING
     )
-    date_time_captured = models.DateTimeField(auto_now_add=True)
+    date_time_recorded = models.DateTimeField(auto_now_add=True)
     quantity_of_vouchers = models.IntegerField(blank=False, null=False, default=1)
     date_time_approved = models.DateTimeField(null=True)
 
