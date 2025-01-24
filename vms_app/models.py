@@ -10,9 +10,9 @@ class Company(models.Model):
 
 
 class Shop(models.Model):
-    location = models.CharField(max_length=100)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='shops')
-
+    location = models.CharField(max_length=100)
+    addresse = models.CharField(max_length=150, blank=True, null=True)
 
 class User(AbstractUser):
     REQUIRED_FIELDS = ['email']

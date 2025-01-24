@@ -10,7 +10,9 @@ from .views import (
     UserRegisterView,
     ClientViewSet,
     VoucherViewSet,
-    VoucherRequestViewSet
+    VoucherRequestViewSet,
+    CompanyViewSet,
+    ShopViewSet
 )
 
 router = DefaultRouter()
@@ -18,6 +20,8 @@ router.register('users', UserViewSet)
 router.register('clients', ClientViewSet)
 router.register('vouchers', VoucherViewSet)
 router.register('voucher_requests', VoucherRequestViewSet)
+router.register('companies', CompanyViewSet)
+router.register('shops', ShopViewSet)
 
 from django.urls import path, include
 from . import views

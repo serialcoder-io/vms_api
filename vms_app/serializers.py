@@ -1,7 +1,11 @@
 from django.contrib.auth.models import Group
 from rest_framework import serializers
 from rest_framework.permissions import SAFE_METHODS
-from vms_app.models import User, Client, VoucherRequest, Voucher
+from vms_app.models import (
+    Voucher, Client,
+    VoucherRequest,
+    User, Company, Shop
+)
 
 
 class UsersSerializer(serializers.ModelSerializer):
@@ -9,6 +13,7 @@ class UsersSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = "__all__"
+        read_only_fields = ['date_joined', 'id']
 
     def __init__(self, *args, **kwargs):
         super(UsersSerializer, self).__init__(*args, **kwargs)
@@ -21,7 +26,7 @@ class UsersSerializer(serializers.ModelSerializer):
         password = validated_data.pop('password', None)
         instance = super().update(instance, validated_data)
         if password:
-            instance.set_password(password)
+            instance.set_password(password) # Hash the password before saving
             instance.save()
         return instance
 
@@ -32,7 +37,7 @@ class RegisterUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('first_name', 'last_name', 'username', 'email', 'password')
-        read_only_fields = 'date_joined'
+        read_only_fields = ['date_joined', 'id']
 
     def validate(self, data):
         """validate username and email if username or email already exists, reaise an error"""
@@ -43,9 +48,11 @@ class RegisterUserSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        password = validated_data.pop('password')  # extract password
+        # Extract and hash the password before saving
+        password = validated_data.pop('password')
         user = User(**validated_data)
-        user.set_password(password) # hash password
+        user.set_password(password) # Hash the password
+        # Create and assign the user to the 'shop_supervisor' group
         group, created = Group.objects.get_or_create(name='shop_supervisor')
         user.groups.add(group)
         user.save()
@@ -57,6 +64,7 @@ class ClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
         fields = "__all__"
+        read_only_fields = ['id']
 
 
 class VoucherRequestSerializer(serializers.ModelSerializer):
@@ -64,9 +72,10 @@ class VoucherRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = VoucherRequest
         fields = "__all__"
-        read_only_fields = ['date_time_recorded', 'request_ref']
+        read_only_fields = ['date_time_recorded', 'request_ref', 'id']
 
     def create(self, validated_data):
+        # Ensure the instance is updated with the correct database values after creation
         instance = super().create(validated_data)
         instance.refresh_from_db()
         return instance
@@ -76,9 +85,24 @@ class VoucherSerializer(serializers.ModelSerializer):
     class Meta:
         model = Voucher
         fields = "__all__"
-        read_only_fields = ['date_time_created', 'voucher_ref']
+        read_only_fields = ['date_time_created', 'voucher_ref', 'id']
 
     def create(self, validated_data):
+        # Ensure the instance is updated with the correct database values after creation
         instance = super().create(validated_data)
         instance.refresh_from_db()
         return instance
+
+
+class CompanySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Company
+        fields = "__all__"
+        read_only_fields = ['id']
+
+
+class ShopSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Shop
+        fields = "__all__"
+        read_only_fields = ['id']

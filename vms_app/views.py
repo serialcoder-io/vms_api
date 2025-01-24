@@ -16,10 +16,12 @@ from vms_app.serializers import (
     RegisterUserSerializer,
     ClientSerializer,
     VoucherRequestSerializer,
-    VoucherSerializer
+    VoucherSerializer,
+    CompanySerializer,
+    ShopSerializer
 )
 
-from .models import User, Client, VoucherRequest, Voucher
+from .models import User, Client, VoucherRequest, Voucher, Company, Shop
 from .paginations import VoucherRequestPagination, VoucherPagination
 
 
@@ -95,6 +97,25 @@ class VoucherViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticated,
         DjangoModelPermissions
     ]
+
+class CompanyViewSet(viewsets.ModelViewSet):
+    queryset = Company.objects.all()
+    serializer_class = CompanySerializer
+    search_fields = ['company_name', 'id']
+    permission_classes = [
+        permissions.IsAuthenticated,
+        DjangoModelPermissions
+    ]
+
+class ShopViewSet(viewsets.ModelViewSet):
+    queryset = Shop.objects.all()
+    serializer_class = ShopSerializer
+    search_fields = ['id']
+    permission_classes = [
+        permissions.IsAuthenticated,
+        DjangoModelPermissions
+    ]
+
 
 @api_view(['GET'])
 def get_latest_id(request):
