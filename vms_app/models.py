@@ -5,6 +5,9 @@ from django.db import models
 class Company(models.Model):
     company_name = models.CharField(max_length=70)
 
+    class Meta:
+        ordering = ['company_name']
+
     def __str__(self):
         return self.company_name
 
@@ -14,8 +17,19 @@ class Shop(models.Model):
     location = models.CharField(max_length=100)
     addresse = models.CharField(max_length=150, blank=True, null=True)
 
+    class Meta:
+        ordering = ['id']
+
+    def __str__(self):
+        return f"{self.company.company_name} {self.location}"
+
+
 class User(AbstractUser):
     REQUIRED_FIELDS = ['email']
+
+    class Meta:
+        ordering = ['username', 'email']
+
     company = models.ForeignKey(
         Company,
         on_delete=models.CASCADE,
@@ -34,6 +48,9 @@ class Client(models.Model):
     contact = models.CharField(max_length=20)
     logo = models.URLField(max_length=255, blank=True, null=True)
 
+    class Meta:
+        ordering = ['lastname', 'firstname']
+
     def __str__(self):
         return f"{self.firstname} {self.lastname}"
 
@@ -43,6 +60,9 @@ class VoucherRequest(models.Model):
         PENDING = 'pending', 'Pending'
         APPROVED = 'approved', 'Approved'
         REJECTED = 'rejected', 'Rejected'
+
+    class Meta:
+        ordering = ['request_ref']
 
     recorded_by = models.ForeignKey(
         User, on_delete=models.CASCADE,
@@ -82,6 +102,9 @@ class Voucher(models.Model):
         EXPIRED = 'expired', 'Expired'
         REDEEMDED = 'redeemed', 'Redeemed'
         CANCELLED = 'cancelled', 'Cancelled'
+
+    class Meta:
+        ordering = ['voucher_ref']
 
     voucher_request = models.ForeignKey(VoucherRequest, on_delete=models.CASCADE, related_name='vouchers')
     voucher_ref = models.TextField(unique=True, null=True, blank=True)
@@ -126,6 +149,9 @@ class AuditTrails(models.Model):
         ADD = 'add', 'Add'
         UPDATE = 'update', 'Update'
         DELETE = 'delete', 'Delete'
+
+    class Meta:
+        ordering = ['datetime']
 
     datetime = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='audit_trails')
