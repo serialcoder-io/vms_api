@@ -23,11 +23,8 @@ class UsersSerializer(serializers.ModelSerializer):
             self.fields.pop('password')
 
     def update(self, instance, validated_data):
-        password = validated_data.pop('password', None)
+        validated_data.pop('password', None)
         instance = super().update(instance, validated_data)
-        if password:
-            instance.set_password(password) # Hash the password before saving
-            instance.save()
         return instance
 
 

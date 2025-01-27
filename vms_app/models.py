@@ -112,7 +112,7 @@ class Voucher(models.Model):
     date_time_created = models.DateTimeField(auto_now_add=True)
     expiry_date = models.DateField(blank=False, null=False)
     extention_date = models.DateField(null=True, blank=True)
-    redeemed_on = models.DateTimeField(null=True, blank=True)
+    redeemed = models.BooleanField(default=False)
     voucher_status = models.CharField(
         max_length=20,
         choices=VoucherStatus.choices,

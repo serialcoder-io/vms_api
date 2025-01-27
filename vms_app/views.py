@@ -44,6 +44,9 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     queryset = User.objects.all()
     serializer_class = UsersSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ['email']
+    filterset_fields = ['company']
     permission_classes = [
         permissions.IsAuthenticated,
         permissions.DjangoModelPermissions
@@ -71,8 +74,8 @@ class VoucherRequestListView(generics.ListAPIView):
     serializer_class = VoucherRequestListSerializer
     pagination_class = VoucherRequestPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    search_fields = ['request_ref', 'id']
-    filterset_fields = ['request_status', 'date_time_recorded']
+    search_fields = ['request_ref']
+    filterset_fields = ['request_status']
     permission_classes = [
         permissions.IsAuthenticated,
         DjangoModelPermissions
@@ -146,7 +149,7 @@ class ClientListView(generics.ListAPIView):
     serializer_class = ClientListSerializer
     filter_backends = [filters.SearchFilter]
     pagination_class = ClientsPagination
-    search_fields = ['email', 'id']
+    search_fields = ['email']
     permission_classes = [
         permissions.IsAuthenticated,
         permissions.DjangoModelPermissions
@@ -156,6 +159,7 @@ class ClientListView(generics.ListAPIView):
 class ClientCRUDView(generics.GenericAPIView):
     queryset = Client.objects.all()
     serializer_class = ClientCrudSerializer
+    filter_backends = [filters.SearchFilter]
     permission_classes = [
         permissions.IsAuthenticated,
         permissions.DjangoModelPermissions
@@ -214,8 +218,8 @@ class VoucherViewSet(viewsets.ModelViewSet):
     serializer_class = VoucherSerializer
     pagination_class = VoucherPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    search_fields = ['voucher_ref', 'id']
-    filterset_fields = ['voucher_status', 'date_time_created']
+    search_fields = ['voucher_ref']
+    filterset_fields = ['voucher_status']
     permission_classes = [
         permissions.IsAuthenticated,
         DjangoModelPermissions
@@ -225,7 +229,8 @@ class VoucherViewSet(viewsets.ModelViewSet):
 class CompanyViewSet(viewsets.ModelViewSet):
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
-    search_fields = ['company_name', 'id']
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ['company_name']
     permission_classes = [
         permissions.IsAuthenticated,
         DjangoModelPermissions
@@ -235,7 +240,8 @@ class CompanyViewSet(viewsets.ModelViewSet):
 class ShopViewSet(viewsets.ModelViewSet):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
-    search_fields = ['id']
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['company']
     permission_classes = [
         permissions.IsAuthenticated,
         DjangoModelPermissions
