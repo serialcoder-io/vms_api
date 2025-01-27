@@ -18,11 +18,12 @@ from vms_app.serializers import (
     UsersSerializer,
     RegisterUserSerializer,
     ClientListSerializer,
-    VoucherRequestSerializer,
+    VoucherRequestListSerializer,
+    VoucherRequestCrudSerializer,
     VoucherSerializer,
     CompanySerializer,
     ShopSerializer,
-    ClientDetailsSerializer
+    ClientCrudSerializer,
 )
 from .models import (
     User, Client,
@@ -61,13 +62,13 @@ class UserRegisterView(generics.GenericAPIView):
         return Response(serializer.data, status=201)
 
 
-class VoucherRequestViewSet(viewsets.ModelViewSet):
+class VoucherRequestListView(generics.ListAPIView):
     """
         created, read, update, delete Voucher_requests:
         view only for authenticated users with right permissions
     """
     queryset = VoucherRequest.objects.all()
-    serializer_class = VoucherRequestSerializer
+    serializer_class = VoucherRequestListSerializer
     pagination_class = VoucherRequestPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ['request_ref', 'id']
@@ -77,7 +78,65 @@ class VoucherRequestViewSet(viewsets.ModelViewSet):
         DjangoModelPermissions
     ]
 
+
+class VoucherRequestCrudView(generics.GenericAPIView):
+    queryset = VoucherRequest.objects.all()
+    serializer_class = VoucherRequestCrudSerializer
+    permission_classes = [
+        permissions.IsAuthenticated,
+        DjangoModelPermissions
+    ]
+
+    def get_object(self):
+        """ Find a VoucherRequest by id """
+        pk = self.kwargs.get('pk')
+        if not pk:
+            raise NotFound(detail="VoucherRequest ID not provided")
+        try:
+            return self.queryset.get(pk=pk)
+        except VoucherRequest.DoesNotExist:
+            raise NotFound(detail="VoucherRequest not found")
+
+    def get(self, request, *args, **kwargs):
+        voucher_request = self.get_object()
+        serializer = self.serializer_class(voucher_request)
+        return Response(serializer.data)
+
+    def put(self, request, *args, **kwargs):
+        voucher_request = self.get_object()
+        serializer = self.get_serializer(voucher_request, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, *args, **kwargs):
+        voucher_request = self.get_object()
+        voucher_request.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class VoucherRequestCreateView(generics.CreateAPIView):
+    queryset = VoucherRequest.objects.all()
+    serializer_class = VoucherRequestCrudSerializer
+    permission_classes = [
+        permissions.IsAuthenticated,
+        DjangoModelPermissions
+    ]
+
+    def post(self, request, *args, **kwargs):
+        """
+        Create a new VoucherRequest
+        """
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     def perform_create(self, serializer):
+        """
+        Save the voucher request with the user who created it
+        """
         serializer.save(recorded_by=self.request.user)
 
 
@@ -96,12 +155,12 @@ class ClientListView(generics.ListAPIView):
 
 class ClientCRUDView(generics.GenericAPIView):
     queryset = Client.objects.all()
-    serializer_class = ClientDetailsSerializer
-
+    serializer_class = ClientCrudSerializer
     permission_classes = [
         permissions.IsAuthenticated,
         permissions.DjangoModelPermissions
     ]
+
     def get_object(self):
         """ find a client by id """
         try:
@@ -126,6 +185,24 @@ class ClientCRUDView(generics.GenericAPIView):
         client = self.get_object()
         client.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ClientCreateView(generics.CreateAPIView):
+    queryset = Client.objects.all()
+    serializer_class = ClientCrudSerializer
+    permission_classes = [
+        permissions.IsAuthenticated,
+        permissions.DjangoModelPermissions
+    ]
+    def post(self, request, *args, **kwargs):
+        """
+            Add a new client
+        """
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class VoucherViewSet(viewsets.ModelViewSet):

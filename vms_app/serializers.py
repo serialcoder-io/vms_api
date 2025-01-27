@@ -59,7 +59,7 @@ class RegisterUserSerializer(serializers.ModelSerializer):
         return user
 
 
-class VoucherRequestSerializer(serializers.ModelSerializer):
+"""class VoucherRequestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = VoucherRequest
@@ -70,19 +70,50 @@ class VoucherRequestSerializer(serializers.ModelSerializer):
         # Ensure the instance is updated with the correct database values after creation
         instance = super().create(validated_data)
         instance.refresh_from_db()
+        ddreturn instance
+        """
+
+
+class VoucherRequestListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = VoucherRequest
+        fields = "__all__"
+        read_only_fields = ['date_time_recorded', 'request_ref', 'id']
+
+
+class VoucherRequestCrudSerializer(serializers.ModelSerializer):
+    vouchers = VoucherRequestListSerializer(many=True, read_only=True)
+    class Meta:
+        model = VoucherRequest
+        fields = [
+            "id", "request_ref",
+              "request_status",
+              "date_time_recorded",
+              "date_time_approved",
+              "quantity_of_vouchers",
+              "vouchers"
+            ]
+        read_only_fields = ['date_time_recorded', 'request_ref', 'id']
+
+    def create(self, validated_data):
+        # Ensure the instance is updated with the correct database values after creation
+        instance = super().create(validated_data)
+        instance.refresh_from_db()
         return instance
 
 
 class ClientListSerializer(serializers.ModelSerializer):
-
+    """serializer for client list"""
     class Meta:
         model = Client
         fields = "__all__"
         read_only_fields = ['id']
 
 
-class ClientDetailsSerializer(serializers.ModelSerializer):
-    client_voucher_requests = VoucherRequestSerializer(many=True, read_only=True)
+class ClientCrudSerializer(serializers.ModelSerializer):
+    """serializer for client crud"""
+    client_voucher_requests = VoucherRequestListSerializer(many=True, read_only=True)
 
     class Meta:
         model = Client
