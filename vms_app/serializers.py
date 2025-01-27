@@ -59,14 +59,6 @@ class RegisterUserSerializer(serializers.ModelSerializer):
         return user
 
 
-class ClientSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Client
-        fields = "__all__"
-        read_only_fields = ['id']
-
-
 class VoucherRequestSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -79,6 +71,31 @@ class VoucherRequestSerializer(serializers.ModelSerializer):
         instance = super().create(validated_data)
         instance.refresh_from_db()
         return instance
+
+
+class ClientListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Client
+        fields = "__all__"
+        read_only_fields = ['id']
+
+
+class ClientDetailsSerializer(serializers.ModelSerializer):
+    client_voucher_requests = VoucherRequestSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Client
+        fields = [
+            "id",
+            "firstname",
+            "lastname",
+            "email",
+            "contact",
+            "logo",
+            "client_voucher_requests"
+        ]
+        read_only_fields = ['id']
 
 
 class VoucherSerializer(serializers.ModelSerializer):

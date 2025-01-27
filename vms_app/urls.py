@@ -9,16 +9,16 @@ from rest_framework_simplejwt.views import (
 from .views import (
     UserViewSet,
     UserRegisterView,
-    ClientViewSet,
+    ClientListView,
     VoucherViewSet,
     VoucherRequestViewSet,
     CompanyViewSet,
-    ShopViewSet
+    ShopViewSet,
+    ClientCRUDView
 )
 
 router = DefaultRouter()
 router.register('users', UserViewSet)
-router.register('clients', ClientViewSet)
 router.register('vouchers', VoucherViewSet)
 router.register('voucher_requests', VoucherRequestViewSet)
 router.register('companies', CompanyViewSet)
@@ -26,10 +26,12 @@ router.register('shops', ShopViewSet)
 
 app_name = 'vms_app'
 urlpatterns = [
-    path('', include(router.urls)),
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
-    path('api/register/', UserRegisterView.as_view(), name='register'),
+    path("vms_api/", include(router.urls)),
+    path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("api/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
+    path("vms_api/register/", UserRegisterView.as_view(), name="register"),
+    path("vms_api/clients/", ClientListView.as_view(), name="clients-list"),
+    path("vms_api/clients/<int:pk>/", ClientCRUDView.as_view(), name="client-details"),
     path('latest_id/', views.get_latest_id, name="latest_id")
 ]
