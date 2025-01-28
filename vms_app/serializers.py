@@ -56,21 +56,6 @@ class RegisterUserSerializer(serializers.ModelSerializer):
         return user
 
 
-"""class VoucherRequestSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = VoucherRequest
-        fields = "__all__"
-        read_only_fields = ['date_time_recorded', 'request_ref', 'id']
-
-    def create(self, validated_data):
-        # Ensure the instance is updated with the correct database values after creation
-        instance = super().create(validated_data)
-        instance.refresh_from_db()
-        ddreturn instance
-        """
-
-
 class VoucherRequestListSerializer(serializers.ModelSerializer):
 
     class Meta:
