@@ -15,7 +15,7 @@ class Company(models.Model):
 class Shop(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='shops')
     location = models.CharField(max_length=100)
-    addresse = models.CharField(max_length=150, blank=True, null=True)
+    address = models.CharField(max_length=150, blank=True, null=True)
 
     class Meta:
         ordering = ['id']
