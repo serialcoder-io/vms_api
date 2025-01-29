@@ -89,7 +89,7 @@ class VoucherRequest(models.Model):
     )
     date_time_recorded = models.DateTimeField(auto_now_add=True, blank=True)
     quantity_of_vouchers = models.IntegerField(blank=False, null=False, default=1)
-
+    description = models.TextField(blank=True, null=True)
     date_time_approved = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
