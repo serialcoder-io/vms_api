@@ -39,13 +39,13 @@ urlpatterns = [
     path("vms_api/register/", UserRegisterView.as_view(), name="register"),
 
     # views related to client model
-    path("vms_api/clients/", ClientListView.as_view(), name="clients-list"),
-    path("vms_api/clients/<int:pk>/", ClientCRUDView.as_view(), name="client-details"),
-    path("vms_api/clients/add/", ClientCreateView.as_view(), name="new-client"),
+    path("vms_api/clients/", ClientListView.as_view(), name="clients_list"),
+    path("vms_api/clients/<int:pk>/", ClientCRUDView.as_view(), name="client_details"),
+    path("vms_api/clients/add/", ClientCreateView.as_view(), name="new_client"),
 
     # views related to voucher_request model
-    path("vms_api/voucher_requests/", VoucherRequestListView.as_view(), name="requests-list"),
-    path("vms_api/voucher_requests/<int:pk>/", VoucherRequestCrudView.as_view(), name="requests-details"),
-    path("vms_api/voucher_requests/add/", VoucherRequestCreateView.as_view(), name="new-request"),
+    path("vms_api/voucher_requests/", VoucherRequestListView.as_view(), name="requests_list"),
+    path("vms_api/voucher_requests/<int:pk>/", VoucherRequestCrudView.as_view(), name="request_details"),
+    path("vms_api/voucher_requests/add/", VoucherRequestCreateView.as_view(), name="new_request"),
     path('latest_id/', views.get_latest_id, name="latest_id")
 ]

@@ -1,5 +1,5 @@
 from django.db.models import Max
-from django.shortcuts import redirect
+# from django.shortcuts import redirect
 # from django.shortcuts import render
 
 from rest_framework.decorators import api_view
