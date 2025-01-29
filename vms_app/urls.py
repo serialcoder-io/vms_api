@@ -41,7 +41,7 @@ urlpatterns = [
     # views related to client model
     path("vms_api/clients/", ClientListView.as_view(), name="clients-list"),
     path("vms_api/clients/<int:pk>/", ClientCRUDView.as_view(), name="client-details"),
-    path("vms_api/clients/add", ClientCreateView.as_view(), name="new-client"),
+    path("vms_api/clients/add/", ClientCreateView.as_view(), name="new-client"),
 
     # views related to voucher_request model
     path("vms_api/voucher_requests/", VoucherRequestListView.as_view(), name="requests-list"),

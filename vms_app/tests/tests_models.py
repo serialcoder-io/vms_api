@@ -1,7 +1,6 @@
-from django.db.models import Max
 from django.test import Client, TestCase
 
-from .models import (
+from vms_app.models import (
     User,
     Client,
     VoucherRequest,
@@ -31,11 +30,11 @@ class VoucherRequestTestCase(TestCase):
         )
         voucher_request = VoucherRequest.objects.create(
             recorded_by=user,
-            request_ref="VRQ-00001-1/3",
+            request_ref="VRQ-00001-1/1",
             client=client_1,
             quantity_of_vouchers=3,
         )
-        voucher1 = Voucher.objects.create(
+        Voucher.objects.create(
             voucher_request=voucher_request,
             voucher_ref="VR-00001-1000",
             amount=1000,
@@ -50,7 +49,7 @@ class VoucherRequestTestCase(TestCase):
         self.assertNotEqual(VoucherRequest.objects.count(), 0, fail_message)
 
     def test_voucher_request_default_status(self):
-        voucher_request = VoucherRequest.objects.get(request_ref="VRQ-00001-1/3")
+        voucher_request = VoucherRequest.objects.get(request_ref="VRQ-00001-1/1")
         message = "The default status of a `VoucherRequest` should be 'pending'."
         self.assertEqual(voucher_request.request_status, "pending", message)
 
@@ -61,3 +60,7 @@ class VoucherRequestTestCase(TestCase):
             "provisional",
             "default status should be provisional."
         )
+
+"""class RedemptionTestCase(TestCase):
+    def setUp(self):
+        pass"""

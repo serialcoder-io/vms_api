@@ -1,4 +1,5 @@
 from django.db.models import Max
+from django.shortcuts import redirect
 # from django.shortcuts import render
 
 from rest_framework.decorators import api_view
@@ -74,7 +75,7 @@ class VoucherRequestListView(generics.ListAPIView):
     serializer_class = VoucherRequestListSerializer
     pagination_class = VoucherRequestPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    search_fields = ['request_ref']
+    search_fields = ['=request_ref']
     filterset_fields = ['request_status']
     permission_classes = [
         permissions.IsAuthenticated,
@@ -218,7 +219,7 @@ class VoucherViewSet(viewsets.ModelViewSet):
     serializer_class = VoucherSerializer
     pagination_class = VoucherPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    search_fields = ['voucher_ref']
+    search_fields = ['=voucher_ref']
     filterset_fields = ['voucher_status']
     permission_classes = [
         permissions.IsAuthenticated,
