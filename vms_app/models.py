@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
-from django.db import models
+from django.db import models, transaction
+from django.utils import timezone
 
 
 class Company(models.Model):
@@ -66,34 +67,51 @@ class VoucherRequest(models.Model):
 
     recorded_by = models.ForeignKey(
         User, on_delete=models.CASCADE,
-        related_name='user_voucher_requests',
-        null=True, blank=True
+        related_name='user_voucher_requests', null=True, blank=True
     )
     approved_by = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='approved_requests',
-        null=True, blank=True
+        User, on_delete=models.CASCADE,
+        related_name='approved_requests', null=True, blank=True
     )
     request_ref = models.TextField(unique=True, blank=True, null=True)
     client = models.ForeignKey(
-        Client,
-        on_delete=models.CASCADE,
-        related_name='client_voucher_requests',
-        null=True, blank=True
+        Client, on_delete=models.CASCADE, null=True, blank=True,
+        related_name='client_voucher_requests'
     )
-    request_status = models.CharField(
-        max_length=20,
-        choices=RequestStatus.choices,
-        default=RequestStatus.PENDING
-    )
-    date_time_recorded = models.DateTimeField(auto_now_add=True, blank=True)
+    request_status = models.CharField(max_length=20, choices=RequestStatus.choices, default=RequestStatus.PENDING)
+    date_time_recorded = models.DateTimeField(default=timezone.now(), blank=True)
     quantity_of_vouchers = models.IntegerField(blank=False, null=False, default=1)
     description = models.TextField(blank=True, null=True)
     date_time_approved = models.DateTimeField(null=True, blank=True)
 
+    def set_date_time_approved(self):
+        """Set the approval timestamp when the request is approved."""
+        self.date_time_approved = timezone.now()
+        self.save()
+
+    def update_related_vouchers_status(self, new_request_status):
+        """This method updates the status of the vouchers linked to the voucher request within a transaction."""
+        try:
+            with transaction.atomic():
+                provisional_related_vouchers = self.vouchers.filter(voucher_status=Voucher.VoucherStatus.PROVISIONAL)
+
+                if provisional_related_vouchers.exists():
+                    if self.request_status == "pending":
+                        updated_count = 0
+                        if new_request_status == "approved":
+                            updated_count = provisional_related_vouchers.update(voucher_status=Voucher.VoucherStatus.ISSUED)
+                        elif new_request_status == "rejected":
+                            updated_count = provisional_related_vouchers.update(voucher_status=Voucher.VoucherStatus.CANCELLED)
+
+                        # Check if any vouchers were updated
+                        if updated_count == 0:
+                            raise Exception("No vouchers were updated.")
+        except Exception as e:
+            # Raise more specific error or log the exception
+            raise Exception(f"Error occurred while updating vouchers status: {e}")
+
     def __str__(self):
-        return f"ref: {self.request_ref}"
+        return f"Voucher Request ref: {self.request_ref}"
 
 
 class Voucher(models.Model):
@@ -110,10 +128,9 @@ class Voucher(models.Model):
     voucher_request = models.ForeignKey(VoucherRequest, on_delete=models.CASCADE, related_name='vouchers')
     voucher_ref = models.TextField(unique=True, null=True, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    date_time_created = models.DateTimeField(auto_now_add=True)
+    date_time_created = models.DateTimeField(default=timezone.now())
     expiry_date = models.DateField(blank=False, null=False)
     extention_date = models.DateField(null=True, blank=True)
-    redeemed = models.BooleanField(default=False)
     voucher_status = models.CharField(
         max_length=20,
         choices=VoucherStatus.choices,
@@ -136,7 +153,7 @@ class Redemption(models.Model):
         null=False, blank=False
     )
     shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='shop_redemptions')
-    redemption_date = models.DateTimeField(auto_now_add=True)
+    redemption_date = models.DateTimeField(default=timezone.now())
     till_no = models.IntegerField(blank=False, null=True)
 
     def __str__(self):
@@ -154,7 +171,7 @@ class AuditTrails(models.Model):
     class Meta:
         ordering = ['datetime']
 
-    datetime = models.DateTimeField(auto_now_add=True)
+    datetime = models.DateTimeField(default=timezone.now())
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='audit_trails')
     table_name = models.CharField(max_length=20)
     object_id = models.IntegerField()
@@ -167,3 +184,4 @@ class AuditTrails(models.Model):
 
     def __str__(self):
         return f"user: {self.user.username}, table_name: {self.table_name}, action: {self.action}"
+

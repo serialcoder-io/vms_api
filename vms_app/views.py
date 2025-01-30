@@ -1,7 +1,9 @@
 from django.db.models import Max
+from django.db.models.lookups import Exact
 # from django.shortcuts import redirect
 # from django.shortcuts import render
-
+from django.db import IntegrityError, DatabaseError
+from django.utils import timezone
 from rest_framework.decorators import api_view
 from rest_framework.exceptions import NotFound
 # from rest_framework.exceptions import ValidationError
@@ -110,6 +112,27 @@ class VoucherRequestCrudView(generics.GenericAPIView):
         voucher_request = self.get_object()
         serializer = self.get_serializer(voucher_request, data=request.data, partial=True)
         if serializer.is_valid():
+            new_request_status = serializer.validated_data.get('request_status')
+            try:
+                voucher_request.update_related_vouchers_status(new_request_status)
+                # Set the approval timestamp if the request is approved
+                if new_request_status == "approved":
+                    serializer.validated_data["date_time_approved"] = timezone.now()
+            except IntegrityError:
+                return Response(
+                    {"detail": "There was a problem with the data integrity."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            except DatabaseError:
+                return Response(
+                    {"detail": "There was a problem with the database."},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            except Exception as e:
+                return Response(
+                    {"detail": f"An unexpected error occurred. {str(e)}"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

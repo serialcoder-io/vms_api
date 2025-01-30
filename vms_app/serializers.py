@@ -56,6 +56,19 @@ class RegisterUserSerializer(serializers.ModelSerializer):
         return user
 
 
+class VoucherSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Voucher
+        fields = "__all__"
+        read_only_fields = ['date_time_created', 'voucher_ref', 'id']
+
+    def create(self, validated_data):
+        # Ensure the instance is updated with the correct database values after creation
+        instance = super().create(validated_data)
+        instance.refresh_from_db()
+        return instance
+
+
 class VoucherRequestListSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -65,7 +78,7 @@ class VoucherRequestListSerializer(serializers.ModelSerializer):
 
 
 class VoucherRequestCrudSerializer(serializers.ModelSerializer):
-    vouchers = VoucherRequestListSerializer(many=True, read_only=True)
+    vouchers = VoucherSerializer(many=True, read_only=True)
     class Meta:
         model = VoucherRequest
         fields = [
@@ -74,6 +87,7 @@ class VoucherRequestCrudSerializer(serializers.ModelSerializer):
               "date_time_recorded",
               "date_time_approved",
               "quantity_of_vouchers",
+              "description",
               "vouchers"
             ]
         read_only_fields = ['date_time_recorded', 'request_ref', 'id']
@@ -95,6 +109,7 @@ class ClientListSerializer(serializers.ModelSerializer):
 
 class ClientCrudSerializer(serializers.ModelSerializer):
     """serializer for client crud"""
+    # client requests
     client_voucher_requests = VoucherRequestListSerializer(many=True, read_only=True)
 
     class Meta:
@@ -109,19 +124,6 @@ class ClientCrudSerializer(serializers.ModelSerializer):
             "client_voucher_requests"
         ]
         read_only_fields = ['id']
-
-
-class VoucherSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Voucher
-        fields = "__all__"
-        read_only_fields = ['date_time_created', 'voucher_ref', 'id']
-
-    def create(self, validated_data):
-        # Ensure the instance is updated with the correct database values after creation
-        instance = super().create(validated_data)
-        instance.refresh_from_db()
-        return instance
 
 
 class CompanySerializer(serializers.ModelSerializer):
