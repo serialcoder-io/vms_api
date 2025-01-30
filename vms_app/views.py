@@ -1,5 +1,5 @@
 from django.db.models import Max
-from django.db.models.lookups import Exact
+# from django.db.models.lookups import Exact
 # from django.shortcuts import redirect
 # from django.shortcuts import render
 from django.db import IntegrityError, DatabaseError
@@ -118,7 +118,7 @@ class VoucherRequestCrudView(generics.GenericAPIView):
             try:
                 # Update the status of related vouchers
                 voucher_request.update_related_vouchers_status(new_request_status)
-                if new_request_status == pending_status and voucher_request.request_status == pending_status:
+                if new_request_status == approved_status and voucher_request.request_status == pending_status:
                     # If the request is approved, set the approval timestamp and
                     # associate the action with the approving user
                     serializer.validated_data["date_time_approved"] = timezone.now()
