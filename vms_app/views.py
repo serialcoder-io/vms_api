@@ -109,38 +109,61 @@ class VoucherRequestCrudView(generics.GenericAPIView):
         return Response(serializer.data)
 
     def put(self, request, *args, **kwargs):
+        pending_status = VoucherRequest.RequestStatus.PENDING
+        approved_status = VoucherRequest.RequestStatus.APPROVED
         voucher_request = self.get_object()
         serializer = self.get_serializer(voucher_request, data=request.data, partial=True)
         if serializer.is_valid():
             new_request_status = serializer.validated_data.get('request_status')
             try:
+                # Update the status of related vouchers
                 voucher_request.update_related_vouchers_status(new_request_status)
-                # Set the approval timestamp if the request is approved
-                if new_request_status == "approved":
+                if new_request_status == pending_status and voucher_request.request_status == pending_status:
+                    # If the request is approved, set the approval timestamp and
+                    # associate the action with the approving user
                     serializer.validated_data["date_time_approved"] = timezone.now()
+                    serializer.validated_data["approved_by"] = request.user
+                else:
+                    # Prevent changing the status if the voucher request is already approved/rejected
+                    return Response(
+                        {
+                            "detail": f"This voucher request is already {voucher_request.request_status}. You cannot modify the status."
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
             except IntegrityError:
+                # Handle integrity issues, such as foreign key constraints or unique constraints
                 return Response(
-                    {"detail": "There was a problem with the data integrity."},
+                    {"detail": "There was a data integrity issue."},
                     status=status.HTTP_400_BAD_REQUEST
                 )
+
             except DatabaseError:
+                # Handle general database issues, such as connection problems
                 return Response(
-                    {"detail": "There was a problem with the database."},
+                    {"detail": "A database error occurred."},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
+
             except Exception as e:
+                # Catch all other unexpected errors
                 return Response(
-                    {"detail": f"An unexpected error occurred. {str(e)}"},
+                    {"detail": f"An unexpected error occurred: {str(e)}"},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
+
+            # Save changes and return the updated data
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
+        # Return validation errors if the serializer is invalid
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, *args, **kwargs):
         voucher_request = self.get_object()
         voucher_request.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class VoucherRequestCreateView(generics.CreateAPIView):
     queryset = VoucherRequest.objects.all()
@@ -149,7 +172,6 @@ class VoucherRequestCreateView(generics.CreateAPIView):
         permissions.IsAuthenticated,
         DjangoModelPermissions
     ]
-
     def post(self, request, *args, **kwargs):
         """
         Create a new VoucherRequest

@@ -86,6 +86,7 @@ class VoucherRequestCrudSerializer(serializers.ModelSerializer):
               "request_status",
               "date_time_recorded",
               "date_time_approved",
+              "approved_by",
               "quantity_of_vouchers",
               "description",
               "vouchers"

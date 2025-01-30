@@ -86,29 +86,49 @@ class VoucherRequest(models.Model):
 
     def set_date_time_approved(self):
         """Set the approval timestamp when the request is approved."""
-        self.date_time_approved = timezone.now
+        self.date_time_approved = timezone.now()
         self.save()
 
     def update_related_vouchers_status(self, new_request_status):
-        """This method updates the status of the vouchers linked to the voucher request within a transaction."""
+        """
+        Updates the status of vouchers linked to the voucher request within a transaction.
+
+        This method checks for vouchers with a 'PROVISIONAL' status and updates them based on the
+        new status of the voucher request (approved or rejected).
+        """
         try:
             with transaction.atomic():
-                provisional_related_vouchers = self.vouchers.filter(voucher_status=Voucher.VoucherStatus.PROVISIONAL)
+                # Filter provisional vouchers linked to this request
+                provisional_related_vouchers = self.vouchers.filter(
+                    voucher_status=Voucher.VoucherStatus.PROVISIONAL
+                )
 
                 if provisional_related_vouchers.exists():
+                    # Only proceed with updating if the request status is 'pending'
                     if self.request_status == "pending":
                         updated_count = 0
-                        if new_request_status == "approved":
-                            updated_count = provisional_related_vouchers.update(voucher_status=Voucher.VoucherStatus.ISSUED)
-                        elif new_request_status == "rejected":
-                            updated_count = provisional_related_vouchers.update(voucher_status=Voucher.VoucherStatus.CANCELLED)
 
-                        # Check if any vouchers were updated
+                        # Update voucher status based on the new request status
+                        if new_request_status == "approved":
+                            updated_count = provisional_related_vouchers.update(
+                                voucher_status=Voucher.VoucherStatus.ISSUED
+                            )
+                        elif new_request_status == "rejected":
+                            updated_count = provisional_related_vouchers.update(
+                                voucher_status=Voucher.VoucherStatus.CANCELLED
+                            )
+
+                        # Raise an exception if no vouchers were updated
                         if updated_count == 0:
-                            raise Exception("No vouchers were updated.")
+                            raise ValueError("No provisional vouchers were updated.")
+                else:
+                    # No provisional vouchers found, simply leave their status unchanged
+                    for voucher in provisional_related_vouchers:
+                        voucher.voucher_status = voucher.voucher_status
+
         except Exception as e:
-            # Raise more specific error or log the exception
-            raise Exception(f"Error occurred while updating vouchers status: {e}")
+            # Log or raise a more specific error to help with debugging
+            raise Exception(f"Error while updating voucher status: {e}")
 
     def __str__(self):
         return f"Voucher Request ref: {self.request_ref}"
