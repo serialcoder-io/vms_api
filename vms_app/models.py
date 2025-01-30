@@ -79,14 +79,14 @@ class VoucherRequest(models.Model):
         related_name='client_voucher_requests'
     )
     request_status = models.CharField(max_length=20, choices=RequestStatus.choices, default=RequestStatus.PENDING)
-    date_time_recorded = models.DateTimeField(default=timezone.now(), blank=True)
+    date_time_recorded = models.DateTimeField(default=timezone.now, blank=True)
     quantity_of_vouchers = models.IntegerField(blank=False, null=False, default=1)
     description = models.TextField(blank=True, null=True)
     date_time_approved = models.DateTimeField(null=True, blank=True)
 
     def set_date_time_approved(self):
         """Set the approval timestamp when the request is approved."""
-        self.date_time_approved = timezone.now()
+        self.date_time_approved = timezone.now
         self.save()
 
     def update_related_vouchers_status(self, new_request_status):
@@ -128,7 +128,7 @@ class Voucher(models.Model):
     voucher_request = models.ForeignKey(VoucherRequest, on_delete=models.CASCADE, related_name='vouchers')
     voucher_ref = models.TextField(unique=True, null=True, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    date_time_created = models.DateTimeField(default=timezone.now())
+    date_time_created = models.DateTimeField(default=timezone.now)
     expiry_date = models.DateField(blank=False, null=False)
     extention_date = models.DateField(null=True, blank=True)
     voucher_status = models.CharField(
@@ -153,7 +153,7 @@ class Redemption(models.Model):
         null=False, blank=False
     )
     shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='shop_redemptions')
-    redemption_date = models.DateTimeField(default=timezone.now())
+    redemption_date = models.DateTimeField(default=timezone.now)
     till_no = models.IntegerField(blank=False, null=True)
 
     def __str__(self):
@@ -171,7 +171,7 @@ class AuditTrails(models.Model):
     class Meta:
         ordering = ['datetime']
 
-    datetime = models.DateTimeField(default=timezone.now())
+    datetime = models.DateTimeField(default=timezone.now)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='audit_trails')
     table_name = models.CharField(max_length=20)
     object_id = models.IntegerField()
