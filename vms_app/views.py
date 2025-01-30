@@ -127,7 +127,7 @@ class VoucherRequestCrudView(generics.GenericAPIView):
                     # Prevent changing the status if the voucher request is already approved/rejected
                     return Response(
                         {
-                            "detail": f"This voucher request is already {voucher_request.request_status}. You cannot modify the status."
+                            "detail": f"This voucher request is already {voucher_request.request_status}. You cannot modify it."
                         },
                         status=status.HTTP_400_BAD_REQUEST
                     )
