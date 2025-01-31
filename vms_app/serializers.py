@@ -131,11 +131,16 @@ class CompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
         fields = "__all__"
-        read_only_fields = ['id']
 
 
 class ShopSerializer(serializers.ModelSerializer):
+    company = CompanySerializer(read_only=True)
+    company_id = serializers.PrimaryKeyRelatedField(
+        queryset=Company.objects.all(),
+        source='company',
+        write_only=True
+    )
     class Meta:
         model = Shop
-        fields = "__all__"
-        read_only_fields = ['id']
+        fields = ['id', 'location', 'address', 'company', 'company_id']
+        read_only_fields = ['id', 'company']
