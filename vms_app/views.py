@@ -18,7 +18,7 @@ from rest_framework import (
 )
 
 from vms_app.serializers import (
-    UsersSerializer,
+    UserSerializer,
     RegisterUserSerializer,
     ClientListSerializer,
     VoucherRequestListSerializer,
@@ -26,13 +26,13 @@ from vms_app.serializers import (
     VoucherSerializer,
     CompanySerializer,
     ShopSerializer,
-    ClientCrudSerializer,
+    ClientCrudSerializer, RedemptionSerializer,
 )
 from .models import (
     User, Client,
     VoucherRequest,
     Voucher, Shop,
-    Company,
+    Company, Redemption,
 )
 from .paginations import (
     VoucherRequestPagination,
@@ -46,7 +46,7 @@ class UserViewSet(viewsets.ModelViewSet):
     view only for authenticated users with right permissions
     """
     queryset = User.objects.all()
-    serializer_class = UsersSerializer
+    serializer_class = UserSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ['email']
     filterset_fields = ['company']
@@ -294,11 +294,8 @@ class ShopViewSet(viewsets.ModelViewSet):
     ]
 
 
-@api_view(['GET'])
-def get_latest_id(request):
-    latest_id = User.objects.aggregate(Max('id'))['id__max']
-    return Response(
-        {
-            "latest_id": latest_id
-        }
-    )
+class RedemptionViewSet(viewsets.ModelViewSet):
+    queryset = Redemption.objects.all()
+    serializer_class = RedemptionSerializer
+    permission_classes = [permissions.IsAuthenticated, DjangoModelPermissions]
+

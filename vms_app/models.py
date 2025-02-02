@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models, transaction
+from django.db.models import SET_NULL
 from django.utils import timezone
 
 
@@ -139,7 +140,7 @@ class Voucher(models.Model):
         PROVISIONAL = 'provisional', 'Provisional'
         ISSUED = 'issued', 'Issued'
         EXPIRED = 'expired', 'Expired'
-        REDEEMDED = 'redeemed', 'Redeemed'
+        REDEEMED = 'redeemed', 'Redeemed'
         CANCELLED = 'cancelled', 'Cancelled'
 
     class Meta:
@@ -157,12 +158,22 @@ class Voucher(models.Model):
         default=VoucherStatus.PROVISIONAL
     )
 
+    def redeem(self, user, shop, till_no):
+        """Redeem the voucher by creating a Redemption and updating status."""
+        if self.voucher_status != Voucher.VoucherStatus.ISSUED:
+            raise ValueError("Voucher must be issued to be redeemed.")
+        # Create the Redemption
+        Redemption.objects.create(voucher=self, user=user, shop=shop, till_no=till_no)
+        # Update voucher status to redeemed
+        self.voucher_status = Voucher.VoucherStatus.REDEEMED
+        self.save()
+
     def __str__(self):
         return f"Ref: {self.voucher_ref}; Amount: {self.amount} MUR"
 
 
 class Redemption(models.Model):
-    voucher = models.ForeignKey(
+    voucher = models.OneToOneField(
         Voucher, on_delete=models.CASCADE,
         related_name='redemption',
         null=True, blank=False

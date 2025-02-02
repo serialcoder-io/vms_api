@@ -1,5 +1,5 @@
 from django.urls import path, include
-from . import views
+# from . import views
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -18,6 +18,7 @@ from .views import (
     ClientListView,
     ClientCRUDView,
     ClientCreateView,
+    RedemptionViewSet
 )
 
 router = DefaultRouter()
@@ -25,6 +26,7 @@ router.register('users', UserViewSet)
 router.register('vouchers', VoucherViewSet)
 router.register('companies', CompanyViewSet)
 router.register('shops', ShopViewSet)
+router.register('redemptions', RedemptionViewSet)
 
 app_name = 'vms_app'
 urlpatterns = [
@@ -47,5 +49,4 @@ urlpatterns = [
     path("vms_api/voucher_requests/", VoucherRequestListView.as_view(), name="requests_list"),
     path("vms_api/voucher_requests/<int:pk>/", VoucherRequestCrudView.as_view(), name="request_details"),
     path("vms_api/voucher_requests/add/", VoucherRequestCreateView.as_view(), name="new_request"),
-    path('latest_id/', views.get_latest_id, name="latest_id")
 ]
