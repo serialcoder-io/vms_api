@@ -1,6 +1,5 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models, transaction
-from django.db.models import SET_NULL
 from django.utils import timezone
 
 
@@ -185,7 +184,7 @@ class Redemption(models.Model):
     )
     shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='shop_redemptions')
     redemption_date = models.DateTimeField(default=timezone.now)
-    till_no = models.IntegerField(blank=False, null=True)
+    till_no = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
         return (f"voucher_ref: {self.voucher.voucher_ref}, "
@@ -215,4 +214,3 @@ class AuditTrails(models.Model):
 
     def __str__(self):
         return f"user: {self.user.username}, table_name: {self.table_name}, action: {self.action}"
-

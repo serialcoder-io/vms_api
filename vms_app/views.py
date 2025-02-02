@@ -1,12 +1,12 @@
-from django.db.models import Max
+# from django.db.models import Max
 # from django.db.models.lookups import Exact
 # from django.shortcuts import redirect
 # from django.shortcuts import render
+# from rest_framework.exceptions import ValidationError
 from django.db import IntegrityError, DatabaseError
 from django.utils import timezone
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import NotFound
-# from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import DjangoModelPermissions
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
@@ -298,4 +298,59 @@ class RedemptionViewSet(viewsets.ModelViewSet):
     queryset = Redemption.objects.all()
     serializer_class = RedemptionSerializer
     permission_classes = [permissions.IsAuthenticated, DjangoModelPermissions]
+
+
+@permission_classes([permissions.IsAuthenticated])
+@api_view(["POST"])
+def redeem_voucher(request, voucher_id, *args, **kwargs):
+    if request.method == "POST":
+        try:
+            voucher = Voucher.objects.get(pk=voucher_id)
+            # a voucher can be redeemed only if the status is 'issued'
+            if voucher.voucher_status != Voucher.VoucherStatus.ISSUED:
+                return Response(
+                    {"details": "Voucher must have the status 'ISSUED' to be redeemed."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            if "shop_id" not in request.data:
+                return Response(
+                    {"details": "The 'shop_id' field is required."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # check if there is a shop with the id provided in request.data
+            shop = Shop.objects.get(pk=request.data["shop_id"])
+            till_no = request.data.get("till_no")
+
+            # redeem the voucher
+            voucher.redeem(user=request.user, shop=shop, till_no=till_no)
+
+            # response when the voucher was redeemed successfully
+            redemption = {
+                "redeemed_on": voucher.redemption.redemption_date,
+                "redeemed_at": f"{voucher.redemption.shop.company.company_name} {voucher.redemption.shop.location}",
+            }
+            return Response(
+                {
+                    "details": f"Voucher '{voucher.voucher_ref}' was redeemed successfully.",
+                    "voucher_info": {
+                        "voucher_ref": voucher.voucher_ref,
+                        "amount": voucher.amount,
+                        "redemption": redemption,
+                    },
+                },
+                status=status.HTTP_201_CREATED
+            )
+        except Voucher.DoesNotExist:
+            return Response({"details": "Voucher not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Shop.DoesNotExist:
+            return Response({"details": "Shop not found."}, status=status.HTTP_404_NOT_FOUND)
+        except KeyError as e:
+            return Response({"details": f"Missing field: {e}"}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    return Response({"details": "Invalid request method."}, status=status.HTTP_400_BAD_REQUEST)
+
 

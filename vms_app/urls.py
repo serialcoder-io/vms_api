@@ -18,7 +18,8 @@ from .views import (
     ClientListView,
     ClientCRUDView,
     ClientCreateView,
-    RedemptionViewSet
+    RedemptionViewSet,
+    redeem_voucher
 )
 
 router = DefaultRouter()
@@ -49,4 +50,5 @@ urlpatterns = [
     path("vms_api/voucher_requests/", VoucherRequestListView.as_view(), name="requests_list"),
     path("vms_api/voucher_requests/<int:pk>/", VoucherRequestCrudView.as_view(), name="request_details"),
     path("vms_api/voucher_requests/add/", VoucherRequestCreateView.as_view(), name="new_request"),
+    path("vms_api/vouchers/<int:voucher_id>/redeem/", redeem_voucher, name="redeem_voucher"),
 ]
