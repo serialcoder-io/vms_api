@@ -265,7 +265,7 @@ class VoucherViewSet(viewsets.ModelViewSet):
     pagination_class = VoucherPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ['=voucher_ref']
-    filterset_fields = ['voucher_status']
+    filterset_fields = ['voucher_status', 'redemption__shop']
     permission_classes = [
         permissions.IsAuthenticated,
         DjangoModelPermissions
@@ -300,7 +300,7 @@ class RedemptionViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, DjangoModelPermissions]
 
 
-@permission_classes([permissions.IsAuthenticated])
+@permission_classes([permissions.IsAuthenticated, DjangoModelPermissions])
 @api_view(["POST"])
 def redeem_voucher(request, voucher_id, *args, **kwargs):
     if request.method == "POST":
