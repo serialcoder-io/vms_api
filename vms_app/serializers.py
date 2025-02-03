@@ -88,6 +88,7 @@ class VoucherSerializer(serializers.ModelSerializer):
         model = Voucher
         fields = [
             "id", "voucher_ref",
+            "amount",
             "voucher_request",
             "date_time_created",
             "expiry_date",
