@@ -31,7 +31,7 @@ router.register('redemptions', RedemptionViewSet)
 
 app_name = 'vms_app'
 urlpatterns = [
-    path("vms_api/", include(router.urls)),
+    path("api/", include(router.urls)),
 
     # token views
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
@@ -39,16 +39,16 @@ urlpatterns = [
     path("api/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
 
     # register view
-    path("vms_api/register/", UserRegisterView.as_view(), name="register"),
+    path("api/register/", UserRegisterView.as_view(), name="register"),
 
     # views related to client model
-    path("vms_api/clients/", ClientListView.as_view(), name="clients_list"),
-    path("vms_api/clients/<int:pk>/", ClientCRUDView.as_view(), name="client_details"),
-    path("vms_api/clients/add/", ClientCreateView.as_view(), name="new_client"),
+    path("api/clients/", ClientListView.as_view(), name="clients_list"),
+    path("api/clients/<int:pk>/", ClientCRUDView.as_view(), name="client_details"),
+    path("api/clients/add/", ClientCreateView.as_view(), name="new_client"),
 
     # views related to voucher_request model
-    path("vms_api/voucher_requests/", VoucherRequestListView.as_view(), name="requests_list"),
-    path("vms_api/voucher_requests/<int:pk>/", VoucherRequestCrudView.as_view(), name="request_details"),
-    path("vms_api/voucher_requests/add/", VoucherRequestCreateView.as_view(), name="new_request"),
-    path("vms_api/vouchers/<int:voucher_id>/redeem/", redeem_voucher, name="redeem_voucher"),
+    path("api/voucher_requests/", VoucherRequestListView.as_view(), name="requests_list"),
+    path("api/voucher_requests/<int:pk>/", VoucherRequestCrudView.as_view(), name="request_details"),
+    path("api/voucher_requests/add/", VoucherRequestCreateView.as_view(), name="new_request"),
+    path("api/vouchers/<int:voucher_id>/redeem/", redeem_voucher, name="redeem_voucher"),
 ]

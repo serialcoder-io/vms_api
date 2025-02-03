@@ -175,5 +175,12 @@ CORS_ALLOW_HEADERS = (
     "x-csrftoken",
 )
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
 # CORS_ALLOW_ORIGINS = []
+
+DJOSER = {
+    'SERIALIZERS': {
+        'user': 'vms_app.serializers.CurrentUserSerializer',  # Chemin vers ton sérialiseur personnalisé
+        'current_user': 'vms_app.serializers.CurrentUserSerializer',  # Pour l'endpoint /users/me/
+    }
+}

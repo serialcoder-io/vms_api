@@ -29,6 +29,13 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
 
 
+class CurrentUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["first_name", "last_name", "username", "email"]
+        read_only_fields = ['date_joined', 'id']
+
+
 class RegisterUserSerializer(serializers.ModelSerializer):
     """create an account for supervisor"""
     password = serializers.CharField(write_only=True)
