@@ -5,7 +5,7 @@ class VoucherRequestPagination(PageNumberPagination):
     max_page_size = 100
 
 class VoucherPagination(PageNumberPagination):
-    page_size = 4
+    page_size = 2
     max_page_size = 100
 
 
