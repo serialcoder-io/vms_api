@@ -7,7 +7,7 @@ from vms_app.models import User, Client
 
 class ClientViewsTestCase(TestCase):
     def setUp(self):
-        self.client_list_url = "/vms_api/clients/"
+        self.client_list_url = "/vms/api/clients/"
         # Create a test user
         user1 = User.objects.create_user(username='testuser', password='testpassword')
         # create user with no permission

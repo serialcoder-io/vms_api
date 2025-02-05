@@ -10,9 +10,9 @@ class TokenViewsTestCase(TestCase):
         # Create a test user
         self.user = User.objects.create_user(username='usertest', password='testpassword')
         self.client = APIClient()
-        self.token_obtain_url = "/api/token/"
-        self.token_refresh_url = "/api/token/refresh/"
-        self.token_verify_url = "/api/token/verify/"
+        self.token_obtain_url = "/vms/auth/token/"
+        self.token_refresh_url = "/vms/auth/token/refresh/"
+        self.token_verify_url = "/vms/auth/token/verify/"
 
     def test_obtain_token_pair(self):
         """Test obtaining JWT pair (access and refresh tokens)"""
