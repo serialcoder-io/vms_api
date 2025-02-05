@@ -178,9 +178,19 @@ CORS_ALLOW_HEADERS = (
 CORS_ALLOW_ALL_ORIGINS = False
 # CORS_ALLOW_ORIGINS = []
 
+PASSWORD_RESET_CONFIRM_URL = 'vms/auth/users/reset_password_confirm/{uid}/{token}/'
 DJOSER = {
+    'PASSWORD_RESET_CONFIRM_URL': PASSWORD_RESET_CONFIRM_URL,
+    'SEND_CONFIRMATION_EMAIL': True,
     'SERIALIZERS': {
         'user': 'vms_app.serializers.CurrentUserSerializer',  # Chemin vers ton sérialiseur personnalisé
         'current_user': 'vms_app.serializers.CurrentUserSerializer',  # Pour l'endpoint /users/me/
     }
 }
+
+# EMAIL
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = 1025
+EMAIL_HOST_USER = 'noreplay@gmail.com'
+EMAIL_HOST_PASSWORD = 'omaranli285@gmail.com'

@@ -16,18 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from djoser.views import UserViewSet
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('vms/', include('vms_app.urls')),
-    # Pour récupérer et mettre à jour les infos du user connecté
-    path('vms/auth/users/me/', UserViewSet.as_view({'get': 'me', 'put': 'me'}), name='user-me'),
 
-    # Pour réinitialiser le mot de passe
-    path('vms/auth/password_reset/', UserViewSet.as_view({'post': 'reset_password'}), name='password-reset'),
-    path('vms/auth/password_reset_confirm/', UserViewSet.as_view({'post': 'reset_password_confirm'}), name='password-reset-confirm'),
-
-    # Pour changer le mot de passe (quand l'utilisateur est authentifié)
-    path('vms/auth/password_change/', UserViewSet.as_view({'post': 'set_password'}), name='password-change'),
+    path('vms/auth/', include('djoser.urls')),
 ]

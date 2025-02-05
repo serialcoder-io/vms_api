@@ -1,4 +1,4 @@
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, Permission
 from rest_framework import serializers
 from rest_framework.permissions import SAFE_METHODS
 from vms_app.models import (
@@ -8,9 +8,9 @@ from vms_app.models import (
 )
 
 
-
 class UserSerializer(serializers.ModelSerializer):
-    """create, update, delete, view all users or one user"""
+    """Create, update, delete, view all users or one user."""
+
     class Meta:
         model = User
         fields = "__all__"
@@ -18,48 +18,130 @@ class UserSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         super(UserSerializer, self).__init__(*args, **kwargs)
-        # exlude password field if the request method is "GET or HEAD or OPTIONS"
+        # Exclude password field if the request method is SAFE (GET, HEAD, OPTIONS)
         request = self.context.get('request')
         if request and request.method in SAFE_METHODS:
             self.fields.pop('password')
 
+    def validate(self, data):
+        """Validate that username and email are unique."""
+        user_instance = self.instance  # Get the current instance (None for creation)
+
+        # Check uniqueness of username only if it's being updated or created
+        username = data.get('username')
+        if username and User.objects.filter(username=username).exclude(
+                id=user_instance.id if user_instance else None).exists():
+            raise serializers.ValidationError({"username": "Username already exists."})
+
+        # Check uniqueness of email only if it's being updated or created
+        email = data.get('email')
+        if email and User.objects.filter(email=email).exclude(id=user_instance.id if user_instance else None).exists():
+            raise serializers.ValidationError({"email": "A user with that email already exists."})
+
+        return data
+
     def update(self, instance, validated_data):
-        validated_data.pop('password', None)
+        """Update user details."""
+        # Remove password field before update unless explicitly provided
+        password = validated_data.pop('password', None)
+        groups = validated_data.pop('groups', None)  # Pop groups if provided
+        user_permissions = validated_data.pop('user_permissions', None)  # Pop user_permissions if provided
         instance = super().update(instance, validated_data)
+
+        # Update password if it's provided
+        if password:
+            instance.set_password(password)
+            instance.save()
+
+        # Update groups if provided
+        if groups:
+            instance.groups.set(groups)
+
+        # Update user_permissions if provided
+        if user_permissions:
+            instance.user_permissions.set(user_permissions)
+
         return instance
+
+    def create(self, validated_data):
+        """Create a new user and ensure uniqueness of username and email."""
+        password = validated_data.pop('password')  # Password is required, so no need to check for None
+        groups = validated_data.pop('groups', None)
+        user_permissions = validated_data.pop('user_permissions', None)
+
+        # Create user and set password
+        user = User(**validated_data)
+        user.set_password(password)
+        user.save()
+
+        # Assign groups and permissions after saving
+        if groups:
+            user.groups.set(groups)
+        if user_permissions:
+            user.user_permissions.set(user_permissions)
+        return user
+
+    @staticmethod
+    def validate_unique_fields(data):
+        """Check uniqueness of username and email for creation."""
+        if User.objects.filter(username=data.get('username')).exists():
+            raise serializers.ValidationError({"username": "Username already exists."})
+        if User.objects.filter(email=data.get('email')).exists():
+            raise serializers.ValidationError({"email": "A user with that email already exists."})
 
 
 class CurrentUserSerializer(serializers.ModelSerializer):
+    """Serializer for retrieving the current user's basic details."""
+
     class Meta:
         model = User
         fields = ["first_name", "last_name", "username", "email"]
         read_only_fields = ['date_joined', 'id']
 
 
+shop_supervisor_default_permissions = [
+            'add_redemption',
+            'change_voucher',
+            'view_voucher',
+            'view_redemption'
+        ]
+
 class RegisterUserSerializer(serializers.ModelSerializer):
-    """create an account for supervisor"""
+    """Create an account for a supervisor."""
+
     password = serializers.CharField(write_only=True)
+
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'username', 'email', 'password')
+        fields = ('company', 'first_name', 'last_name', 'username', 'email', 'password')
         read_only_fields = ['date_joined', 'id']
 
     def validate(self, data):
-        """validate username and email if username or email already exists, reaise an error"""
-        if User.objects.filter(username=data['username']).exists():
-            raise serializers.ValidationError("Username already exists")
-        if User.objects.filter(email=data['email']).exists():
-            raise serializers.ValidationError({"email": "A user with that email already exists."})
+        """Validate that username and email are unique."""
+        UserSerializer.validate_unique_fields(data)
         return data
 
     def create(self, validated_data):
-        # Extract and hash the password before saving
-        password = validated_data.pop('password')
+        # Ensure password is provided
+        password = validated_data.get('password')
+        if not password:
+            raise serializers.ValidationError({"password": "Password is required."})
+
+        # Hash the password before saving
+        validated_data.pop('password')
         user = User(**validated_data)
-        user.set_password(password) # Hash the password
+        user.set_password(password)  # Hash the password
         # Create and assign the user to the 'shop_supervisor' group
+        user.save()
         group, created = Group.objects.get_or_create(name='shop_supervisor')
         user.groups.add(group)
+        user.save()
+
+        for codename in shop_supervisor_default_permissions:
+            permission = Permission.objects.get(codename=codename)
+            user.user_permissions.add(permission)  # add the permissions to the user
+
+        # Sauvegarder les changements
         user.save()
         return user
 

@@ -33,13 +33,13 @@ app_name = 'vms_app'
 urlpatterns = [
     path("api/", include(router.urls)),
 
-    # token views
+    # auth views
     path("auth/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("auth/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
 
     # register view
-    path("api/register/", UserRegisterView.as_view(), name="register"),
+    path("auth/register/", UserRegisterView.as_view(), name="register"),
 
     # views related to client model
     path("api/clients/", ClientListView.as_view(), name="clients_list"),
