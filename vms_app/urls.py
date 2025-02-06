@@ -20,7 +20,8 @@ from .views import (
     ClientCreateView,
     RedemptionViewSet,
     redeem_voucher,
-    password_reset_view
+    password_reset_view,
+    password_reset_success_view
 )
 
 router = DefaultRouter()
@@ -53,5 +54,6 @@ urlpatterns = [
     path("api/voucher_requests/add/", VoucherRequestCreateView.as_view(), name="new_request"),
     path("api/vouchers/<int:voucher_id>/redeem/", redeem_voucher, name="redeem_voucher"),
 
-    path("auth/reset_password/<str:uidb64>/<str:token>/", password_reset_view, name="password_reset")
+    path("auth/reset_password/<str:uidb64>/<str:token>/", password_reset_view, name="password_reset"),
+    path("auth/reset_password_success/", password_reset_success_view, name="password_reset_success"),
 ]

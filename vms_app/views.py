@@ -358,3 +358,7 @@ def redeem_voucher(request, voucher_id, *args, **kwargs):
 def password_reset_view(request, uidb64, token):
     context = {"uidb64": uidb64, "token": token}
     return render(request, 'reset_password.html', context)
+
+
+def password_reset_success_view(request):
+    return render(request, 'password_reset_success.html')

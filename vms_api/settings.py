@@ -188,7 +188,7 @@ DJOSER = {
     'SEND_CONFIRMATION_EMAIL': True,
     'PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND': True,
     'SERIALIZERS': {
-        'user': 'vms_app.serializers.CurrentUserSerializer',  # Chemin vers ton sérialiseur personnalisé
+        'user': 'vms_app.serializers.UserSerializer',
         'current_user': 'vms_app.serializers.CurrentUserSerializer',  # Pour l'endpoint /users/me/
     }
 }
