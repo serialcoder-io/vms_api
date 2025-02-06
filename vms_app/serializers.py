@@ -99,12 +99,12 @@ class CurrentUserSerializer(serializers.ModelSerializer):
         read_only_fields = ['date_joined', 'id']
 
 
-shop_supervisor_default_permissions = [
-            'add_redemption',
-            'change_voucher',
-            'view_voucher',
-            'view_redemption'
-        ]
+shop_supervisor_permissions = [
+    'add_redemption',
+    'change_voucher',
+    'view_voucher',
+    'view_redemption'
+]
 
 class RegisterUserSerializer(serializers.ModelSerializer):
     """Create an account for a supervisor."""
@@ -137,7 +137,7 @@ class RegisterUserSerializer(serializers.ModelSerializer):
         user.groups.add(group)
         user.save()
 
-        for codename in shop_supervisor_default_permissions:
+        for codename in shop_supervisor_permissions:
             permission = Permission.objects.get(codename=codename)
             user.user_permissions.add(permission)  # add the permissions to the user
 
