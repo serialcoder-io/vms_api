@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
+import os
 from datetime import timedelta
 from pathlib import Path
 
@@ -135,6 +136,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static')
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -178,10 +182,11 @@ CORS_ALLOW_HEADERS = (
 CORS_ALLOW_ALL_ORIGINS = False
 # CORS_ALLOW_ORIGINS = []
 
-PASSWORD_RESET_CONFIRM_URL = 'vms/auth/users/reset_password_confirm/{uid}/{token}/'
+PASSWORD_RESET_CONFIRM_URL = 'vms/auth/reset_password/{uid}/{token}/'
 DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': PASSWORD_RESET_CONFIRM_URL,
     'SEND_CONFIRMATION_EMAIL': True,
+    'PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND': True,
     'SERIALIZERS': {
         'user': 'vms_app.serializers.CurrentUserSerializer',  # Chemin vers ton sérialiseur personnalisé
         'current_user': 'vms_app.serializers.CurrentUserSerializer',  # Pour l'endpoint /users/me/

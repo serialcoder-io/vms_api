@@ -7,7 +7,6 @@ from vms_app.models import (
     User, Company, Shop, Redemption
 )
 
-
 class UserSerializer(serializers.ModelSerializer):
     """Create, update, delete, view all users or one user."""
 

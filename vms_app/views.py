@@ -4,6 +4,7 @@
 # from django.shortcuts import render
 # from rest_framework.exceptions import ValidationError
 from django.db import IntegrityError, DatabaseError
+from django.shortcuts import render
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import NotFound
@@ -354,3 +355,6 @@ def redeem_voucher(request, voucher_id, *args, **kwargs):
     return Response({"details": "Invalid request method."}, status=status.HTTP_400_BAD_REQUEST)
 
 
+def password_reset_view(request, uidb64, token):
+    context = {"uidb64": uidb64, "token": token}
+    return render(request, 'reset_password.html', context)
