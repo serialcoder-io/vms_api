@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'django_filters',
+    'drf_spectacular',
+    'drf_spectacular_sidecar',
 ]
 
 MIDDLEWARE = [
@@ -146,12 +148,13 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# JWT
+# JWT SETUP
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-    ]
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 SIMPLE_JWT = {
@@ -161,7 +164,7 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True, # added old tokens in the blacklist
 }
 
-# CORS
+# CORS SETUP
 CORS_ALLOW_METHODS = (
     "DELETE",
     "GET",
@@ -182,6 +185,7 @@ CORS_ALLOW_HEADERS = (
 CORS_ALLOW_ALL_ORIGINS = False
 # CORS_ALLOW_ORIGINS = []
 
+# DJOSER SETUP
 PASSWORD_RESET_CONFIRM_URL = 'vms/auth/reset_password/{uid}/{token}/'
 DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': PASSWORD_RESET_CONFIRM_URL,
@@ -191,6 +195,20 @@ DJOSER = {
         'user': 'vms_app.serializers.UserSerializer',
         'current_user': 'vms_app.serializers.CurrentUserSerializer',  # Pour l'endpoint /users/me/
     }
+}
+
+# DRF-SPECTACULAR SETUP
+PROJECT_DESCRIPTION = """
+    API for managing vouchers, including creation, generation, and status updates (paid, expired, used). 
+    Supports user management and voucher lifecycle handling. Built for efficient voucher tracking and updates
+"""
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'vms_api',
+    'DESCRIPTION': PROJECT_DESCRIPTION,
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SWAGGER_UI_DIST': '/static/swagger-ui/',
+    'REDOC_DIST': '/static/redoc/',
 }
 
 # EMAIL
