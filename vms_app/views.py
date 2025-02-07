@@ -6,6 +6,7 @@
 from django.db import IntegrityError, DatabaseError
 from django.shortcuts import render
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import DjangoModelPermissions
@@ -301,13 +302,18 @@ class RedemptionViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, DjangoModelPermissions]
 
 
-@permission_classes([permissions.IsAuthenticated, DjangoModelPermissions])
-@api_view(["POST"])
-def redeem_voucher(request, voucher_id, *args, **kwargs):
-    if request.method == "POST":
+class RedeemVoucherView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated, permissions.DjangoModelPermissions]
+    serializer_class = VoucherSerializer
+    queryset = Voucher.objects.all()
+
+    @extend_schema(
+        request=VoucherSerializer,
+        responses={201: VoucherSerializer}
+    )
+    def post(self, request, pk, *args, **kwargs):
         try:
-            voucher = Voucher.objects.get(pk=voucher_id)
-            # a voucher can be redeemed only if the status is 'issued'
+            voucher = self.get_object()
             if voucher.voucher_status != Voucher.VoucherStatus.ISSUED:
                 return Response(
                     {"details": "Voucher must have the status 'ISSUED' to be redeemed."},
@@ -351,8 +357,6 @@ def redeem_voucher(request, voucher_id, *args, **kwargs):
             return Response({"details": f"Missing field: {e}"}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    return Response({"details": "Invalid request method."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 def password_reset_view(request, uidb64, token):

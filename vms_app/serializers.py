@@ -1,3 +1,5 @@
+from typing import Optional, Dict, Any
+
 from django.contrib.auth.models import Group, Permission
 from rest_framework import serializers
 from rest_framework.permissions import SAFE_METHODS
@@ -192,7 +194,7 @@ class VoucherSerializer(serializers.ModelSerializer):
         instance.refresh_from_db()
         return instance
 
-    def get_redemption(self, obj):
+    def get_redemption(self, obj)-> Optional[Dict[str, Any]]:
         # Retrieve the latest redemption if available
         try:
             redemption = obj.redemption

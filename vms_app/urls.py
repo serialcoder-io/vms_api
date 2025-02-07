@@ -19,7 +19,7 @@ from .views import (
     ClientCRUDView,
     ClientCreateView,
     RedemptionViewSet,
-    redeem_voucher,
+    RedeemVoucherView,
     password_reset_view,
     password_reset_success_view
 )
@@ -52,7 +52,7 @@ urlpatterns = [
     path("api/voucher_requests/", VoucherRequestListView.as_view(), name="requests_list"),
     path("api/voucher_requests/<int:pk>/", VoucherRequestCrudView.as_view(), name="request_details"),
     path("api/voucher_requests/add/", VoucherRequestCreateView.as_view(), name="new_request"),
-    path("api/vouchers/<int:voucher_id>/redeem/", redeem_voucher, name="redeem_voucher"),
+    path("api/vouchers/<int:pk>/redeem/",  RedeemVoucherView.as_view(), name="redeem_voucher"),
 
     path("auth/reset_password/<str:uidb64>/<str:token>/", password_reset_view, name="password_reset"),
     path("auth/reset_password_success/", password_reset_success_view, name="password_reset_success"),
