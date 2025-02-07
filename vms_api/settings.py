@@ -207,8 +207,8 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': PROJECT_DESCRIPTION,
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
-    'SWAGGER_UI_DIST': '/static/swagger-ui/',
-    'REDOC_DIST': '/static/redoc/',
+    'REDOC_DIST': 'SIDECAR',
+    'SWAGGER_UI_DIST': 'SIDECAR'
 }
 
 # EMAIL
