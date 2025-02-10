@@ -1,12 +1,12 @@
 from typing import Optional, Dict, Any
-
+from .utils import logs_audit_action
 from django.contrib.auth.models import Group, Permission
 from rest_framework import serializers
 from rest_framework.permissions import SAFE_METHODS
 from vms_app.models import (
     Voucher, Client,
     VoucherRequest,
-    User, Company, Shop, Redemption
+    User, Company, Shop, Redemption, AuditTrails
 )
 
 class UserSerializer(serializers.ModelSerializer):
@@ -36,8 +36,14 @@ class UserSerializer(serializers.ModelSerializer):
 
         # Check uniqueness of email only if it's being updated or created
         email = data.get('email')
-        if email and User.objects.filter(email=email).exclude(id=user_instance.id if user_instance else None).exists():
-            raise serializers.ValidationError({"email": "A user with that email already exists."})
+        if email:
+            # If the instance is not None (i.e., it's an update), check if email is different
+            if user_instance and email != user_instance.email:
+                if User.objects.filter(email=email).exclude(id=user_instance.id).exists():
+                    raise serializers.ValidationError({"email": "A user with that email already exists."})
+            # If the instance is None (i.e., it's creation), check if email is unique
+            elif not user_instance and User.objects.filter(email=email).exists():
+                raise serializers.ValidationError({"email": "A user with that email already exists."})
 
         return data
 
@@ -61,7 +67,9 @@ class UserSerializer(serializers.ModelSerializer):
         # Update user_permissions if provided
         if user_permissions:
             instance.user_permissions.set(user_permissions)
-
+        user = self.context['request'].user
+        desctiption = f"updated data for {user.username}"
+        logs_audit_action(instance, AuditTrails.AuditTrailsAction.UPDATE, desctiption, user)
         return instance
 
     def create(self, validated_data):
@@ -80,6 +88,8 @@ class UserSerializer(serializers.ModelSerializer):
             user.groups.set(groups)
         if user_permissions:
             user.user_permissions.set(user_permissions)
+        desctiption = f"added new user {user.username}"
+        logs_audit_action(user, AuditTrails.AuditTrailsAction.ADD, desctiption, user)
         return user
 
     @staticmethod

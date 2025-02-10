@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import VoucherRequest, Voucher, Client, User
+from .models import VoucherRequest, Voucher, Client, User, AuditTrails
 
 class VoucherRequestAdmin(admin.ModelAdmin):
     list_display = ['request_ref', 'date_time_recorded', 'quantity_of_vouchers']
@@ -24,8 +24,12 @@ class ClientAdmin(admin.ModelAdmin):
 class UserAdmin(admin.ModelAdmin):
     list_display = ['first_name', 'last_name', 'email']
 
+class AuditTrailsAdmin(admin.ModelAdmin):
+    list_display = ['user__username', 'action', 'table_name', 'datetime']
+
 
 admin.site.register(VoucherRequest, VoucherRequestAdmin)
 admin.site.register(Voucher, VoucherAdmin)
 admin.site.register(Client, ClientAdmin)
 admin.site.register(User, UserAdmin)
+admin.site.register(AuditTrails, AuditTrailsAdmin)
