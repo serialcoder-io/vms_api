@@ -205,7 +205,7 @@ class VoucherSerializer(serializers.ModelSerializer):
         return instance
 
     def get_redemption(self, obj)-> Optional[Dict[str, Any]]:
-        # Retrieve the latest redemption if available
+        # Retrieve the redemption related to the voucher if available
         try:
             redemption = obj.redemption
             if redemption:
