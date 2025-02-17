@@ -21,7 +21,7 @@ from .views import (
     RedemptionViewSet,
     RedeemVoucherView,
     password_reset_view,
-    password_reset_success_view
+    password_reset_success_view, account_activation
 )
 
 router = DefaultRouter()
@@ -42,6 +42,7 @@ urlpatterns = [
     path("auth/register/", UserRegisterView.as_view(), name="register"),
     path("auth/reset_password/<str:uidb64>/<str:token>/", password_reset_view, name="password_reset"),
     path("auth/reset_password_success/", password_reset_success_view, name="password_reset_success"),
+    path("auth/activate/<str:uidb64>/<str:token>/", account_activation, name="activate_account"),
 
     # -------- urls related to client model ----------
     path("api/clients/", ClientListView.as_view(), name="clients_list"),

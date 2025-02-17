@@ -1,4 +1,7 @@
 from typing import Optional, Dict, Any
+
+from django.contrib.auth import authenticate
+
 from .utils import logs_audit_action
 from django.contrib.auth.models import Group, Permission
 from rest_framework import serializers
@@ -89,7 +92,8 @@ class UserSerializer(serializers.ModelSerializer):
         if user_permissions:
             user.user_permissions.set(user_permissions)
         desctiption = f"added new user {user.username}"
-        logs_audit_action(user, AuditTrails.AuditTrailsAction.ADD, desctiption, user)
+        authenticated_user = self.context['request'].user
+        logs_audit_action(user, AuditTrails.AuditTrailsAction.ADD, desctiption, authenticated_user)
         return user
 
     @staticmethod

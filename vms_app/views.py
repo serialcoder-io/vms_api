@@ -284,6 +284,10 @@ class CompanyViewSet(viewsets.ModelViewSet):
         DjangoModelPermissions
     ]
 
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.AllowAny()]
+        return super().get_permissions()
 
 class ShopViewSet(viewsets.ModelViewSet):
     queryset = Shop.objects.all()
@@ -294,6 +298,11 @@ class ShopViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticated,
         DjangoModelPermissions
     ]
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.AllowAny()]
+        return super().get_permissions()
 
 
 class RedemptionViewSet(viewsets.ModelViewSet):
@@ -362,6 +371,10 @@ class RedeemVoucherView(generics.GenericAPIView):
 def password_reset_view(request, uidb64, token):
     context = {"uidb64": uidb64, "token": token}
     return render(request, 'reset_password.html', context)
+
+def account_activation(request, uidb64, token):
+    context = {"uidb64": uidb64, "token": token}
+    return render(request, 'account_activation.html', context)
 
 
 def password_reset_success_view(request):

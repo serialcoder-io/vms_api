@@ -189,11 +189,14 @@ CORS_ALLOW_ALL_ORIGINS = False
 PASSWORD_RESET_CONFIRM_URL = 'vms/auth/reset_password/{uid}/{token}/'
 DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': PASSWORD_RESET_CONFIRM_URL,
-    'SEND_CONFIRMATION_EMAIL': True,
+    'SEND_CONFIRMATION_EMAIL': False,
+    'SEND_ACTIVATION_EMAIL': True,
+    'ACTIVATION_URL': 'vms/auth/activate/{uid}/{token}/',
     'PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND': True,
     'SERIALIZERS': {
         'user': 'vms_app.serializers.UserSerializer',
-        'current_user': 'vms_app.serializers.CurrentUserSerializer',  # Pour l'endpoint /users/me/
+        'current_user': 'vms_app.serializers.CurrentUserSerializer',
+        'user_create': 'vms_app.serializers.RegisterUserSerializer',
     }
 }
 

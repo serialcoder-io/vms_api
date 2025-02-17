@@ -22,7 +22,7 @@ class ClientAdmin(admin.ModelAdmin):
 
 
 class UserAdmin(admin.ModelAdmin):
-    list_display = ['first_name', 'last_name', 'email']
+    list_display = ['username', 'email']
 
 class AuditTrailsAdmin(admin.ModelAdmin):
     list_display = ['user__username', 'action', 'table_name', 'datetime']
