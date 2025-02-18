@@ -14,6 +14,8 @@ from vms_app.models import (
 
 class UserSerializer(serializers.ModelSerializer):
     """Create, update, delete, view all users or one user."""
+    password = serializers.CharField(write_only=True, required=False)
+    username = serializers.CharField(required=False)
 
     class Meta:
         model = User
