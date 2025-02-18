@@ -8,7 +8,7 @@ from rest_framework_simplejwt.views import (
 )
 from .views import (
     UserViewSet,
-    UserRegisterView,
+    # UserRegisterView,
     VoucherViewSet,
     VoucherRequestListView,
     VoucherRequestCrudView,
@@ -39,7 +39,7 @@ urlpatterns = [
     path("auth/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("auth/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
-    path("auth/register/", UserRegisterView.as_view(), name="register"),
+    # path("auth/register/", UserRegisterView.as_view(), name="register"),
     path("auth/reset_password/<str:uidb64>/<str:token>/", password_reset_view, name="password_reset"),
     path("auth/reset_password_success/", password_reset_success_view, name="password_reset_success"),
     path("auth/activate/<str:uidb64>/<str:token>/", account_activation, name="activate_account"),

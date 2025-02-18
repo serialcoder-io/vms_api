@@ -58,8 +58,8 @@ class UserViewSet(viewsets.ModelViewSet):
     ]
 
 
-class UserRegisterView(generics.GenericAPIView):
-    """create an account for supervisor"""
+"""class UserRegisterView(generics.GenericAPIView):
+    #create an account for supervisor
     serializer_class = RegisterUserSerializer
     permission_classes = [permissions.AllowAny]
 
@@ -67,7 +67,7 @@ class UserRegisterView(generics.GenericAPIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data, status=201)
+        return Response(serializer.data, status=201)"""
 
 
 class VoucherRequestListView(generics.ListAPIView):
