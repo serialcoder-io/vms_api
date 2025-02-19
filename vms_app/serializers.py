@@ -1,7 +1,5 @@
 from typing import Optional, Dict, Any
-
-from django.contrib.auth import authenticate
-
+# from django.contrib.auth import authenticate
 from .utils import logs_audit_action
 from django.contrib.auth.models import Group, Permission
 from rest_framework import serializers
@@ -112,7 +110,7 @@ class CurrentUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["first_name", "last_name", "username", "email"]
+        fields = ["id", "first_name", "last_name", "username", "email"]
         read_only_fields = ['date_joined', 'id']
 
 
