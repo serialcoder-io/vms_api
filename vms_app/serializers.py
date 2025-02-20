@@ -181,9 +181,17 @@ class ShopSerializer(serializers.ModelSerializer):
 
 
 class RedemptionSerializer(serializers.ModelSerializer):
+    redeemed_on = serializers.DateTimeField(source='redemption_date', read_only=True)  # Fetch redemption_date
+    redeemed_by = serializers.CharField(source='user.username', read_only=True)  # Fetch user's username
+    redeemed_at = serializers.SerializerMethodField()  # Correct usage of SerializerMethodField
+
     class Meta:
         model = Redemption
-        fields = ["id", "redemption_date", "till_no", "user", "shop", "voucher"]
+        fields = ["id", "redeemed_on", "till_no", "redeemed_by", "redeemed_at", "voucher"]
+
+    def get_redeemed_at(self, obj):
+        # Access the related `shop` object and combine company_name and location
+        return f"{obj.shop.company.company_name} {obj.shop.location}"
 
 
 class VoucherSerializer(serializers.ModelSerializer):

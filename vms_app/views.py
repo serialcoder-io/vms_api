@@ -197,7 +197,7 @@ class ClientListView(generics.ListAPIView):
     serializer_class = ClientListSerializer
     filter_backends = [filters.SearchFilter]
     pagination_class = ClientsPagination
-    search_fields = ['email']
+    search_fields = ['=email']
     permission_classes = [
         permissions.IsAuthenticated,
         permissions.DjangoModelPermissions
@@ -267,7 +267,7 @@ class VoucherViewSet(viewsets.ModelViewSet):
     pagination_class = VoucherPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ['=voucher_ref']
-    filterset_fields = ['voucher_status', 'redemption__shop']
+    filterset_fields = ['voucher_status', 'redemption__shop', 'redemption__redemption_date']
     permission_classes = [
         permissions.IsAuthenticated,
         DjangoModelPermissions
