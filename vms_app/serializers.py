@@ -280,5 +280,4 @@ class ClientCrudSerializer(serializers.ModelSerializer):
 @Todo: call logs_action_action in every serializer after insert, update and delete
 @Todo: write all tests
 @Todo: finish reset password feature
-@Todo(optinal): Dockirize the api
 """
