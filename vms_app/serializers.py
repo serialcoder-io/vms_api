@@ -239,7 +239,7 @@ class VoucherRequestCrudSerializer(serializers.ModelSerializer):
     class Meta:
         model = VoucherRequest
         fields = [
-            "id", "request_ref",
+              "id", "request_ref",
               "request_status",
               "date_time_recorded",
               "date_time_approved",
@@ -288,4 +288,5 @@ class ClientCrudSerializer(serializers.ModelSerializer):
 @Todo: call logs_action_action in every serializer after insert, update and delete
 @Todo: write all tests
 @Todo: finish reset password feature
+@Todo: finish active account feature
 """

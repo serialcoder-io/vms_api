@@ -26,11 +26,10 @@ SECRET_KEY = config('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "192.168.226.83", "192.168.26.83"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "192.168.226.83", "192.168.26.83", "192.168.7.11"]
 
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -215,8 +214,13 @@ SPECTACULAR_SETTINGS = {
 }
 
 # EMAIL
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-EMAIL_HOST = 'localhost'
-EMAIL_PORT = 1025
-EMAIL_HOST_USER = 'noreplay@gmail.com'
-EMAIL_HOST_PASSWORD = 'omaranli285@gmail.com'
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND = config('EMAIL_BACKEND')
+    EMAIL_HOST = config('EMAIL_HOST')
+    EMAIL_PORT = config('EMAIL_PORT')
+    EMAIL_USE_TLS = config('EMAIL_USE_TLS')
+    EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+    DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
