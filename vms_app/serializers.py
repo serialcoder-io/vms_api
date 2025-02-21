@@ -1,6 +1,6 @@
 from typing import Optional, Dict, Any
 # from django.contrib.auth import authenticate
-from .utils import logs_audit_action
+from .utils import logs_audit_action, validate_and_format_date
 from django.contrib.auth.models import Group, Permission
 from rest_framework import serializers
 from rest_framework.permissions import SAFE_METHODS
@@ -211,6 +211,12 @@ class VoucherSerializer(serializers.ModelSerializer):
         read_only_fields = ["id"]
 
     def create(self, validated_data):
+        if 'expiry_date' in validated_data:
+            validated_data['expiry_date'] = validate_and_format_date(validated_data['expiry_date'])
+
+            # Validate and format the extention_date only if it is not empty or None
+        if 'extention_date' in validated_data and validated_data['extention_date']:
+            validated_data['extention_date'] = validate_and_format_date(validated_data['extention_date'])
         # Ensure the instance is updated with the correct database values after creation
         instance = super().create(validated_data)
         instance.refresh_from_db()

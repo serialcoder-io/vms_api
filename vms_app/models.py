@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.utils import timezone
 
@@ -59,6 +60,7 @@ class Client(models.Model):
 class VoucherRequest(models.Model):
     class RequestStatus(models.TextChoices):
         PENDING = 'pending', 'Pending'
+        PAID = 'paid', 'Paid'
         APPROVED = 'approved', 'Approved'
         REJECTED = 'rejected', 'Rejected'
 
@@ -89,46 +91,20 @@ class VoucherRequest(models.Model):
         self.date_time_approved = timezone.now()
         self.save()
 
-    def update_related_vouchers_status(self, new_request_status):
-        """
-        Updates the status of vouchers linked to the voucher request within a transaction.
+    def clean(self):
+        # retrieve request_status before update
+        if self.pk:
+            old_status = VoucherRequest.objects.get(pk=self.pk).request_status
 
-        This method checks for vouchers with a 'PROVISIONAL' status and updates them based on the
-        new status of the voucher request (approved or rejected).
-        """
-        try:
-            with transaction.atomic():
-                # Filter provisional vouchers linked to this request
-                provisional_related_vouchers = self.vouchers.filter(
-                    voucher_status=Voucher.VoucherStatus.PROVISIONAL
-                )
+            if old_status in ('approved', 'rejected') and self.request_status != old_status:
+                raise ValidationError(f"Invalid status: {old_status} requests cannot modified")
 
-                if provisional_related_vouchers.exists():
-                    # Only proceed with updating if the request status is 'pending'
-                    if self.request_status == "pending":
-                        updated_count = 0
+            if old_status == 'pending' and self.request_status not in ('paid', 'rejected', 'pending'):
+                raise ValidationError("Invalid status: pending requests can only be paid or rejected")
 
-                        # Update voucher status based on the new request status
-                        if new_request_status == "approved":
-                            updated_count = provisional_related_vouchers.update(
-                                voucher_status=Voucher.VoucherStatus.ISSUED
-                            )
-                        elif new_request_status == "rejected":
-                            updated_count = provisional_related_vouchers.update(
-                                voucher_status=Voucher.VoucherStatus.CANCELLED
-                            )
+            if old_status == 'paid' and self.request_status not in ('paid', 'rejected', 'approved'):
+                raise ValidationError("Invalid status: pending requests can only be approved or rejected")
 
-                        # Raise an exception if no vouchers were updated
-                        if updated_count == 0:
-                            raise ValueError("No provisional vouchers were updated.")
-                else:
-                    # No provisional vouchers found, simply leave their status unchanged
-                    for voucher in provisional_related_vouchers:
-                        voucher.voucher_status = voucher.voucher_status
-
-        except Exception as e:
-            # Log or raise a more specific error to help with debugging
-            raise Exception(f"Error while updating voucher status: {e}")
 
     def __str__(self):
         return f"Voucher Request ref: {self.request_ref}"

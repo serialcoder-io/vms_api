@@ -6,7 +6,7 @@
 from django.db import IntegrityError, DatabaseError
 from django.shortcuts import render
 from django.utils import timezone
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 # from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import DjangoModelPermissions
@@ -94,7 +94,6 @@ class VoucherRequestCrudView(generics.GenericAPIView):
         permissions.IsAuthenticated,
         DjangoModelPermissions
     ]
-
     def get_object(self):
         """ Find a VoucherRequest by id """
         pk = self.kwargs.get('pk')
@@ -110,22 +109,45 @@ class VoucherRequestCrudView(generics.GenericAPIView):
         serializer = self.serializer_class(voucher_request)
         return Response(serializer.data)
 
+    @extend_schema(
+
+        responses={
+            200: OpenApiResponse(description="modified", response=VoucherRequestCrudSerializer),
+            400: OpenApiResponse(
+                description="'method not allowed' or Bad request: When the status is 'pending', the request can only be"
+                " modified to 'paid' or 'rejected'. When the status is 'paid', it can only be modified to "
+                "'rejected' or 'approved'. Once the status is 'approved' or 'rejected', it cannot be modified."),
+            403: OpenApiResponse(description="Forbiden"),
+            401: OpenApiResponse(description="Non authorize(not authenticated)"),
+        }
+    )
     def put(self, request, *args, **kwargs):
         pending_status = VoucherRequest.RequestStatus.PENDING
         approved_status = VoucherRequest.RequestStatus.APPROVED
+        paid_status = VoucherRequest.RequestStatus.PAID
+        rejected_status = VoucherRequest.RequestStatus.REJECTED
         voucher_request = self.get_object()
         serializer = self.get_serializer(voucher_request, data=request.data, partial=True)
         if serializer.is_valid():
             new_request_status = serializer.validated_data.get('request_status')
+            current_status = voucher_request.request_status
+            connot_be_modified = (current_status == approved_status or current_status == rejected_status or
+                  (current_status == paid_status and new_request_status  == pending_status) )
             try:
-                # Update the status of related vouchers
-                voucher_request.update_related_vouchers_status(new_request_status)
-                if new_request_status == approved_status and voucher_request.request_status == pending_status:
+                if current_status == paid_status and new_request_status == approved_status:
                     # If the request is approved, set the approval timestamp and
                     # associate the action with the approving user
                     serializer.validated_data["date_time_approved"] = timezone.now()
                     serializer.validated_data["approved_by"] = request.user
-                else:
+                elif current_status == pending_status and new_request_status == approved_status:
+                    return Response(
+                        {
+                            "detail": f"The request must be in 'Paid' status before it can be approved."
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                elif connot_be_modified:
                     # Prevent changing the status if the voucher request is already approved/rejected
                     return Response(
                         {
@@ -133,7 +155,6 @@ class VoucherRequestCrudView(generics.GenericAPIView):
                         },
                         status=status.HTTP_400_BAD_REQUEST
                     )
-
             except IntegrityError:
                 # Handle integrity issues, such as foreign key constraints or unique constraints
                 return Response(
