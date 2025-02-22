@@ -31,7 +31,7 @@ class UserSerializer(serializers.ModelSerializer):
             "password", "is_staff", "is_active", "is_superuser", "company",
             "user_permissions_code_name", "groups_name", "groups", "user_permissions"
         ]
-        read_only_fields = ['date_joined', 'id']
+        read_only_fields = ['date_joined', 'id', 'last_login']
 
     def get_user_permissions_code_name(self, obj):
         return [permission.codename for permission in obj.user_permissions.all()]
@@ -124,7 +124,7 @@ class CurrentUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "first_name", "last_name", "username", "email", "last_login"]
-        read_only_fields = ['date_joined', 'id']
+        read_only_fields = ['date_joined', 'id', 'last_login']
 
 
 shop_supervisor_permissions = [
@@ -135,6 +135,7 @@ shop_supervisor_permissions = [
     'view_redemption'
 ]
 
+
 class RegisterUserSerializer(serializers.ModelSerializer):
     """Create an account for a supervisor."""
 
@@ -142,35 +143,50 @@ class RegisterUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('company', 'first_name', 'last_name', 'username', 'email', 'password')
-        read_only_fields = ['date_joined', 'id']
+        fields = ('id', 'company', 'first_name', 'last_name', 'username', 'email', 'password')
+        read_only_fields = ['date_joined', 'id','last_login']
 
     def validate(self, data):
         """Validate that username and email are unique."""
-        UserSerializer.validate_unique_fields(data)
+        # Appelez la méthode validate_unique_fields en passant les données de validation
+        self.validate_unique_fields(data)
         return data
 
+    def validate_unique_fields(self, data):
+        """Check uniqueness of username and email for creation."""
+        username = data.get('username')
+        email = data.get('email')
+
+        # Vérifier l'unicité du nom d'utilisateur
+        if username and User.objects.filter(username=username).exists():
+            raise serializers.ValidationError({"username": "Username already exists."})
+
+        # Vérifier l'unicité de l'email
+        if email and User.objects.filter(email=email).exists():
+            raise serializers.ValidationError({"email": "A user with that email already exists."})
+
     def create(self, validated_data):
-        # Ensure password is provided
+        """Create a new user."""
         password = validated_data.get('password')
         if not password:
             raise serializers.ValidationError({"password": "Password is required."})
 
-        # Hash the password before saving
         validated_data.pop('password')
         user = User(**validated_data)
-        user.set_password(password)  # Hash the password
-        # Create and assign the user to the 'shop_supervisor' group
+        user.set_password(password)
+
+        # Sauvegarder l'utilisateur
         user.save()
+
+        # Ajouter l'utilisateur au groupe 'shop_supervisor'
         group, created = Group.objects.get_or_create(name='shop_supervisor')
         user.groups.add(group)
-        user.save()
 
+        # Assigner les permissions du shop_supervisor
         for codename in shop_supervisor_permissions:
             permission = Permission.objects.get(codename=codename)
-            user.user_permissions.add(permission)  # add the permissions to the user
+            user.user_permissions.add(permission)
 
-        # Sauvegarder les changements
         user.save()
         return user
 

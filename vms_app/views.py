@@ -1,13 +1,7 @@
-# from django.db.models import Max
-# from django.db.models.lookups import Exact
-# from django.shortcuts import redirect
-# from django.shortcuts import render
-# from rest_framework.exceptions import ValidationError
 from django.db import IntegrityError, DatabaseError
 from django.shortcuts import render
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema, OpenApiResponse
-# from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import DjangoModelPermissions
 from .permissions import RedeemVoucherPermissions
@@ -99,7 +93,6 @@ class VoucherRequestCrudView(generics.GenericAPIView):
         return Response(serializer.data)
 
     @extend_schema(
-
         responses={
             200: OpenApiResponse(description="modified", response=VoucherRequestCrudSerializer),
             400: OpenApiResponse(
@@ -320,6 +313,8 @@ class RedemptionViewSet(viewsets.ModelViewSet):
     serializer_class = RedemptionSerializer
     permission_classes = [permissions.IsAuthenticated, DjangoModelPermissions]
 
+    # is redemtion intance is created only when we redeem a voucher:
+    # the user must have redeem_voucher permission to added a redemption a associate it with voucher
     def get_permissions(self):
         if self.request.method == 'POST':
             return [permissions.IsAuthenticated, RedeemVoucherPermissions]
