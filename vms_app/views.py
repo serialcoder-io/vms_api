@@ -23,7 +23,6 @@ from rest_framework import (
 
 from vms_app.serializers import (
     UserSerializer,
-    RegisterUserSerializer,
     ClientListSerializer,
     VoucherRequestListSerializer,
     VoucherRequestCrudSerializer,
@@ -58,18 +57,6 @@ class UserViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticated,
         permissions.DjangoModelPermissions
     ]
-
-
-"""class UserRegisterView(generics.GenericAPIView):
-    #create an account for supervisor
-    serializer_class = RegisterUserSerializer
-    permission_classes = [permissions.AllowAny]
-
-    def post(self, request):
-        serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=201)"""
 
 
 class VoucherRequestListView(generics.ListAPIView):
@@ -340,19 +327,19 @@ class RedemptionViewSet(viewsets.ModelViewSet):
 
 
 class RedeemVoucherView(generics.GenericAPIView):
-    permission_classes = [
-        permissions.IsAuthenticated,
-        permissions.DjangoModelPermissions,
-        RedeemVoucherPermissions
-    ]
     serializer_class = VoucherSerializer
     queryset = Voucher.objects.all()
+
+    permission_classes = [
+        permissions.IsAuthenticated,
+        RedeemVoucherPermissions
+    ]
 
     @extend_schema(
         request=VoucherSerializer,
         responses={201: VoucherSerializer}
     )
-    def post(self, request, pk, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         try:
             voucher = self.get_object()
             if voucher.voucher_status != Voucher.VoucherStatus.ISSUED:
@@ -403,6 +390,7 @@ class RedeemVoucherView(generics.GenericAPIView):
 def password_reset_view(request, uidb64, token):
     context = {"uidb64": uidb64, "token": token}
     return render(request, 'reset_password.html', context)
+
 
 def account_activation(request, uidb64, token):
     context = {"uidb64": uidb64, "token": token}

@@ -10,15 +10,34 @@ from vms_app.models import (
     User, Company, Shop, Redemption, AuditTrails
 )
 
+
 class UserSerializer(serializers.ModelSerializer):
-    """Create, update, delete, view all users or one user."""
+    """Create, update, delete, and view users."""
     password = serializers.CharField(write_only=True, required=False)
     username = serializers.CharField(required=False)
+    user_permissions_code_name = serializers.SerializerMethodField()
+    groups_name = serializers.SerializerMethodField()
+    groups = serializers.PrimaryKeyRelatedField(
+        queryset=Group.objects.all(), many=True, required=False, write_only=True
+    )
+    user_permissions = serializers.PrimaryKeyRelatedField(
+        queryset=Permission.objects.all(), many=True, required=False, write_only=True
+    )
 
     class Meta:
         model = User
-        fields = "__all__"
+        fields = [
+            "id", "last_login", "first_name", "last_name", "username", "email",
+            "password", "is_staff", "is_active", "is_superuser", "company",
+            "user_permissions_code_name", "groups_name", "groups", "user_permissions"
+        ]
         read_only_fields = ['date_joined', 'id']
+
+    def get_user_permissions_code_name(self, obj):
+        return [permission.codename for permission in obj.user_permissions.all()]
+
+    def get_groups_name(self, obj):
+        return [group.name for group in obj.groups.all()]
 
     def __init__(self, *args, **kwargs):
         super(UserSerializer, self).__init__(*args, **kwargs)
@@ -29,80 +48,74 @@ class UserSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """Validate that username and email are unique."""
+        # Validation de l'unicité du username et de l'email
+        self.validate_unique_fields(data)
+        return data
+
+    def validate_unique_fields(self, data):
+        """Check uniqueness of username and email for creation or update."""
         user_instance = self.instance  # Get the current instance (None for creation)
 
-        # Check uniqueness of username only if it's being updated or created
         username = data.get('username')
-        if username and User.objects.filter(username=username).exclude(
-                id=user_instance.id if user_instance else None).exists():
-            raise serializers.ValidationError({"username": "Username already exists."})
+        if username:
+            if User.objects.filter(username=username).exclude(id=user_instance.id if user_instance else None).exists():
+                raise serializers.ValidationError({"username": "Username already exists."})
 
-        # Check uniqueness of email only if it's being updated or created
         email = data.get('email')
         if email:
-            # If the instance is not None (i.e., it's an update), check if email is different
             if user_instance and email != user_instance.email:
                 if User.objects.filter(email=email).exclude(id=user_instance.id).exists():
                     raise serializers.ValidationError({"email": "A user with that email already exists."})
-            # If the instance is None (i.e., it's creation), check if email is unique
             elif not user_instance and User.objects.filter(email=email).exists():
                 raise serializers.ValidationError({"email": "A user with that email already exists."})
 
-        return data
-
     def update(self, instance, validated_data):
         """Update user details."""
-        # Remove password field before update unless explicitly provided
         password = validated_data.pop('password', None)
-        groups = validated_data.pop('groups', None)  # Pop groups if provided
-        user_permissions = validated_data.pop('user_permissions', None)  # Pop user_permissions if provided
+        groups = validated_data.pop('groups', None)
+        user_permissions = validated_data.pop('user_permissions', None)
+
         instance = super().update(instance, validated_data)
 
-        # Update password if it's provided
         if password:
             instance.set_password(password)
             instance.save()
 
-        # Update groups if provided
         if groups:
             instance.groups.set(groups)
 
-        # Update user_permissions if provided
         if user_permissions:
             instance.user_permissions.set(user_permissions)
+
+        # Log audit action for update
         user = self.context['request'].user
-        desctiption = f"updated data for {user.username}"
-        logs_audit_action(instance, AuditTrails.AuditTrailsAction.UPDATE, desctiption, user)
+        description = f"updated data for {user.username}"
+        logs_audit_action(instance, AuditTrails.AuditTrailsAction.UPDATE, description, user)
+
         return instance
 
     def create(self, validated_data):
         """Create a new user and ensure uniqueness of username and email."""
-        password = validated_data.pop('password')  # Password is required, so no need to check for None
+        password = validated_data.pop('password')
         groups = validated_data.pop('groups', None)
         user_permissions = validated_data.pop('user_permissions', None)
 
-        # Create user and set password
         user = User(**validated_data)
         user.set_password(password)
         user.save()
 
-        # Assign groups and permissions after saving
         if groups:
             user.groups.set(groups)
         if user_permissions:
             user.user_permissions.set(user_permissions)
-        desctiption = f"added new user {user.username}"
+
+        # Log audit action for creation
+        description = f"added new user {user.username}"
         authenticated_user = self.context['request'].user
-        logs_audit_action(user, AuditTrails.AuditTrailsAction.ADD, desctiption, authenticated_user)
+        logs_audit_action(user, AuditTrails.AuditTrailsAction.ADD, description, authenticated_user)
+
         return user
 
-    @staticmethod
-    def validate_unique_fields(data):
-        """Check uniqueness of username and email for creation."""
-        if User.objects.filter(username=data.get('username')).exists():
-            raise serializers.ValidationError({"username": "Username already exists."})
-        if User.objects.filter(email=data.get('email')).exists():
-            raise serializers.ValidationError({"email": "A user with that email already exists."})
 
 
 class CurrentUserSerializer(serializers.ModelSerializer):
@@ -110,7 +123,7 @@ class CurrentUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "first_name", "last_name", "username", "email"]
+        fields = ["id", "first_name", "last_name", "username", "email", "last_login"]
         read_only_fields = ['date_joined', 'id']
 
 
