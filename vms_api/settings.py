@@ -24,8 +24,7 @@ from decouple import config
 SECRET_KEY = config('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
+DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = [
     "localhost", "127.0.0.1",
     "192.168.226.83", "192.168.26.83",
@@ -69,8 +68,7 @@ ROOT_URLCONF = 'vms_api.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -163,7 +161,7 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'BLACKLIST_AFTER_ROTATION': True, # added old tokens in the blacklist
 }
@@ -203,6 +201,8 @@ DJOSER = {
         'user_create': 'vms_app.serializers.RegisterUserSerializer',
     }
 }
+# 5 minuites
+PASSWORD_RESET_TIMEOUT = 300
 
 # DRF-SPECTACULAR SETUP
 PROJECT_DESCRIPTION = """
