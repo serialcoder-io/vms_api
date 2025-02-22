@@ -96,7 +96,7 @@ class VoucherRequestCrudView(generics.GenericAPIView):
         responses={
             200: OpenApiResponse(description="modified", response=VoucherRequestCrudSerializer),
             400: OpenApiResponse(
-                description="'method not allowed' or Bad request: When the status is 'pending', the request can only be"
+                description="Bad request: When the status is 'pending', the request can only be"
                 " modified to 'paid' or 'rejected'. When the status is 'paid', it can only be modified to "
                 "'rejected' or 'approved'. Once the status is 'approved' or 'rejected', it cannot be modified."),
             403: OpenApiResponse(description="Forbiden"),
