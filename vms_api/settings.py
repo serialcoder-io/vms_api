@@ -26,7 +26,12 @@ SECRET_KEY = config('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "192.168.226.83", "192.168.26.83", "192.168.7.11", "192.168.71.83"]
+ALLOWED_HOSTS = [
+    "localhost", "127.0.0.1",
+    "192.168.226.83", "192.168.26.83",
+    "192.168.7.11", "192.168.71.83",
+    "192.168.56.1"
+]
 
 
 # Application definition

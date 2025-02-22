@@ -117,6 +117,7 @@ class CurrentUserSerializer(serializers.ModelSerializer):
 shop_supervisor_permissions = [
     'add_redemption',
     'change_voucher',
+    'redeem_voucher',
     'view_voucher',
     'view_redemption'
 ]
@@ -291,8 +292,10 @@ class ClientCrudSerializer(serializers.ModelSerializer):
 
 
 """
-@Todo: call logs_action_action in every serializer after insert, update and delete
-@Todo: write all tests
-@Todo: finish reset password feature
-@Todo: finish active account feature
+1) @Todo: finish reset password feature
+2) @Todo: finish active account feature
+3) send email to approvers after change request sttatus from 'pending' to 'paid'
+4) @Todo: call logs_action_action in every serializer after insert, update and delete
+5) @Todo: customize django admin and installed django jazzmin or daisy ui
+6) @Todo: write all tests
 """

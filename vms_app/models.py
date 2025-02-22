@@ -1,5 +1,5 @@
 from django.contrib.auth.models import AbstractUser
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.db import models, transaction
 from django.utils import timezone
 
@@ -66,6 +66,11 @@ class VoucherRequest(models.Model):
 
     class Meta:
         ordering = ['request_ref']
+        permissions = [
+            ("reject_request", "Can reject a voucher request"),
+            ("approve_request", "Can approve a voucher request"),
+            ("change_to_paid", "Can change the request_status from pending to paid"),
+        ]
 
     recorded_by = models.ForeignKey(
         User, on_delete=models.CASCADE,
@@ -120,6 +125,7 @@ class Voucher(models.Model):
 
     class Meta:
         ordering = ['voucher_ref']
+        permissions = [("redeem_voucher", "Can redeem voucher")]
 
     voucher_request = models.ForeignKey(VoucherRequest, on_delete=models.CASCADE, related_name='vouchers')
     voucher_ref = models.TextField(unique=True, null=True, blank=True)
@@ -135,6 +141,9 @@ class Voucher(models.Model):
 
     def redeem(self, user, shop, till_no):
         """Redeem the voucher by creating a Redemption and updating status."""
+        if not user.has_perm('app_name.redeem_voucher'):
+            raise PermissionDenied("You do not have permission to redeem vouchers.")
+
         if self.voucher_status != Voucher.VoucherStatus.ISSUED:
             raise ValueError("Voucher must be issued to be redeemed.")
         # Create the Redemption

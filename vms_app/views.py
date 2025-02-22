@@ -10,13 +10,15 @@ from drf_spectacular.utils import extend_schema, OpenApiResponse
 # from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import DjangoModelPermissions
+from .permissions import RedeemVoucherPermissions
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import (
     filters,
     generics,
     viewsets,
-    permissions, status
+    permissions,
+    status
 )
 
 from vms_app.serializers import (
@@ -331,9 +333,18 @@ class RedemptionViewSet(viewsets.ModelViewSet):
     serializer_class = RedemptionSerializer
     permission_classes = [permissions.IsAuthenticated, DjangoModelPermissions]
 
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [permissions.IsAuthenticated, RedeemVoucherPermissions]
+        return super().get_permissions()
+
 
 class RedeemVoucherView(generics.GenericAPIView):
-    permission_classes = [permissions.IsAuthenticated, permissions.DjangoModelPermissions]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        permissions.DjangoModelPermissions,
+        RedeemVoucherPermissions
+    ]
     serializer_class = VoucherSerializer
     queryset = Voucher.objects.all()
 

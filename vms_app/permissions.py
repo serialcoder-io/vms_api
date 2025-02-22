@@ -1,7 +1,10 @@
-from rest_framework.permissions import BasePermission
+from rest_framework import permissions
 
-class IsSopSupervisor(BasePermission):
-    """check if a user is a shop supervisor."""
+class RedeemVoucherPermissions(permissions.BasePermission):
     def has_permission(self, request, view):
-        # the user must be a shop supervisor
-        return request.user.groups.filter(name="shop_supervisor").exists()
+        if not request.user.is_authenticated:
+            return False
+
+        if not request.user.has_perm('vms_app.redeem_voucher'):
+            return False
+        return True
