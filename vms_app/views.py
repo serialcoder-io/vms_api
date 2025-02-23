@@ -1,9 +1,10 @@
+from django.contrib.auth.models import Group, Permission
 from django.db import IntegrityError, DatabaseError
 from django.shortcuts import render
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from rest_framework.exceptions import NotFound
-from rest_framework.permissions import DjangoModelPermissions, AllowAny
+
 from .permissions import (
     RedeemVoucherPermissions,
     IsMemberOfCompanyOrAdminUser,
@@ -27,7 +28,7 @@ from vms_app.serializers import (
     VoucherSerializer,
     CompanySerializer,
     ShopSerializer,
-    ClientCrudSerializer, RedemptionSerializer,
+    ClientCrudSerializer, RedemptionSerializer, PermissionsListSerializer, GroupCustomSerializer,
 )
 from .models import (
     User, Client,
@@ -384,6 +385,29 @@ class RedeemVoucherView(generics.GenericAPIView):
         except Exception as e:
             return Response({"details": "Sorry something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+class GroupViewSet(viewsets.ModelViewSet):
+    queryset = Group.objects.all()
+    serializer_class = GroupCustomSerializer
+    permission_classes = [
+        permissions.IsAuthenticated,
+        CustomDjangoModelPermissions
+    ]
+
+class PermissionListViewSet(generics.ListAPIView):
+    """
+        This view allows listing all the permissions available in the application.
+        Only authenticated users who have view_permission permission can access it.
+
+        This view is read-only (GET). To create, update, or delete permissions,
+        a user with the appropriate administrative permissions must log into the Django admin interface.
+    """
+    queryset = Permission.objects.all()
+    serializer_class = PermissionsListSerializer
+    permission_classes = [
+        permissions.IsAuthenticated,
+        CustomDjangoModelPermissions
+    ]
 
 def password_reset_view(request, uidb64, token):
     context = {"uidb64": uidb64, "token": token}

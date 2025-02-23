@@ -320,8 +320,28 @@ class ClientCrudSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
 
+class GroupCustomSerializer(serializers.ModelSerializer):
+    """Serializer for the list of groups with hyperlinking"""
+    permissions = serializers.PrimaryKeyRelatedField(queryset=Permission.objects.all(), many=True)
+
+    class Meta:
+        model = Group
+        fields = ['id', 'name', 'permissions']
+        read_only_fields = ['id']
+
+    def get_permissions(self, obj):
+        # Exemple de logique pour récupérer les permissions d'un groupe
+        return [permission.codename for permission in obj.permissions.all()]
+
+
+class PermissionsListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Permission
+        fields = ["id", "name", "codename"]
+        read_only_fields = ['id']
+
+
 """
-1) @Todo: finish reset password feature
 2) @Todo: finish active account feature
 3) send email to approvers after change request sttatus from 'pending' to 'paid'
 4) @Todo: call logs_action_action in every serializer after insert, update and delete
