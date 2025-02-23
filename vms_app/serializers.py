@@ -340,11 +340,17 @@ class PermissionsListSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "codename"]
         read_only_fields = ['id']
 
+class AuditTrailsSerializer(serializers.ModelSerializer):
+    executed_by = serializers.CharField(source='user.username', read_only=True)
+    class Meta:
+        model = AuditTrails
+        fields = ["id", "datetime", "action", "table_name", "object_id", "description", "executed_by"]
+        read_only_fields = ["id", "datetime", "action", "table_name", "object_id", "description", "user"]
 
 """
 2) @Todo: finish active account feature
 3) send email to approvers after change request sttatus from 'pending' to 'paid'
 4) @Todo: call logs_action_action in every serializer after insert, update and delete
-5) @Todo: customize django admin and installed django jazzmin or daisy ui
+5) @Todo: customize django admin and install django jazzmin or daisy-ui
 6) @Todo: write all tests
 """

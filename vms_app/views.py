@@ -4,37 +4,31 @@ from django.shortcuts import render
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from rest_framework.exceptions import NotFound
+from rest_framework.permissions import (IsAdminUser, IsAuthenticated, AllowAny)
+from rest_framework import ( filters, generics, viewsets, status)
+from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
 
 from .permissions import (
     RedeemVoucherPermissions,
     IsMemberOfCompanyOrAdminUser,
     CustomDjangoModelPermissions
 )
-from rest_framework.response import Response
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import (
-    filters,
-    generics,
-    viewsets,
-    permissions,
-    status
-)
 
 from vms_app.serializers import (
-    UserSerializer,
-    ClientListSerializer,
+    UserSerializer, VoucherSerializer,
     VoucherRequestListSerializer,
     VoucherRequestCrudSerializer,
-    VoucherSerializer,
-    CompanySerializer,
-    ShopSerializer,
-    ClientCrudSerializer, RedemptionSerializer, PermissionsListSerializer, GroupCustomSerializer,
+    CompanySerializer, ShopSerializer,
+    ClientCrudSerializer, ClientListSerializer,
+    RedemptionSerializer, PermissionsListSerializer,
+    GroupCustomSerializer, AuditTrailsSerializer,
 )
 from .models import (
     User, Client,
     VoucherRequest,
     Voucher, Shop,
-    Company, Redemption,
+    Company, Redemption, AuditTrails,
 )
 from .paginations import (
     VoucherRequestPagination,
@@ -54,7 +48,7 @@ class UserViewSet(viewsets.ModelViewSet):
     search_fields = ['email']
     filterset_fields = ['company']
     permission_classes = [
-        permissions.IsAuthenticated,
+        IsAuthenticated,
         CustomDjangoModelPermissions
     ]
 
@@ -71,8 +65,8 @@ class VoucherRequestListView(generics.ListAPIView):
     search_fields = ['=request_ref']
     filterset_fields = ['request_status']
     permission_classes = [
-        permissions.IsAuthenticated,
-        CustomDjangoModelPermissions
+       IsAuthenticated,
+       CustomDjangoModelPermissions
     ]
 
 
@@ -80,7 +74,7 @@ class VoucherRequestCrudView(generics.GenericAPIView):
     queryset = VoucherRequest.objects.all()
     serializer_class = VoucherRequestCrudSerializer
     permission_classes = [
-        permissions.IsAuthenticated,
+        IsAuthenticated,
         CustomDjangoModelPermissions
     ]
     def get_object(self):
@@ -180,7 +174,7 @@ class VoucherRequestCreateView(generics.CreateAPIView):
     queryset = VoucherRequest.objects.all()
     serializer_class = VoucherRequestCrudSerializer
     permission_classes = [
-        permissions.IsAuthenticated,
+        IsAuthenticated,
         CustomDjangoModelPermissions
     ]
     def post(self, request, *args, **kwargs):
@@ -208,7 +202,7 @@ class ClientListView(generics.ListAPIView):
     pagination_class = ClientsPagination
     search_fields = ['=email']
     permission_classes = [
-        permissions.IsAuthenticated,
+        IsAuthenticated,
         CustomDjangoModelPermissions
     ]
 
@@ -218,7 +212,7 @@ class ClientCRUDView(generics.GenericAPIView):
     serializer_class = ClientCrudSerializer
     filter_backends = [filters.SearchFilter]
     permission_classes = [
-        permissions.IsAuthenticated,
+        IsAuthenticated,
         CustomDjangoModelPermissions
     ]
 
@@ -252,7 +246,7 @@ class ClientCreateView(generics.CreateAPIView):
     queryset = Client.objects.all()
     serializer_class = ClientCrudSerializer
     permission_classes = [
-        permissions.IsAuthenticated,
+        IsAuthenticated,
         CustomDjangoModelPermissions
     ]
     def post(self, request, *args, **kwargs):
@@ -281,7 +275,7 @@ class VoucherViewSet(viewsets.ModelViewSet):
         'redemption__redemption_date'
     ]
     permission_classes = [
-        permissions.IsAuthenticated,
+        IsAuthenticated,
         IsMemberOfCompanyOrAdminUser,
     ]
 
@@ -292,13 +286,13 @@ class CompanyViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ['company_name']
     permission_classes = [
-        permissions.IsAuthenticated,
+        IsAuthenticated,
         CustomDjangoModelPermissions
     ]
 
     def get_permissions(self):
         if self.request.method == 'GET':
-            return [permissions.AllowAny()]
+            return [AllowAny()]
         return super().get_permissions()
 
 class ShopViewSet(viewsets.ModelViewSet):
@@ -307,13 +301,13 @@ class ShopViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['company']
     permission_classes = [
-        permissions.IsAuthenticated,
+        IsAuthenticated,
         CustomDjangoModelPermissions
     ]
 
     def get_permissions(self):
         if self.request.method == 'GET':
-            return [permissions.AllowAny()]
+            return [AllowAny()]
         return super().get_permissions()
 
 
@@ -321,7 +315,7 @@ class RedemptionViewSet(viewsets.ModelViewSet):
     queryset = Redemption.objects.all()
     serializer_class = RedemptionSerializer
     permission_classes = [
-        permissions.IsAuthenticated,
+        IsAuthenticated,
         CustomDjangoModelPermissions
     ]
 
@@ -330,7 +324,7 @@ class RedeemVoucherView(generics.GenericAPIView):
     serializer_class = VoucherSerializer
     queryset = Voucher.objects.all()
     permission_classes = [
-        permissions.IsAuthenticated,
+        IsAuthenticated,
         RedeemVoucherPermissions
     ]
 
@@ -390,7 +384,7 @@ class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupCustomSerializer
     permission_classes = [
-        permissions.IsAuthenticated,
+        IsAuthenticated,
         CustomDjangoModelPermissions
     ]
 
@@ -405,8 +399,17 @@ class PermissionListViewSet(generics.ListAPIView):
     queryset = Permission.objects.all()
     serializer_class = PermissionsListSerializer
     permission_classes = [
-        permissions.IsAuthenticated,
+        IsAuthenticated,
         CustomDjangoModelPermissions
+    ]
+
+
+class AuditTrailsViewset(viewsets.ModelViewSet):
+    queryset = AuditTrails.objects.all()
+    serializer_class = AuditTrailsSerializer
+    permission_classes = [
+        IsAuthenticated,
+        IsAdminUser,
     ]
 
 def password_reset_view(request, uidb64, token):

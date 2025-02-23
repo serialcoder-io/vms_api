@@ -7,21 +7,12 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView,
 )
 from .views import (
-    UserViewSet,
-    # UserRegisterView,
-    VoucherViewSet,
-    VoucherRequestListView,
-    VoucherRequestCrudView,
-    VoucherRequestCreateView,
-    CompanyViewSet,
-    ShopViewSet,
-    ClientListView,
-    ClientCRUDView,
-    ClientCreateView,
-    RedemptionViewSet,
-    RedeemVoucherView,
-    password_reset_view,
-    password_reset_success_view, account_activation, GroupViewSet, PermissionListViewSet
+    UserViewSet,VoucherViewSet,CompanyViewSet, ShopViewSet,
+    VoucherRequestListView, VoucherRequestCrudView, VoucherRequestCreateView,
+    ClientListView, ClientCRUDView, ClientCreateView,
+    RedemptionViewSet, RedeemVoucherView, AuditTrailsViewset,
+    password_reset_view, password_reset_success_view,
+    account_activation, GroupViewSet, PermissionListViewSet
 )
 
 router = DefaultRouter()
@@ -31,13 +22,13 @@ router.register(r'vouchers', VoucherViewSet)
 router.register(r'companies', CompanyViewSet)
 router.register(r'shops', ShopViewSet)
 router.register(r'redemptions', RedemptionViewSet)
+router.register(r'audit-trails', AuditTrailsViewset)
 
 app_name = 'vms_app'
 urlpatterns = [
     path("api/", include(router.urls)),
 
     # ------------------------- authentication ------------------------
-
     path("auth/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("auth/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
