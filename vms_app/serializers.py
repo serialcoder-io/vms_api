@@ -47,13 +47,13 @@ class UserSerializer(serializers.ModelSerializer):
             self.fields.pop('password')
 
     def validate(self, data):
-        """Validate that username and email are unique."""
-        # Validation de l'unicité du username et de l'email
+        """Validate that username and emails are unique."""
+        # Validation de l'unicité du username et de l'emails
         self.validate_unique_fields(data)
         return data
 
     def validate_unique_fields(self, data):
-        """Check uniqueness of username and email for creation or update."""
+        """Check uniqueness of username and emails for creation or update."""
         user_instance = self.instance  # Get the current instance (None for creation)
 
         username = data.get('username')
@@ -61,13 +61,13 @@ class UserSerializer(serializers.ModelSerializer):
             if User.objects.filter(username=username).exclude(id=user_instance.id if user_instance else None).exists():
                 raise serializers.ValidationError({"username": "Username already exists."})
 
-        email = data.get('email')
+        email = data.get('emails')
         if email:
             if user_instance and email != user_instance.email:
                 if User.objects.filter(email=email).exclude(id=user_instance.id).exists():
-                    raise serializers.ValidationError({"email": "A user with that email already exists."})
+                    raise serializers.ValidationError({"emails": "A user with that emails already exists."})
             elif not user_instance and User.objects.filter(email=email).exists():
-                raise serializers.ValidationError({"email": "A user with that email already exists."})
+                raise serializers.ValidationError({"emails": "A user with that emails already exists."})
 
     def update(self, instance, validated_data):
         """Update user details."""
@@ -95,7 +95,7 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
 
     def create(self, validated_data):
-        """Create a new user and ensure uniqueness of username and email."""
+        """Create a new user and ensure uniqueness of username and emails."""
         password = validated_data.pop('password')
         groups = validated_data.pop('groups', None)
         user_permissions = validated_data.pop('user_permissions', None)
@@ -147,23 +147,23 @@ class RegisterUserSerializer(serializers.ModelSerializer):
         read_only_fields = ['date_joined', 'id','last_login']
 
     def validate(self, data):
-        """Validate that username and email are unique."""
+        """Validate that username and emails are unique."""
         # Appelez la méthode validate_unique_fields en passant les données de validation
         self.validate_unique_fields(data)
         return data
 
     def validate_unique_fields(self, data):
-        """Check uniqueness of username and email for creation."""
+        """Check uniqueness of username and emails for creation."""
         username = data.get('username')
-        email = data.get('email')
+        email = data.get('emails')
 
         # Vérifier l'unicité du nom d'utilisateur
         if username and User.objects.filter(username=username).exists():
             raise serializers.ValidationError({"username": "Username already exists."})
 
-        # Vérifier l'unicité de l'email
+        # Vérifier l'unicité de l'emails
         if email and User.objects.filter(email=email).exists():
-            raise serializers.ValidationError({"email": "A user with that email already exists."})
+            raise serializers.ValidationError({"emails": "A user with that emails already exists."})
 
     def create(self, validated_data):
         """Create a new user."""
@@ -271,7 +271,7 @@ class VoucherRequestListSerializer(serializers.ModelSerializer):
 
 
 class VoucherRequestCrudSerializer(serializers.ModelSerializer):
-    vouchers = VoucherSerializer(many=True, read_only=True)
+    # vouchers = VoucherSerializer(many=True, read_only=True)
     class Meta:
         model = VoucherRequest
         fields = [
@@ -282,7 +282,7 @@ class VoucherRequestCrudSerializer(serializers.ModelSerializer):
               "approved_by",
               "quantity_of_vouchers",
               "description",
-              "vouchers"
+              #"vouchers"
             ]
         read_only_fields = ['date_time_recorded', 'request_ref', 'id']
 
@@ -348,8 +348,7 @@ class AuditTrailsSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "datetime", "action", "table_name", "object_id", "description", "user"]
 
 """
-2) @Todo: finish active account feature
-3) send email to approvers after change request sttatus from 'pending' to 'paid'
+3) send emails to approvers after change request sttatus from 'pending' to 'paid'
 4) @Todo: call logs_action_action in every serializer after insert, update and delete
 5) @Todo: customize django admin and install django jazzmin or daisy-ui
 6) @Todo: write all tests

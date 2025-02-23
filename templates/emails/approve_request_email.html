@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Approve Voucher Request - {{ request_ref }}</title>
+    </head>
+    <body>
+        <h2>Hello,</h2>
+        <p>
+            A new voucher request has been paid. <br>
+            <strong>Reference: {{ request_ref }}</strong>
+        </p>
+        <p>Please click the link below to log in and approve the request.</p>
+        <p><a href="http://192.168.56.1:8000/vms/approve_request/{{ request_id }}/">Click here to approve the request</a></p>
+        <p>You can also log in to the desktop app to approve the request.</p>
+        <p>If you're not concerned with this email, please ignore it.</p>
+        <br>
+        <p>Best regards,</p>
+        <p>The Voucher Management Team</p>
+    </body>
+</html>

@@ -1,0 +1,14 @@
+Hello,
+
+A new voucher request has been paid.
+Reference: {{ request_ref }}
+
+Please click the link below to log in and approve the request:
+http://192.168.56.1:8000/vms/approve_request/{{ request_id }}/
+
+You can also log in to the desktop app to approve the request.
+
+If you're not concerned with this email, please ignore it.
+
+Best regards,
+The Voucher Management Team

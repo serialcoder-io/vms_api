@@ -1,4 +1,5 @@
 from rest_framework import permissions
+from rest_framework.permissions import DjangoModelPermissions
 
 class RedeemVoucherPermissions(permissions.BasePermission):
     """
@@ -19,31 +20,6 @@ class IsActiveUser(permissions.BasePermission):
     message = 'Your account is not active, you cannot access it.'
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.is_active
-
-
-from rest_framework.permissions import DjangoModelPermissions
-
-class IsMemberOfCompanyOrAdminUser(permissions.BasePermission):
-
-    def has_object_permission(self, request, view, obj):
-        user = request.user
-        voucher = request.obj
-        user_authenticated = user.is_authenticated
-        if request.method == "GET":
-            if user_authenticated and user.is_superuser:
-                return True
-            if obj.redemption:
-                return (
-                    user_authenticated and
-                    voucher.redemption.shop.company == user.company
-                )
-            else:
-                perms = DjangoModelPermissions()
-                return perms.has_object_permission(request, view, obj)
-
-        perms = DjangoModelPermissions()
-        return perms.has_object_permission(request, view, obj)
-
 
 
 class CustomDjangoModelPermissions(permissions.BasePermission):

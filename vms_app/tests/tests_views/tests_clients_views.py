@@ -26,7 +26,7 @@ class ClientViewsTestCase(TestCase):
         Client.objects.create(
             firstname="client1_firstname",
             lastname="client1_lastname",
-            email="client1-email@gmail.com",
+            email="client1-emails@gmail.com",
             contact="+230 5429 7857",
         )
         # Initialize API client for testing
@@ -62,7 +62,7 @@ class ClientViewsTestCase(TestCase):
         response = self.client.post(f"{self.client_list_url}add/", {
             'firstname': 'testclient_firstname',
             'lastname': 'testclient_lastname',
-            'email': 'testclient_email@gmail.com',
+            'emails': 'testclient_email@gmail.com',
             'contact': '+230 5429 7857',
         }, format='json')
 
@@ -75,7 +75,7 @@ class ClientViewsTestCase(TestCase):
         )
         self.assertEqual(data['firstname'], 'testclient_firstname')
         self.assertEqual(data['lastname'], 'testclient_lastname')
-        self.assertEqual(data['email'], 'testclient_email@gmail.com')
+        self.assertEqual(data['emails'], 'testclient_email@gmail.com')
         self.assertEqual(data['contact'], '+230 5429 7857')
 
 
@@ -84,7 +84,7 @@ class ClientViewsTestCase(TestCase):
         response = self.client.post(f"{self.client_list_url}add/", {
             'firstname': 'testclient_firstname',
             'lastname': 'testclient_lastname',
-            'email': 'testclient_email@gmail.com',
+            'emails': 'testclient_email@gmail.com',
             'contact': '+230 5429 7857',
         }, format='json')
 
@@ -102,7 +102,7 @@ class ClientViewsTestCase(TestCase):
         response = self.client.post(f"{self.client_list_url}add/", {
             'firstname': 'testclient_firstname',
             'lastname': 'testclient_lastname',
-            'email': 'testclient_email@gmail.com',
+            'emails': 'testclient_email@gmail.com',
             'contact': '+230 5429 7857',
         }, format='json')
 
@@ -124,7 +124,7 @@ class ClientViewsTestCase(TestCase):
         response = self.client.put(f"{self.client_list_url}{client.id}/", {
             'firstname': 'updated_firstname',
             'lastname': 'updated_lastname',
-            'email': client.email,
+            'emails': client.email,
             'contact': client.contact,
         }, format='json')
 

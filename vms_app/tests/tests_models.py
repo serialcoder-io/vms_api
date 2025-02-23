@@ -16,7 +16,7 @@ class VoucherRequestTestCase(TestCase):
         client_1 = Client.objects.create(
             firstname="client1_firstname",
             lastname="client1_lastname",
-            email="client1-email@gmail.com",
+            email="client1-emails@gmail.com",
             contact="+230 5429 7857",
         )
         conpany_1 = Company.objects.create(company_name="company-1")

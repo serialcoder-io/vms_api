@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterModelOptions(
             name='user',
-            options={'ordering': ['username', 'email']},
+            options={'ordering': ['username', 'emails']},
         ),
         migrations.AlterModelOptions(
             name='voucher',

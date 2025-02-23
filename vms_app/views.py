@@ -9,9 +9,9 @@ from rest_framework import ( filters, generics, viewsets, status)
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 
+from .utils import notify_requests_approvers
 from .permissions import (
     RedeemVoucherPermissions,
-    IsMemberOfCompanyOrAdminUser,
     CustomDjangoModelPermissions
 )
 
@@ -25,14 +25,12 @@ from vms_app.serializers import (
     GroupCustomSerializer, AuditTrailsSerializer,
 )
 from .models import (
-    User, Client,
-    VoucherRequest,
-    Voucher, Shop,
+    User, Client, Shop,
+    VoucherRequest, Voucher,
     Company, Redemption, AuditTrails,
 )
 from .paginations import (
-    VoucherRequestPagination,
-    VoucherPagination,
+    VoucherRequestPagination,VoucherPagination,
     ClientsPagination, UserPagination
 )
 
@@ -45,7 +43,7 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     pagination_class = UserPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    search_fields = ['email']
+    search_fields = ['emails']
     filterset_fields = ['company']
     permission_classes = [
         IsAuthenticated,
@@ -116,7 +114,13 @@ class VoucherRequestCrudView(generics.GenericAPIView):
             connot_be_modified = (current_status == approved_status or current_status == rejected_status or
                   (current_status == paid_status and new_request_status  == pending_status) )
             try:
-                if current_status == paid_status and new_request_status == approved_status:
+                if current_status == pending_status and new_request_status == paid_status:
+                    """ 
+                    Notify all users with approval rights when a voucher request status changes from 'pending' to 'paid'
+                    """
+                    notify_requests_approvers(voucher_request.id, voucher_request.request_ref)
+
+                elif current_status == paid_status and new_request_status == approved_status:
                     # If the request is approved, set the approval timestamp and
                     # associate the action with the approving user
                     serializer.validated_data["date_time_approved"] = timezone.now()
@@ -128,7 +132,6 @@ class VoucherRequestCrudView(generics.GenericAPIView):
                         },
                         status=status.HTTP_400_BAD_REQUEST
                     )
-
                 elif connot_be_modified:
                     # Prevent changing the status if the voucher request is already approved/rejected
                     return Response(
@@ -143,14 +146,12 @@ class VoucherRequestCrudView(generics.GenericAPIView):
                     {"detail": "There was a data integrity issue."},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-
             except DatabaseError:
                 # Handle general database issues, such as connection problems
                 return Response(
                     {"detail": "A database error occurred."},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
-
             except Exception as e:
                 # Catch all other unexpected errors
                 return Response(
@@ -200,7 +201,7 @@ class ClientListView(generics.ListAPIView):
     serializer_class = ClientListSerializer
     filter_backends = [filters.SearchFilter]
     pagination_class = ClientsPagination
-    search_fields = ['=email']
+    search_fields = ['=emails']
     permission_classes = [
         IsAuthenticated,
         CustomDjangoModelPermissions
@@ -272,11 +273,10 @@ class VoucherViewSet(viewsets.ModelViewSet):
     search_fields = ['=voucher_ref']
     filterset_fields = [
         'voucher_status', 'redemption__shop',
-        'redemption__redemption_date'
+        'redemption__redemption_date', "voucher_request"
     ]
     permission_classes = [
-        IsAuthenticated,
-        IsMemberOfCompanyOrAdminUser,
+        IsAuthenticated, CustomDjangoModelPermissions
     ]
 
 
@@ -420,3 +420,11 @@ def password_reset_view(request, uidb64, token):
 
 def password_reset_success_view(request):
     return render(request, 'password_reset_success.html')
+
+
+def approve_request_view(request, request_id):
+    voucher_request = VoucherRequest.objects.get(pk=request_id)
+    return render(request, 'approve_request.html', {
+        "reuqest_id": request_id,
+        "request_ref": voucher_request.request_ref,
+    })

@@ -3,155 +3,154 @@ info:
   title: vms_api
   version: 1.0.0
   description: "\n    API for managing vouchers, including creation, generation, and\
-    \ status updates (paid, expired, used). \n    Supports user management and voucher\
-    \ lifecycle handling. Built for efficient voucher tracking and updates\n"
+    \ status updates (paid, expired, redeemed). \n    Supports user management and\
+    \ voucher lifecycle handling. Built for efficient voucher tracking and updates\n"
 paths:
-  /api/schema/:
+  /vms/api/audit-trails/:
     get:
-      operationId: api_schema_retrieve
-      description: |-
-        OpenApi3 schema for this API. Format can be selected via content negotiation.
-
-        - YAML: application/vnd.oai.openapi
-        - JSON: application/vnd.oai.openapi+json
-      parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - yaml
-      - in: query
-        name: lang
-        schema:
-          type: string
-          enum:
-          - af
-          - ar
-          - ar-dz
-          - ast
-          - az
-          - be
-          - bg
-          - bn
-          - br
-          - bs
-          - ca
-          - ckb
-          - cs
-          - cy
-          - da
-          - de
-          - dsb
-          - el
-          - en
-          - en-au
-          - en-gb
-          - eo
-          - es
-          - es-ar
-          - es-co
-          - es-mx
-          - es-ni
-          - es-ve
-          - et
-          - eu
-          - fa
-          - fi
-          - fr
-          - fy
-          - ga
-          - gd
-          - gl
-          - he
-          - hi
-          - hr
-          - hsb
-          - hu
-          - hy
-          - ia
-          - id
-          - ig
-          - io
-          - is
-          - it
-          - ja
-          - ka
-          - kab
-          - kk
-          - km
-          - kn
-          - ko
-          - ky
-          - lb
-          - lt
-          - lv
-          - mk
-          - ml
-          - mn
-          - mr
-          - ms
-          - my
-          - nb
-          - ne
-          - nl
-          - nn
-          - os
-          - pa
-          - pl
-          - pt
-          - pt-br
-          - ro
-          - ru
-          - sk
-          - sl
-          - sq
-          - sr
-          - sr-latn
-          - sv
-          - sw
-          - ta
-          - te
-          - tg
-          - th
-          - tk
-          - tr
-          - tt
-          - udm
-          - ug
-          - uk
-          - ur
-          - uz
-          - vi
-          - zh-hans
-          - zh-hant
+      operationId: vms_api_audit_trails_list
       tags:
-      - api
+      - vms
       security:
       - jwtAuth: []
       - cookieAuth: []
-      - {}
       responses:
         '200':
           content:
-            application/vnd.oai.openapi:
-              schema:
-                type: object
-                additionalProperties: {}
-            application/yaml:
-              schema:
-                type: object
-                additionalProperties: {}
-            application/vnd.oai.openapi+json:
-              schema:
-                type: object
-                additionalProperties: {}
             application/json:
               schema:
-                type: object
-                additionalProperties: {}
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuditTrails'
           description: ''
+    post:
+      operationId: vms_api_audit_trails_create
+      tags:
+      - vms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuditTrails'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuditTrails'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AuditTrails'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditTrails'
+          description: ''
+  /vms/api/audit-trails/{id}/:
+    get:
+      operationId: vms_api_audit_trails_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this audit trails.
+        required: true
+      tags:
+      - vms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditTrails'
+          description: ''
+    put:
+      operationId: vms_api_audit_trails_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this audit trails.
+        required: true
+      tags:
+      - vms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuditTrails'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuditTrails'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AuditTrails'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditTrails'
+          description: ''
+    patch:
+      operationId: vms_api_audit_trails_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this audit trails.
+        required: true
+      tags:
+      - vms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAuditTrails'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAuditTrails'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAuditTrails'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditTrails'
+          description: ''
+    delete:
+      operationId: vms_api_audit_trails_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this audit trails.
+        required: true
+      tags:
+      - vms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
   /vms/api/clients/:
     get:
       operationId: vms_api_clients_list
@@ -293,6 +292,7 @@ paths:
       security:
       - jwtAuth: []
       - cookieAuth: []
+      - {}
       responses:
         '200':
           content:
@@ -343,6 +343,7 @@ paths:
       security:
       - jwtAuth: []
       - cookieAuth: []
+      - {}
       responses:
         '200':
           content:
@@ -432,6 +433,153 @@ paths:
       responses:
         '204':
           description: No response body
+  /vms/api/groups/:
+    get:
+      operationId: vms_api_groups_list
+      tags:
+      - vms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GroupCustom'
+          description: ''
+    post:
+      operationId: vms_api_groups_create
+      tags:
+      - vms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupCustom'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GroupCustom'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GroupCustom'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupCustom'
+          description: ''
+  /vms/api/groups/{id}/:
+    get:
+      operationId: vms_api_groups_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this group.
+        required: true
+      tags:
+      - vms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupCustom'
+          description: ''
+    put:
+      operationId: vms_api_groups_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this group.
+        required: true
+      tags:
+      - vms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupCustom'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GroupCustom'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GroupCustom'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupCustom'
+          description: ''
+    patch:
+      operationId: vms_api_groups_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this group.
+        required: true
+      tags:
+      - vms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedGroupCustom'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedGroupCustom'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedGroupCustom'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupCustom'
+          description: ''
+    delete:
+      operationId: vms_api_groups_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this group.
+        required: true
+      tags:
+      - vms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
   /vms/api/redemptions/:
     get:
       operationId: vms_api_redemptions_list
@@ -464,7 +612,6 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/Redemption'
-        required: true
       security:
       - jwtAuth: []
       - cookieAuth: []
@@ -519,7 +666,6 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/Redemption'
-        required: true
       security:
       - jwtAuth: []
       - cookieAuth: []
@@ -592,6 +738,7 @@ paths:
       security:
       - jwtAuth: []
       - cookieAuth: []
+      - {}
       responses:
         '200':
           content:
@@ -642,6 +789,7 @@ paths:
       security:
       - jwtAuth: []
       - cookieAuth: []
+      - {}
       responses:
         '200':
           content:
@@ -742,6 +890,12 @@ paths:
         name: company
         schema:
           type: integer
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
       - name: search
         required: false
         in: query
@@ -758,9 +912,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/PaginatedUserList'
           description: ''
     post:
       operationId: vms_api_users_create
@@ -780,7 +932,6 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/User'
-        required: true
       security:
       - jwtAuth: []
       - cookieAuth: []
@@ -841,7 +992,6 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/User'
-        required: true
       security:
       - jwtAuth: []
       - cookieAuth: []
@@ -926,10 +1076,12 @@ paths:
           type: string
           enum:
           - approved
+          - paid
           - pending
           - rejected
         description: |-
           * `pending` - Pending
+          * `paid` - Paid
           * `approved` - Approved
           * `rejected` - Rejected
       - name: search
@@ -1001,7 +1153,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VoucherRequestCrud'
-          description: ''
+          description: modified
+        '400':
+          description: 'Bad request: When the status is ''pending'', the request can
+            only be modified to ''paid'' or ''rejected''. When the status is ''paid'',
+            it can only be modified to ''rejected'' or ''approved''. Once the status
+            is ''approved'' or ''rejected'', it cannot be modified.'
+        '403':
+          description: Forbiden
+        '401':
+          description: Non authorize(not authenticated)
     delete:
       operationId: vms_api_voucher_requests_destroy
       parameters:
@@ -1059,6 +1220,11 @@ paths:
         schema:
           type: integer
       - in: query
+        name: redemption__redemption_date
+        schema:
+          type: string
+          format: date-time
+      - in: query
         name: redemption__shop
         schema:
           type: integer
@@ -1068,6 +1234,10 @@ paths:
         description: A search term.
         schema:
           type: string
+      - in: query
+        name: voucher_request
+        schema:
+          type: integer
       - in: query
         name: voucher_status
         schema:
@@ -1274,34 +1444,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/Voucher'
           description: ''
-  /vms/auth/register/:
-    post:
-      operationId: vms_auth_register_create
-      description: create an account for supervisor
+  /vms/auth/permissions/:
+    get:
+      operationId: vms_auth_permissions_list
+      description: |-
+        This view allows listing all the permissions available in the application.
+        Only authenticated users who have view_permission permission can access it.
+
+        This view is read-only (GET). To create, update, or delete permissions,
+        a user with the appropriate administrative permissions must log into the Django admin interface.
       tags:
       - vms
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RegisterUser'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/RegisterUser'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/RegisterUser'
-        required: true
       security:
       - jwtAuth: []
       - cookieAuth: []
-      - {}
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RegisterUser'
+                type: array
+                items:
+                  $ref: '#/components/schemas/PermissionsList'
           description: ''
   /vms/auth/token/:
     post:
@@ -1409,13 +1573,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserCreate'
+              $ref: '#/components/schemas/RegisterUser'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/UserCreate'
+              $ref: '#/components/schemas/RegisterUser'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/UserCreate'
+              $ref: '#/components/schemas/RegisterUser'
         required: true
       security:
       - jwtAuth: []
@@ -1426,7 +1590,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserCreate'
+                $ref: '#/components/schemas/RegisterUser'
           description: ''
   /vms/auth/users/{id}/:
     get:
@@ -1472,7 +1636,6 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/User'
-        required: true
       security:
       - jwtAuth: []
       - cookieAuth: []
@@ -1832,6 +1995,16 @@ paths:
           description: ''
 components:
   schemas:
+    ActionEnum:
+      enum:
+      - add
+      - update
+      - delete
+      type: string
+      description: |-
+        * `add` - Add
+        * `update` - Update
+        * `delete` - Delete
     Activation:
       type: object
       properties:
@@ -1842,6 +2015,42 @@ components:
       required:
       - token
       - uid
+    AuditTrails:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        datetime:
+          type: string
+          format: date-time
+          readOnly: true
+        action:
+          readOnly: true
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/ActionEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        table_name:
+          type: string
+          readOnly: true
+        object_id:
+          type: integer
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        executed_by:
+          type: string
+          readOnly: true
+      required:
+      - action
+      - datetime
+      - description
+      - executed_by
+      - id
+      - object_id
+      - table_name
     ClientCrud:
       type: object
       description: serializer for client crud
@@ -1926,6 +2135,9 @@ components:
       type: object
       description: Serializer for retrieving the current user's basic details.
       properties:
+        id:
+          type: integer
+          readOnly: true
         first_name:
           type: string
           maxLength: 150
@@ -1943,8 +2155,36 @@ components:
           format: email
           title: Email address
           maxLength: 254
+        last_login:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
       required:
+      - id
+      - last_login
       - username
+    GroupCustom:
+      type: object
+      description: Serializer for the list of groups with hyperlinking
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        permissions:
+          type: array
+          items:
+            type: integer
+      required:
+      - id
+      - name
+      - permissions
+    NullEnum:
+      enum:
+      - null
     PaginatedClientListList:
       type: object
       required:
@@ -1968,6 +2208,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ClientList'
+    PaginatedUserList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
     PaginatedVoucherList:
       type: object
       required:
@@ -2027,6 +2290,34 @@ components:
       - new_password
       - token
       - uid
+    PatchedAuditTrails:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        datetime:
+          type: string
+          format: date-time
+          readOnly: true
+        action:
+          readOnly: true
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/ActionEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        table_name:
+          type: string
+          readOnly: true
+        object_id:
+          type: integer
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        executed_by:
+          type: string
+          readOnly: true
     PatchedCompany:
       type: object
       properties:
@@ -2040,6 +2331,9 @@ components:
       type: object
       description: Serializer for retrieving the current user's basic details.
       properties:
+        id:
+          type: integer
+          readOnly: true
         first_name:
           type: string
           maxLength: 150
@@ -2057,24 +2351,46 @@ components:
           format: email
           title: Email address
           maxLength: 254
+        last_login:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+    PatchedGroupCustom:
+      type: object
+      description: Serializer for the list of groups with hyperlinking
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        permissions:
+          type: array
+          items:
+            type: integer
     PatchedRedemption:
       type: object
       properties:
         id:
           type: integer
           readOnly: true
-        redemption_date:
+        redeemed_on:
           type: string
           format: date-time
+          readOnly: true
         till_no:
           type: integer
           maximum: 2147483647
           minimum: -2147483648
           nullable: true
-        user:
-          type: integer
-        shop:
-          type: integer
+        redeemed_by:
+          type: string
+          readOnly: true
+        redeemed_at:
+          type: string
+          readOnly: true
         voucher:
           type: integer
           nullable: true
@@ -2100,40 +2416,32 @@ components:
           writeOnly: true
     PatchedUser:
       type: object
-      description: Create, update, delete, view all users or one user.
+      description: Create, update, delete, and view users.
       properties:
         id:
           type: integer
           readOnly: true
-        password:
-          type: string
-          maxLength: 128
         last_login:
           type: string
           format: date-time
+          readOnly: true
           nullable: true
-        is_superuser:
-          type: boolean
-          title: Superuser status
-          description: Designates that this user has all permissions without explicitly
-            assigning them.
-        username:
-          type: string
-          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
-            only.
-          pattern: ^[\w.@+-]+$
-          maxLength: 150
         first_name:
           type: string
           maxLength: 150
         last_name:
           type: string
           maxLength: 150
+        username:
+          type: string
         email:
           type: string
           format: email
           title: Email address
           maxLength: 254
+        password:
+          type: string
+          writeOnly: true
         is_staff:
           type: boolean
           title: Staff status
@@ -2143,24 +2451,32 @@ components:
           title: Active
           description: Designates whether this user should be treated as active. Unselect
             this instead of deleting accounts.
-        date_joined:
-          type: string
-          format: date-time
-          readOnly: true
+        is_superuser:
+          type: boolean
+          title: Superuser status
+          description: Designates that this user has all permissions without explicitly
+            assigning them.
         company:
           type: integer
           nullable: true
+        user_permissions_code_name:
+          type: string
+          readOnly: true
+        groups_name:
+          type: string
+          readOnly: true
         groups:
           type: array
           items:
             type: integer
-          description: The groups this user belongs to. A user will get all permissions
-            granted to each of their groups.
+            writeOnly: true
+          writeOnly: true
         user_permissions:
           type: array
           items:
             type: integer
-          description: Specific permissions for this user.
+            writeOnly: true
+          writeOnly: true
     PatchedVoucher:
       type: object
       properties:
@@ -2193,35 +2509,58 @@ components:
           additionalProperties: {}
           nullable: true
           readOnly: true
+    PermissionsList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        codename:
+          type: string
+          maxLength: 100
+      required:
+      - codename
+      - id
+      - name
     Redemption:
       type: object
       properties:
         id:
           type: integer
           readOnly: true
-        redemption_date:
+        redeemed_on:
           type: string
           format: date-time
+          readOnly: true
         till_no:
           type: integer
           maximum: 2147483647
           minimum: -2147483648
           nullable: true
-        user:
-          type: integer
-        shop:
-          type: integer
+        redeemed_by:
+          type: string
+          readOnly: true
+        redeemed_at:
+          type: string
+          readOnly: true
         voucher:
           type: integer
           nullable: true
       required:
       - id
-      - shop
-      - user
+      - redeemed_at
+      - redeemed_by
+      - redeemed_on
     RegisterUser:
       type: object
       description: Create an account for a supervisor.
       properties:
+        id:
+          type: integer
+          readOnly: true
         company:
           type: integer
           nullable: true
@@ -2246,16 +2585,19 @@ components:
           type: string
           writeOnly: true
       required:
+      - id
       - password
       - username
     RequestStatusEnum:
       enum:
       - pending
+      - paid
       - approved
       - rejected
       type: string
       description: |-
         * `pending` - Pending
+        * `paid` - Paid
         * `approved` - Approved
         * `rejected` - Rejected
     SendEmailReset:
@@ -2357,7 +2699,7 @@ components:
       - token
     User:
       type: object
-      description: Create, update, delete, view all users or one user.
+      description: Create, update, delete, and view users.
       properties:
         id:
           type: integer
@@ -2365,24 +2707,16 @@ components:
         last_login:
           type: string
           format: date-time
+          readOnly: true
           nullable: true
-        is_superuser:
-          type: boolean
-          title: Superuser status
-          description: Designates that this user has all permissions without explicitly
-            assigning them.
-        username:
-          type: string
-          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
-            only.
-          pattern: ^[\w.@+-]+$
-          maxLength: 150
         first_name:
           type: string
           maxLength: 150
         last_name:
           type: string
           maxLength: 150
+        username:
+          type: string
         email:
           type: string
           format: email
@@ -2397,52 +2731,37 @@ components:
           title: Active
           description: Designates whether this user should be treated as active. Unselect
             this instead of deleting accounts.
-        date_joined:
-          type: string
-          format: date-time
-          readOnly: true
+        is_superuser:
+          type: boolean
+          title: Superuser status
+          description: Designates that this user has all permissions without explicitly
+            assigning them.
         company:
           type: integer
           nullable: true
+        user_permissions_code_name:
+          type: string
+          readOnly: true
+        groups_name:
+          type: string
+          readOnly: true
         groups:
           type: array
           items:
             type: integer
-          description: The groups this user belongs to. A user will get all permissions
-            granted to each of their groups.
+            writeOnly: true
+          writeOnly: true
         user_permissions:
           type: array
           items:
             type: integer
-          description: Specific permissions for this user.
-      required:
-      - date_joined
-      - id
-      - username
-    UserCreate:
-      type: object
-      properties:
-        email:
-          type: string
-          format: email
-          title: Email address
-          maxLength: 254
-        username:
-          type: string
-          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
-            only.
-          pattern: ^[\w.@+-]+$
-          maxLength: 150
-        id:
-          type: integer
-          readOnly: true
-        password:
-          type: string
+            writeOnly: true
           writeOnly: true
       required:
+      - groups_name
       - id
-      - password
-      - username
+      - last_login
+      - user_permissions_code_name
     UsernameResetConfirm:
       type: object
       properties:
@@ -2523,16 +2842,10 @@ components:
         description:
           type: string
           nullable: true
-        vouchers:
-          type: array
-          items:
-            $ref: '#/components/schemas/Voucher'
-          readOnly: true
       required:
       - date_time_recorded
       - id
       - request_ref
-      - vouchers
     VoucherRequestList:
       type: object
       properties:

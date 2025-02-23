@@ -24,7 +24,7 @@ async function resetPassword(newPassword, uid, token) {
             if (errorData.token) {
                 return {
                     detail: "The password reset link has either expired or is invalid. " +
-                        "send your email address again to receive a new reset link.",
+                        "send your emails address again to receive a new reset link.",
                     http_status: response.status
                 };
             } else if (errorData.uid) {

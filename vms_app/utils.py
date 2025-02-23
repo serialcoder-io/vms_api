@@ -1,6 +1,10 @@
+from django.contrib.auth.models import Group
+
 from .models import AuditTrails
 from datetime import datetime, date
-
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.conf import settings
 
 def logs_audit_action(instance, action, description, user):
     try:
@@ -41,4 +45,36 @@ def validate_and_format_date(date_input):
     raise ValueError("The provided date is not in a valid format. "
                      "Expected formats: 'YYYY-MM-DD', 'DD-MM-YYYY', 'DD-MM-YY'.")
 
+def get_approvers_emails():
+    group = Group.objects.get(name='request_approver')
+    if group:
+        approvers = group.user_set.all()
+        emails = [user.email for user in approvers]
+        return emails if emails else []
 
+def send_email_to_approvers(html_content, text_content):
+    approvers_emails = get_approvers_emails()
+    if approvers_emails:
+        msg = EmailMultiAlternatives(
+            "Approve voucher request",
+            text_content,
+            settings.DEFAULT_FROM_EMAIL,
+            approvers_emails,
+        )
+        # add html version of the email
+        print(approvers_emails)
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
+
+
+def notify_requests_approvers(request_id, request_ref):
+    """ this function emails all voucher_requests approvers after a request has been paid"""
+    text_content = render_to_string(
+        "emails/approve_request_email.txt",
+        context={"request_id": request_id, "request_ref": request_ref, "base_ulr": settings.BASE_URL}
+    )
+    html_content = render_to_string(
+        "emails/approve_request_email.html",
+        context={"request_id": request_id, "request_ref": request_ref, "base_ulr": settings.BASE_URL}
+    )
+    send_email_to_approvers(html_content, text_content)

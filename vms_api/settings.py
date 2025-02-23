@@ -25,6 +25,11 @@ SECRET_KEY = config('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
+if DEBUG:
+    BASE_URL = 'http://192.168.56.1:8000'
+else:
+    BASE_URL = 'http://192.168.56.1:8000'
+
 ALLOWED_HOSTS = [
     "localhost", "127.0.0.1",
     "192.168.226.83", "192.168.26.83",
@@ -93,7 +98,7 @@ DATABASES = {
         'NAME': config('DB_NAME'),
         'USER': config('DB_USER'),
         'PASSWORD': config('PASSWORD'),
-        'HOST': config('HOST'),
+        'HOST': config('DB_HOST'),
         'PORT': config('PORT'),
         'OPTIONS': {
             'client_encoding': 'UTF8',
@@ -200,12 +205,12 @@ DJOSER = {
         'user_create': 'vms_app.serializers.RegisterUserSerializer',
     }
 }
-# 5 minuites
+
 PASSWORD_RESET_TIMEOUT = config('PASSWORD_RESET_TIMEOUT', cast=int)
 
 # DRF-SPECTACULAR SETUP
 PROJECT_DESCRIPTION = """
-    API for managing vouchers, including creation, generation, and status updates (paid, expired, used). 
+    API for managing vouchers, including creation, generation, and status updates (paid, expired, redeemed). 
     Supports user management and voucher lifecycle handling. Built for efficient voucher tracking and updates
 """
 SPECTACULAR_SETTINGS = {

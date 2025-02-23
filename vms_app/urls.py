@@ -7,12 +7,12 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView,
 )
 from .views import (
-    UserViewSet,VoucherViewSet,CompanyViewSet, ShopViewSet,
+    UserViewSet, VoucherViewSet, CompanyViewSet, ShopViewSet,
     VoucherRequestListView, VoucherRequestCrudView, VoucherRequestCreateView,
     ClientListView, ClientCRUDView, ClientCreateView,
     RedemptionViewSet, RedeemVoucherView, AuditTrailsViewset,
     password_reset_view, password_reset_success_view,
-    GroupViewSet, PermissionListViewSet
+    GroupViewSet, PermissionListViewSet, approve_request_view
 )
 
 router = DefaultRouter()
@@ -48,5 +48,6 @@ urlpatterns = [
 
     #------------------- Redeem voucher -------------------------------
     path("api/vouchers/<int:pk>/redeem/",  RedeemVoucherView.as_view(), name="redeem_voucher"),
+    path("approve_request/<int:request_id>/", approve_request_view, name="approve_request_view"),
 
 ]
