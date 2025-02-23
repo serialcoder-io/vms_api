@@ -409,17 +409,13 @@ class AuditTrailsViewset(viewsets.ModelViewSet):
     serializer_class = AuditTrailsSerializer
     permission_classes = [
         IsAuthenticated,
-        IsAdminUser,
+        IsAdminUser, CustomDjangoModelPermissions
     ]
+
 
 def password_reset_view(request, uidb64, token):
     context = {"uidb64": uidb64, "token": token}
     return render(request, 'reset_password.html', context)
-
-
-def account_activation(request, uidb64, token):
-    context = {"uidb64": uidb64, "token": token}
-    return render(request, 'account_activation.html', context)
 
 
 def password_reset_success_view(request):

@@ -12,7 +12,7 @@ from .views import (
     ClientListView, ClientCRUDView, ClientCreateView,
     RedemptionViewSet, RedeemVoucherView, AuditTrailsViewset,
     password_reset_view, password_reset_success_view,
-    account_activation, GroupViewSet, PermissionListViewSet
+    GroupViewSet, PermissionListViewSet
 )
 
 router = DefaultRouter()
@@ -34,7 +34,6 @@ urlpatterns = [
     path("auth/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
     path("auth/reset_password/<str:uidb64>/<str:token>/", password_reset_view, name="password_reset"),
     path("auth/reset_password_success/", password_reset_success_view, name="password_reset_success"),
-    path("auth/activate/<str:uidb64>/<str:token>/", account_activation, name="activate_account"),
     path("auth/permissions/", PermissionListViewSet.as_view(), name="permissions"),
 
     # -------- urls related to client model ----------

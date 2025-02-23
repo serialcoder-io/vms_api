@@ -192,8 +192,7 @@ PASSWORD_RESET_CONFIRM_URL = 'vms/auth/reset_password/{uid}/{token}/'
 DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': PASSWORD_RESET_CONFIRM_URL,
     'SEND_CONFIRMATION_EMAIL': False,
-    'SEND_ACTIVATION_EMAIL': True,
-    'ACTIVATION_URL': 'vms/auth/activate/{uid}/{token}/',
+    'SEND_ACTIVATION_EMAIL': False,
     'PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND': True,
     'SERIALIZERS': {
         'user': 'vms_app.serializers.UserSerializer',
