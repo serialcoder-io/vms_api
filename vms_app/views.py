@@ -3,8 +3,12 @@ from django.shortcuts import render
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from rest_framework.exceptions import NotFound
-from rest_framework.permissions import DjangoModelPermissions
-from .permissions import RedeemVoucherPermissions
+from rest_framework.permissions import DjangoModelPermissions, AllowAny
+from .permissions import (
+    RedeemVoucherPermissions,
+    IsMemberOfCompanyOrAdminUser,
+    CustomDjangoModelPermissions
+)
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import (
@@ -49,7 +53,7 @@ class UserViewSet(viewsets.ModelViewSet):
     filterset_fields = ['company']
     permission_classes = [
         permissions.IsAuthenticated,
-        permissions.DjangoModelPermissions
+        CustomDjangoModelPermissions
     ]
 
 
@@ -66,7 +70,7 @@ class VoucherRequestListView(generics.ListAPIView):
     filterset_fields = ['request_status']
     permission_classes = [
         permissions.IsAuthenticated,
-        DjangoModelPermissions
+        CustomDjangoModelPermissions
     ]
 
 
@@ -75,7 +79,7 @@ class VoucherRequestCrudView(generics.GenericAPIView):
     serializer_class = VoucherRequestCrudSerializer
     permission_classes = [
         permissions.IsAuthenticated,
-        DjangoModelPermissions
+        CustomDjangoModelPermissions
     ]
     def get_object(self):
         """ Find a VoucherRequest by id """
@@ -175,7 +179,7 @@ class VoucherRequestCreateView(generics.CreateAPIView):
     serializer_class = VoucherRequestCrudSerializer
     permission_classes = [
         permissions.IsAuthenticated,
-        DjangoModelPermissions
+        CustomDjangoModelPermissions
     ]
     def post(self, request, *args, **kwargs):
         """
@@ -203,7 +207,7 @@ class ClientListView(generics.ListAPIView):
     search_fields = ['=email']
     permission_classes = [
         permissions.IsAuthenticated,
-        permissions.DjangoModelPermissions
+        CustomDjangoModelPermissions
     ]
 
 
@@ -213,7 +217,7 @@ class ClientCRUDView(generics.GenericAPIView):
     filter_backends = [filters.SearchFilter]
     permission_classes = [
         permissions.IsAuthenticated,
-        permissions.DjangoModelPermissions
+        CustomDjangoModelPermissions
     ]
 
     def get_object(self):
@@ -247,7 +251,7 @@ class ClientCreateView(generics.CreateAPIView):
     serializer_class = ClientCrudSerializer
     permission_classes = [
         permissions.IsAuthenticated,
-        permissions.DjangoModelPermissions
+        CustomDjangoModelPermissions
     ]
     def post(self, request, *args, **kwargs):
         """
@@ -273,7 +277,7 @@ class VoucherViewSet(viewsets.ModelViewSet):
     filterset_fields = ['voucher_status', 'redemption__shop', 'redemption__redemption_date']
     permission_classes = [
         permissions.IsAuthenticated,
-        DjangoModelPermissions
+        IsMemberOfCompanyOrAdminUser,
     ]
 
 
@@ -284,7 +288,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
     search_fields = ['company_name']
     permission_classes = [
         permissions.IsAuthenticated,
-        DjangoModelPermissions
+        CustomDjangoModelPermissions
     ]
 
     def get_permissions(self):
@@ -299,7 +303,7 @@ class ShopViewSet(viewsets.ModelViewSet):
     filterset_fields = ['company']
     permission_classes = [
         permissions.IsAuthenticated,
-        DjangoModelPermissions
+        CustomDjangoModelPermissions
     ]
 
     def get_permissions(self):
@@ -311,14 +315,8 @@ class ShopViewSet(viewsets.ModelViewSet):
 class RedemptionViewSet(viewsets.ModelViewSet):
     queryset = Redemption.objects.all()
     serializer_class = RedemptionSerializer
-    permission_classes = [permissions.IsAuthenticated, DjangoModelPermissions]
+    permission_classes = [permissions.IsAuthenticated, CustomDjangoModelPermissions]
 
-    # is redemtion intance is created only when we redeem a voucher:
-    # the user must have redeem_voucher permission to added a redemption a associate it with voucher
-    def get_permissions(self):
-        if self.request.method == 'POST':
-            return [permissions.IsAuthenticated, RedeemVoucherPermissions]
-        return super().get_permissions()
 
 
 class RedeemVoucherView(generics.GenericAPIView):
@@ -379,7 +377,8 @@ class RedeemVoucherView(generics.GenericAPIView):
         except KeyError as e:
             return Response({"details": f"Missing field: {e}"}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({"details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"details": "Sorry something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 
 def password_reset_view(request, uidb64, token):
