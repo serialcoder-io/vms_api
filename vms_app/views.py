@@ -38,7 +38,7 @@ from .models import (
 from .paginations import (
     VoucherRequestPagination,
     VoucherPagination,
-    ClientsPagination
+    ClientsPagination, UserPagination
 )
 
 
@@ -48,6 +48,7 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    pagination_class = UserPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ['email']
     filterset_fields = ['company']
@@ -274,7 +275,10 @@ class VoucherViewSet(viewsets.ModelViewSet):
     pagination_class = VoucherPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ['=voucher_ref']
-    filterset_fields = ['voucher_status', 'redemption__shop', 'redemption__redemption_date']
+    filterset_fields = [
+        'voucher_status', 'redemption__shop',
+        'redemption__redemption_date'
+    ]
     permission_classes = [
         permissions.IsAuthenticated,
         IsMemberOfCompanyOrAdminUser,
@@ -315,14 +319,15 @@ class ShopViewSet(viewsets.ModelViewSet):
 class RedemptionViewSet(viewsets.ModelViewSet):
     queryset = Redemption.objects.all()
     serializer_class = RedemptionSerializer
-    permission_classes = [permissions.IsAuthenticated, CustomDjangoModelPermissions]
-
+    permission_classes = [
+        permissions.IsAuthenticated,
+        CustomDjangoModelPermissions
+    ]
 
 
 class RedeemVoucherView(generics.GenericAPIView):
     serializer_class = VoucherSerializer
     queryset = Voucher.objects.all()
-
     permission_classes = [
         permissions.IsAuthenticated,
         RedeemVoucherPermissions
@@ -378,7 +383,6 @@ class RedeemVoucherView(generics.GenericAPIView):
             return Response({"details": f"Missing field: {e}"}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"details": "Sorry something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 
 def password_reset_view(request, uidb64, token):
