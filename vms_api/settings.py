@@ -161,9 +161,9 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
-    'BLACKLIST_AFTER_ROTATION': True, # added old tokens in the blacklist
+    'ACCESS_TOKEN_LIFETIME': timedelta(days= config('ACCESS_TOKEN_LIFETIME', cast=int)),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=config('REFRESH_TOKEN_LIFETIME', cast=int)),
+    'BLACKLIST_AFTER_ROTATION': True,
 }
 
 # CORS SETUP
@@ -201,7 +201,7 @@ DJOSER = {
     }
 }
 # 5 minuites
-PASSWORD_RESET_TIMEOUT = 300
+PASSWORD_RESET_TIMEOUT = config('PASSWORD_RESET_TIMEOUT', cast=int)
 
 # DRF-SPECTACULAR SETUP
 PROJECT_DESCRIPTION = """
