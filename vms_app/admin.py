@@ -1,34 +1,24 @@
 from django.contrib import admin
 from .models import VoucherRequest, Voucher, Client, User, AuditTrails
-from .utils import validate_and_format_date
+from .utils import validate_and_format_date, notify_requests_approvers
 
 
 class VoucherRequestAdmin(admin.ModelAdmin):
     list_display = ['request_ref', 'date_time_recorded', 'quantity_of_vouchers']
 
-    """def save_model(self, request, obj, form, change):
-        try:
-            # Ajout de la logique spécifique lors de la modification
-            if change:  # Si c'est une modification
-                print(f"Modification de l'objet : {obj.request_ref}")
-                old_status = form.initial.get('request_status', obj.request_status)
-                new_status = form.cleaned_data.get('request_status', obj.request_status)
+    def save_model(self, request, obj, form, change):
+        if change:
+            old_status = form.initial.get('request_status', obj.request_status)
+            new_status = form.cleaned_data.get('request_status', obj.request_status)
 
-                # Check if the old status was 'pending' or 'paid' and if the new status is 'approved' or 'rejected'
-                if (old_status == 'pending' or old_status == "paid") and new_status in ['approved', 'rejected']:
-                    # Update the related vouchers if the status changed from 'pending' or 'paid' to 'approved' or 'rejected'
-                    obj.update_related_vouchers_status(new_status)
-
-            else:  # Si c'est une création
-                print(f"Création de l'objet : {obj.request_ref}")
-                obj.recorded_by = request.user
-
-            # Sauvegarder l'objet après toutes les modifications
-            super().save_model(request, obj, form, change)
-
-        except Exception as e:
-            # Handle any errors
-            raise Exception(f"Error while saving the voucher request: {e}")"""
+            if old_status == 'pending' and new_status == 'paid':
+                # Notify(email) all approvers when a voucher-request has been paid
+                notify_requests_approvers(obj.id, obj.request_ref)
+            elif old_status == 'paid' and new_status == 'approved':
+                obj.approved_by = request.user
+        else:
+            obj.recorded_by = request.user
+        super().save_model(request, obj, form, change)
 
 
 class VoucherAdmin(admin.ModelAdmin):

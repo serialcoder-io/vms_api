@@ -119,7 +119,6 @@ class VoucherRequestCrudView(generics.GenericAPIView):
                     Notify all users with approval rights when a voucher request status changes from 'pending' to 'paid'
                     """
                     notify_requests_approvers(voucher_request.id, voucher_request.request_ref)
-
                 elif current_status == paid_status and new_request_status == approved_status:
                     # If the request is approved, set the approval timestamp and
                     # associate the action with the approving user
