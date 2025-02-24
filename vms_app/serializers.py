@@ -15,8 +15,8 @@ class UserSerializer(serializers.ModelSerializer):
     """Create, update, delete, and view users."""
     password = serializers.CharField(write_only=True, required=False)
     username = serializers.CharField(required=False)
-    user_permissions_code_name = serializers.SerializerMethodField()
-    groups_name = serializers.SerializerMethodField()
+    permissions = serializers.SerializerMethodField()
+    user_groups = serializers.SerializerMethodField()
     groups = serializers.PrimaryKeyRelatedField(
         queryset=Group.objects.all(), many=True, required=False, write_only=True
     )
@@ -29,14 +29,14 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             "id", "last_login", "first_name", "last_name", "username", "email",
             "password", "is_staff", "is_active", "is_superuser", "company",
-            "user_permissions_code_name", "groups_name", "groups", "user_permissions"
+            "permissions", "user_groups", "groups", "user_permissions"
         ]
         read_only_fields = ['date_joined', 'id', 'last_login']
 
-    def get_user_permissions_code_name(self, obj):
+    def get_permissions(self, obj):
         return [permission.codename for permission in obj.user_permissions.all()]
 
-    def get_groups_name(self, obj):
+    def get_user_groups(self, obj):
         return [group.name for group in obj.groups.all()]
 
     def __init__(self, *args, **kwargs):
@@ -320,9 +320,16 @@ class ClientCrudSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
 
+class PermissionsListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Permission
+        fields = ["id", "name", "codename"]
+        read_only_fields = ['id']
+
+
 class GroupCustomSerializer(serializers.ModelSerializer):
     """Serializer for the list of groups with hyperlinking"""
-    permissions = serializers.PrimaryKeyRelatedField(queryset=Permission.objects.all(), many=True)
+    permissions = PermissionsListSerializer(many=True)
 
     class Meta:
         model = Group
@@ -330,15 +337,8 @@ class GroupCustomSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
     def get_permissions(self, obj):
-        # Exemple de logique pour récupérer les permissions d'un groupe
-        return [permission.codename for permission in obj.permissions.all()]
+        return [permission.codename for permission in obj.user_permissions.all()]
 
-
-class PermissionsListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Permission
-        fields = ["id", "name", "codename"]
-        read_only_fields = ['id']
 
 class AuditTrailsSerializer(serializers.ModelSerializer):
     executed_by = serializers.CharField(source='user.username', read_only=True)
