@@ -6,7 +6,7 @@ from rest_framework import serializers
 from rest_framework.permissions import SAFE_METHODS
 from vms_app.models import (
     Voucher, VoucherRequest, Client, User,
-    Company, Shop, Redemption, AuditTrails
+    Company, Shop, Redemption, AuditTrail
 )
 
 class UserSerializer(serializers.ModelSerializer):
@@ -88,7 +88,7 @@ class UserSerializer(serializers.ModelSerializer):
         # Log audit action for update
         user = self.context['request'].user
         description = f"updated data for {user.username}"
-        logs_audit_action(instance, AuditTrails.AuditTrailsAction.UPDATE, description, user)
+        logs_audit_action(instance, AuditTrail.AuditTrailsAction.UPDATE, description, user)
 
         return instance
 
@@ -110,7 +110,7 @@ class UserSerializer(serializers.ModelSerializer):
         # Log audit action for creation
         description = f"added new user {user.username}"
         authenticated_user = self.context['request'].user
-        logs_audit_action(user, AuditTrails.AuditTrailsAction.ADD, description, authenticated_user)
+        logs_audit_action(user, AuditTrail.AuditTrailsAction.ADD, description, authenticated_user)
 
         return user
 
@@ -337,7 +337,7 @@ class GroupCustomSerializer(serializers.ModelSerializer):
 class AuditTrailsSerializer(serializers.ModelSerializer):
     executed_by = serializers.CharField(source='user.username', read_only=True)
     class Meta:
-        model = AuditTrails
+        model = AuditTrail
         fields = ["id", "datetime", "action", "table_name", "object_id", "description", "executed_by"]
         read_only_fields = ["id", "datetime", "action", "table_name", "object_id", "description", "user"]
 

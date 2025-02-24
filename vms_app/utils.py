@@ -1,6 +1,6 @@
 from django.contrib.auth.models import Group
 
-from .models import AuditTrails
+from .models import AuditTrail
 from datetime import datetime, date
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
@@ -8,7 +8,7 @@ from django.conf import settings
 
 def logs_audit_action(instance, action, description, user):
     try:
-        AuditTrails.objects.create(
+        AuditTrail.objects.create(
             user=user,
             table_name=instance.__class__.__name__,
             object_id=instance.pk,

@@ -4,7 +4,7 @@ from django.contrib.auth.admin import UserAdmin
 from .models import (
     VoucherRequest, Shop,
     Voucher, Client, User,
-    AuditTrails, Company,
+    AuditTrail, Company,
     Redemption
 )
 from .utils import validate_and_format_date, notify_requests_approvers
@@ -53,8 +53,11 @@ class VoucherRequestAdmin(admin.ModelAdmin):
             queryset.filter(request_status__in=['pending', 'paid']).update(request_status='rejected')
             self.message_user(request, "Selected voucher requests have been rejected.", level=messages.SUCCESS)
         else:
-            self.message_user(request, "Cannot reject voucher requests that are not 'pending' or 'paid'.",
-                              level=messages.ERROR)
+            self.message_user(
+                request,
+                "Cannot reject voucher requests that are not 'pending' or 'paid'.",
+                level=messages.ERROR
+            )
 
     @admin.action(description="Approve selected requests")
     def approve_selected_voucher_requests(self, request, queryset):
@@ -62,8 +65,11 @@ class VoucherRequestAdmin(admin.ModelAdmin):
             queryset.filter(request_status='paid').update(request_status='approved')
             self.message_user(request, "Selected voucher requests have been approved", level=messages.SUCCESS)
         else:
-            self.message_user(request, "Cannot approve requests that are not 'paid'.",
-                              level=messages.ERROR)
+            self.message_user(
+                request,
+                "Cannot approve requests that are not 'paid'.",
+                level=messages.ERROR
+            )
 
     @admin.action(description="Mark selected requests as paid")
     def paid_selected_voucher_requests(self, request, queryset):
@@ -71,8 +77,11 @@ class VoucherRequestAdmin(admin.ModelAdmin):
             queryset.filter(request_status='pending').update(request_status='paid')
             self.message_user(request, "Selected voucher requests have been paid", level=messages.SUCCESS)
         else:
-            self.message_user(request, "Cannot mark requests as 'paid' that are not 'pending'.",
-                              level=messages.ERROR)
+            self.message_user(
+                request,
+        "Cannot mark requests as 'paid' that are not 'pending'.",
+                level=messages.ERROR
+            )
 
 
 class RedemptionInline(admin.StackedInline):
@@ -111,7 +120,7 @@ class ClientAdmin(admin.ModelAdmin):
 
 
 class AuditTrailstInline(admin.StackedInline):
-    model = AuditTrails
+    model = AuditTrail
     extra = 0
 class UserAdmin(admin.ModelAdmin):
     list_display = ['username', 'email']
@@ -128,10 +137,13 @@ class UserAdmin(admin.ModelAdmin):
     )
 
 
-class AuditTrailsAdmin(admin.ModelAdmin):
+class AuditTrailAdmin(admin.ModelAdmin):
     list_display = ['user__username', 'action', 'table_name', 'datetime']
     readonly_fields = ['id', 'user', 'action', 'table_name', 'datetime', 'description', 'object_id']
     list_per_page = 10
+
+    def has_add_permission(self, request):
+        return False
 
 
 class ShopInline(admin.TabularInline):
@@ -156,6 +168,6 @@ admin.site.register(VoucherRequest, VoucherRequestAdmin)
 admin.site.register(Voucher, VoucherAdmin)
 admin.site.register(Client, ClientAdmin)
 admin.site.register(User, UserAdmin)
-admin.site.register(AuditTrails, AuditTrailsAdmin)
+admin.site.register(AuditTrail, AuditTrailAdmin)
 admin.site.register(Company, CompanyAdmin)
 admin.site.register(Shop, ShopAdmin)

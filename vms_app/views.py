@@ -27,7 +27,7 @@ from vms_app.serializers import (
 from .models import (
     User, Client, Shop,
     VoucherRequest, Voucher,
-    Company, Redemption, AuditTrails,
+    Company, Redemption, AuditTrail,
 )
 from .paginations import (
     VoucherRequestPagination,VoucherPagination,
@@ -404,7 +404,7 @@ class PermissionListViewSet(generics.ListAPIView):
 
 
 class AuditTrailsViewset(viewsets.ModelViewSet):
-    queryset = AuditTrails.objects.all()
+    queryset = AuditTrail.objects.all()
     serializer_class = AuditTrailsSerializer
     permission_classes = [
         IsAuthenticated,

@@ -187,7 +187,7 @@ class Redemption(models.Model):
             f"shop: {self.shop.company.company_name} {self.shop.location}")
 
 
-class AuditTrails(models.Model):
+class AuditTrail(models.Model):
     class AuditTrailsAction(models.TextChoices):
         ADD = 'add', 'Add'
         UPDATE = 'update', 'Update'
