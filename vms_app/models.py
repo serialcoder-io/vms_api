@@ -110,7 +110,6 @@ class VoucherRequest(models.Model):
             if old_status == 'paid' and self.request_status not in ('paid', 'rejected', 'approved'):
                 raise ValidationError("Invalid status: pending requests can only be approved or rejected")
 
-
     def __str__(self):
         return f"Voucher Request ref: {self.request_ref}"
 

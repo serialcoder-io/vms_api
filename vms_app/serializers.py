@@ -128,19 +128,16 @@ class CurrentUserSerializer(serializers.ModelSerializer):
 
 
 shop_supervisor_permissions = [
-    'add_redemption',
     'change_voucher',
     'redeem_voucher',
     'view_voucher',
     'view_redemption'
 ]
 
-
 class RegisterUserSerializer(serializers.ModelSerializer):
     """Create an account for a supervisor."""
 
     password = serializers.CharField(write_only=True)
-
     class Meta:
         model = User
         fields = ('id', 'company', 'first_name', 'last_name', 'username', 'email', 'password')
@@ -348,7 +345,6 @@ class AuditTrailsSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "datetime", "action", "table_name", "object_id", "description", "user"]
 
 """
-3) send emails to approvers after change request sttatus from 'pending' to 'paid'
 4) @Todo: call logs_action_action in every serializer after insert, update and delete
 5) @Todo: customize django admin and install django jazzmin or daisy-ui
 6) @Todo: write all tests
