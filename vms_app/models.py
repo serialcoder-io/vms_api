@@ -198,13 +198,13 @@ class AuditTrails(models.Model):
 
     datetime = models.DateTimeField(default=timezone.now)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='audit_trails')
-    table_name = models.CharField(max_length=20)
-    object_id = models.IntegerField()
-    description = models.TextField()
+    table_name = models.CharField(max_length=20, null=True, blank=True)
+    object_id = models.IntegerField(null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
     action = models.CharField(
         max_length=10,
         choices=AuditTrailsAction.choices,
-        null=True, blank=False
+        null=True, blank=True
     )
 
     def __str__(self):

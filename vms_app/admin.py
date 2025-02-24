@@ -130,7 +130,7 @@ class UserAdmin(admin.ModelAdmin):
 
 class AuditTrailsAdmin(admin.ModelAdmin):
     list_display = ['user__username', 'action', 'table_name', 'datetime']
-    readonly_fields = ['id', 'user', 'action', 'table_name', 'datetime', 'description']
+    readonly_fields = ['id', 'user', 'action', 'table_name', 'datetime', 'description', 'object_id']
     list_per_page = 10
 
 
