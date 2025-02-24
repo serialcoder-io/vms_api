@@ -28,6 +28,7 @@ class VoucherRequestAdmin(admin.ModelAdmin):
     list_filter = ['request_status']
     list_per_page = 10
     inlines = [VoucherInline]
+    search_fields = ["request_ref"]
     actions = [
         "reject_selected_voucher_requests",
         "approve_selected_voucher_requests",
@@ -119,13 +120,9 @@ class ClientAdmin(admin.ModelAdmin):
     inlines = [VoucherRequestInline]
 
 
-class AuditTrailstInline(admin.StackedInline):
-    model = AuditTrail
-    extra = 0
 class UserAdmin(admin.ModelAdmin):
     list_display = ['username', 'email']
     list_per_page = 10
-    inlines = [AuditTrailstInline]
     search_fields = ['username', 'email']
     readonly_fields = ['id', 'password', 'last_login', 'date_joined']
     fieldsets = (

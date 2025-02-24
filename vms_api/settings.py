@@ -236,3 +236,53 @@ else:
     EMAIL_HOST_USER = config('EMAIL_HOST_USER')
     EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
     DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+
+
+# JAZZMIN
+JAZZMIN_UI_TWEAKS = {
+    "theme": "flatly",
+    "dark_mode_theme": "darkly",
+}
+JAZZMIN_SETTINGS = {
+    "site_title": "MSUL",
+    "site_header": "MSUL",
+    "site_brand": "msul",
+    "site_logo": "M",
+    "welcome_sign": "Welcom to Msul VMS",
+    "copyright": "msul",
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "hide_apps": [],
+    "hide_models": [],
+    "icons": {
+        "auth": "fas fa-user",
+        "auth.Group": "fas fa-users-cog",
+        "vms_app.user": "fas fa-users",
+        "vms_app.Voucher": "fa-solid fa-file-invoice-dollar",
+        "vms_app.VoucherRequest": "fas fa-file-signature",
+        "vms_app.Client": "fas fa-user-tie",
+        "vms_app.AuditTrail": "fas fa-calendar-check",
+        "vms_app.Company": "fas fa-building",
+        "vms_app.Shop": "fas fa-store",
+        "token_blacklist.OutstandingToken": "fas fa-hourglass-half",
+        "token_blacklist.BlacklistedToken": "fas fa-ban",
+    },
+    "topmenu_links": [
+        {"name": "Swigger-ui doc",  "url": "/vms/api/schema/swagger-ui/"},
+        {"name": "Redoc",  "url": "/vms/api/schema/redoc/"},
+    ],
+    "default_icon_parents": "fas fa-chevron-circle-right",
+    "default_icon_children": "fas fa-circle",
+    "related_modal_active": False,
+    "custom_css": None,
+    "custom_js": None,
+    "use_google_fonts_cdn": True,
+    "show_ui_builder": True,
+
+    "login_logo": "",
+    "login_logo_dark": "",
+    "login_logo_width": "200px",
+    "login_title": "Welcome",
+    "login_show_sidebar": False,
+    "login_footer_text": "msul",
+}
