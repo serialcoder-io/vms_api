@@ -5,11 +5,9 @@ from django.contrib.auth.models import Group, Permission
 from rest_framework import serializers
 from rest_framework.permissions import SAFE_METHODS
 from vms_app.models import (
-    Voucher, Client,
-    VoucherRequest,
-    User, Company, Shop, Redemption, AuditTrails
+    Voucher, VoucherRequest, Client, User,
+    Company, Shop, Redemption, AuditTrails
 )
-
 
 class UserSerializer(serializers.ModelSerializer):
     """Create, update, delete, and view users."""
@@ -260,7 +258,6 @@ class VoucherSerializer(serializers.ModelSerializer):
 
 
 class VoucherRequestListSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = VoucherRequest
         fields = "__all__"

@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.db import models, transaction
 from django.utils import timezone
+from django.utils.timezone import localtime
 
 
 class Company(models.Model):
@@ -150,6 +151,16 @@ class Voucher(models.Model):
         # Update voucher status to redeemed
         self.voucher_status = Voucher.VoucherStatus.REDEEMED
         self.save()
+
+    def get_redemption_info(self):
+        redemption = self.redemption  # Accéder à la relation Redemption
+        if redemption:
+            # Formater la date pour qu'elle soit plus conviviale
+            redemption_date = localtime(redemption.redemption_date)
+            formatted_date = redemption_date.strftime('%d %b %Y, %H:%M')  # Format: 02 Feb 2025, 14:39
+            return f"Redeemed on {formatted_date}; at {redemption.shop.company.company_name} {redemption.shop.location}"
+        return "No redemption"
+    get_redemption_info.short_description = 'Redemption'
 
     def __str__(self):
         return f"Ref: {self.voucher_ref}; Amount: {self.amount} MUR"

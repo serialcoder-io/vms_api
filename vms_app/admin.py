@@ -1,10 +1,38 @@
-from django.contrib import admin
-from .models import VoucherRequest, Voucher, Client, User, AuditTrails
+from django.contrib import admin, messages
+from django.contrib.auth.admin import UserAdmin
+
+from .models import (
+    VoucherRequest, Shop,
+    Voucher, Client, User,
+    AuditTrails, Company,
+    Redemption
+)
 from .utils import validate_and_format_date, notify_requests_approvers
+from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
+from rest_framework_simplejwt.tokens import OutstandingToken
 
-
+class VoucherInline(admin.StackedInline):
+    model = Voucher
+    extra = 0
 class VoucherRequestAdmin(admin.ModelAdmin):
-    list_display = ['request_ref', 'date_time_recorded', 'quantity_of_vouchers']
+    list_display = [
+        'request_ref', 'request_status',
+        'date_time_recorded', 'quantity_of_vouchers'
+    ]
+    readonly_fields = [
+        'id', 'request_ref',
+        'date_time_recorded',
+        'date_time_approved',
+        'approved_by', 'recorded_by'
+    ]
+    list_filter = ['request_status']
+    list_per_page = 10
+    inlines = [VoucherInline]
+    actions = [
+        "reject_selected_voucher_requests",
+        "approve_selected_voucher_requests",
+        "paid_selected_voucher_requests"
+    ]
 
     def save_model(self, request, obj, form, change):
         if change:
@@ -20,36 +48,108 @@ class VoucherRequestAdmin(admin.ModelAdmin):
             obj.recorded_by = request.user
         super().save_model(request, obj, form, change)
 
+    def reject_selected_voucher_requests(self, request, queryset):
+        if queryset.filter(request_status__in=['pending', 'paid']).exists():
+            queryset.filter(request_status__in=['pending', 'paid']).update(request_status='rejected')
+            self.message_user(request, "Selected voucher requests have been rejected.", level=messages.SUCCESS)
+        else:
+            self.message_user(request, "Cannot reject voucher requests that are not 'pending' or 'paid'.",
+                              level=messages.ERROR)
 
+    @admin.action(description="Approve selected requests")
+    def approve_selected_voucher_requests(self, request, queryset):
+        if queryset.filter(request_status='paid').exists():
+            queryset.filter(request_status='paid').update(request_status='approved')
+            self.message_user(request, "Selected voucher requests have been approved", level=messages.SUCCESS)
+        else:
+            self.message_user(request, "Cannot approve requests that are not 'paid'.",
+                              level=messages.ERROR)
+
+    @admin.action(description="Mark selected requests as paid")
+    def paid_selected_voucher_requests(self, request, queryset):
+        if queryset.filter(request_status='pending').exists():
+            queryset.filter(request_status='pending').update(request_status='paid')
+            self.message_user(request, "Selected voucher requests have been paid", level=messages.SUCCESS)
+        else:
+            self.message_user(request, "Cannot mark requests as 'paid' that are not 'pending'.",
+                              level=messages.ERROR)
+
+
+class RedemptionInline(admin.StackedInline):
+    model = Redemption
+    extra = 0
+    readonly_fields = ['user', 'voucher', 'redemption_date', 'shop','till_no']
 class VoucherAdmin(admin.ModelAdmin):
-    list_display = ['voucher_ref', 'date_time_created', 'amount']
+    list_display = ['voucher_ref', 'date_time_created', 'amount', 'get_redemption_info']
+    readonly_fields = ['id', 'voucher_ref', 'voucher_request', 'amount', 'date_time_created']
+    search_fields = ['voucher_ref']
+    list_filter = ['voucher_status']
+    list_per_page = 10
+    inlines = [RedemptionInline]
 
     def save_model(self, request, obj, form, change):
-        # Vérification et formatage de expiry_date si elle n'est ni vide ni null
         if obj.expiry_date not in [None, '']:
             obj.expiry_date = validate_and_format_date(obj.expiry_date)
 
-        # Vérification et formatage de extention_date si elle n'est ni vide ni null
         if obj.extention_date not in [None, '']:
             obj.extention_date = validate_and_format_date(obj.extention_date)
         else:
-            # Si extention_date est vide ou None, on la laisse null (None en Python)
             obj.extention_date = None
 
-        # Sauvegarde de l'objet après modification
         super().save_model(request, obj, form, change)
 
 
-
+class VoucherRequestInline(admin.StackedInline):
+    model = VoucherRequest
+    extra = 1
 class ClientAdmin(admin.ModelAdmin):
     list_display = ['firstname', 'lastname', 'email']
+    search_fields = ['email']
+    readonly_fields = ['id']
+    list_per_page = 10
+    inlines = [VoucherRequestInline]
 
 
+class AuditTrailstInline(admin.StackedInline):
+    model = AuditTrails
+    extra = 0
 class UserAdmin(admin.ModelAdmin):
     list_display = ['username', 'email']
+    list_per_page = 10
+    inlines = [AuditTrailstInline]
+    search_fields = ['username', 'email']
+    readonly_fields = ['id', 'password', 'last_login', 'date_joined']
+    fieldsets = (
+        ('profile', {
+            'fields': (
+                'first_name', 'last_name', 'username', 'email')
+        }),
+        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'user_permissions', 'groups')}),
+    )
+
 
 class AuditTrailsAdmin(admin.ModelAdmin):
     list_display = ['user__username', 'action', 'table_name', 'datetime']
+    readonly_fields = ['id', 'user', 'action', 'table_name', 'datetime', 'description']
+    list_per_page = 10
+
+
+class ShopInline(admin.TabularInline):
+    model = Shop
+    extra = 1
+class CompanyAdmin(admin.ModelAdmin):
+    list_display = ['company_name']
+    readonly_fields = ['id']
+    inlines = [ShopInline]
+    list_per_page = 10
+    search_fields = ['company_name']
+
+
+class ShopAdmin(admin.ModelAdmin):
+    list_display = ['company__company_name', 'location']
+    readonly_fields = ['id']
+    list_per_page = 10
+    search_fields = ['location']
 
 
 admin.site.register(VoucherRequest, VoucherRequestAdmin)
@@ -57,3 +157,5 @@ admin.site.register(Voucher, VoucherAdmin)
 admin.site.register(Client, ClientAdmin)
 admin.site.register(User, UserAdmin)
 admin.site.register(AuditTrails, AuditTrailsAdmin)
+admin.site.register(Company, CompanyAdmin)
+admin.site.register(Shop, ShopAdmin)
