@@ -27,7 +27,7 @@ class Shop(models.Model):
 
 
 class User(AbstractUser):
-    REQUIRED_FIELDS = ['emails']
+    REQUIRED_FIELDS = ['email']
 
     class Meta:
         ordering = ['username', 'email']
