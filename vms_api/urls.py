@@ -15,13 +15,25 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.contrib.auth.decorators import login_required
 from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+from rest_framework.decorators import permission_classes
+from rest_framework.permissions import IsAuthenticated
+
 urlpatterns = [
     path('vms/msul-vms-adminsite/', admin.site.urls),
-    path('vms/', include('vms_app.urls')),
+    path('', include('vms_app.urls')),
     path('vms/auth/', include('djoser.urls')),
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('vms/api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('vms/api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+    path('vms/api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path(
+        'vms/api/schema/swagger-ui/',
+        login_required(SpectacularSwaggerView.as_view(url_name='schema')),
+        name='swagger-ui'
+    ),
+    path(
+        'vms/api/schema/redoc/',
+        login_required(SpectacularRedocView.as_view(url_name='schema')),
+        name='redoc'
+    ),
 ]

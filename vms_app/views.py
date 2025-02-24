@@ -1,6 +1,9 @@
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import Group, Permission
 from django.db import IntegrityError, DatabaseError
-from django.shortcuts import render
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from rest_framework.exceptions import NotFound
@@ -427,3 +430,35 @@ def approve_request_view(request, request_id):
         "reuqest_id": request_id,
         "request_ref": voucher_request.request_ref,
     })
+
+def index(request):
+    if request.user.is_authenticated:
+        return redirect('swagger-ui')
+    return redirect('/login')
+
+def login_view(request):
+    if request.method == "POST":
+        # Attempt to sign user in
+        username = request.POST["username"]
+        password = request.POST["password"]
+        user = authenticate(request, username=username, password=password)
+
+        # Check if authentication successful
+        if user is not None:
+            login(request, user)
+            return redirect("/")
+        else:
+            return render(request, "login.html", {
+                "message": "Invalid username and/or password."
+            })
+    else:
+        return render(request, "login.html")
+
+def logout_view(request):
+    logout(request)
+    return redirect("/")
+
+"""
+@Todo: reset password in admin and login view for documentation
+@Approve coucher request in browser
+"""
