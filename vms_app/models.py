@@ -4,6 +4,8 @@ from django.core.validators import MaxValueValidator
 from django.db import models, transaction
 from django.utils import timezone
 from django.utils.timezone import localtime
+from drf_spectacular.utils import extend_schema_field
+from rest_framework import serializers
 
 
 class Company(models.Model):
@@ -164,6 +166,7 @@ class Voucher(models.Model):
         self.voucher_status = Voucher.VoucherStatus.REDEEMED
         self.save()
 
+    @extend_schema_field(serializers.CharField)
     def get_redemption_info(self):
         redemption = self.redemption  # Accéder à la relation Redemption
         if redemption:
