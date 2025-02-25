@@ -37,7 +37,7 @@ ALLOWED_HOSTS = [
     "192.168.56.1"
 ]
 
-LOGIN_URL = '/login/'
+LOGIN_URL = '/vms/login/'
 
 # Application definition
 INSTALLED_APPS = [
