@@ -89,8 +89,8 @@ class VoucherRequest(models.Model):
     request_status = models.CharField(max_length=20, choices=RequestStatus.choices, default=RequestStatus.PENDING)
     date_time_recorded = models.DateTimeField(default=timezone.now, blank=True)
     quantity_of_vouchers = models.IntegerField(blank=False, null=False, default=1)
-    ammout = models.IntegerField(null=True, blank=True)
-    vouhers_expiry_date = models.DateField(null=True, blank=True)
+    amount = models.IntegerField(null=True, blank=True)
+    vouchers_expiry_date = models.DateField(null=True, blank=True)
     date_time_approved = models.DateTimeField(null=True, blank=True)
 
     def set_date_time_approved(self):
