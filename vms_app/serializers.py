@@ -265,18 +265,16 @@ class VoucherRequestListSerializer(serializers.ModelSerializer):
 
 
 class VoucherRequestCrudSerializer(serializers.ModelSerializer):
-    # vouchers = VoucherSerializer(many=True, read_only=True)
     class Meta:
         model = VoucherRequest
         fields = [
               "id", "request_ref",
-              "request_status",
+              "request_status", "amount",
               "date_time_recorded",
+              "quantity_of_vouchers",
+              "validity_type", "validity_periode",
               "date_time_approved",
               "approved_by",
-              "quantity_of_vouchers",
-              "amount", "vouchers_expiry_date",
-              #"vouchers"
             ]
         read_only_fields = ['date_time_recorded', 'request_ref', 'id']
 

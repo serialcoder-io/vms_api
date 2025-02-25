@@ -1,6 +1,4 @@
 from django.contrib import admin, messages
-from django.contrib.auth.admin import UserAdmin
-
 from .models import (
     VoucherRequest, Shop,
     Voucher, Client, User,
@@ -8,8 +6,6 @@ from .models import (
     Redemption
 )
 from .utils import validate_and_format_date, notify_requests_approvers
-from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
-from rest_framework_simplejwt.tokens import OutstandingToken
 
 class VoucherInline(admin.StackedInline):
     model = Voucher
@@ -39,13 +35,13 @@ class VoucherRequestAdmin(admin.ModelAdmin):
         if change:
             old_status = form.initial.get('request_status', obj.request_status)
             new_status = form.cleaned_data.get('request_status', obj.request_status)
-
-            if old_status == 'pending' and new_status == 'paid':
-                # Notify(email) all approvers when a voucher-request has been paid
-                notify_requests_approvers(obj.id, obj.request_ref)
-            elif old_status == 'paid' and new_status == 'approved':
+            if old_status == 'paid' and new_status == 'approved':
                 obj.approved_by = request.user
         else:
+            status = form.cleaned_data.get('request_status', obj.request_status)
+            if status != 'pending':
+                messages.warning(request, "The request status has been automatically set to 'pending' upon creation.")
+                obj.request_status = "pending"
             obj.recorded_by = request.user
         super().save_model(request, obj, form, change)
 
