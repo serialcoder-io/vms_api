@@ -1,8 +1,8 @@
-const baseUrl = 'http://192.168.56.1:8000';
+const baseUrl = 'http://127.0.0.1:8000';
 
 async function resetPassword(newPassword, uid, token) {
     try {
-        const response = await fetch(`${baseUrl}/vms/auth/users/reset_password_confirm/`, {
+        const response = await fetch(`http://127.0.0.1:8000/vms/auth/users/reset_password_confirm/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

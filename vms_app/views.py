@@ -1,4 +1,6 @@
+import requests
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group, Permission
 from django.db import IntegrityError, DatabaseError
 from django.http import HttpResponse, HttpResponseRedirect
@@ -415,15 +417,32 @@ class AuditTrailsViewset(viewsets.ModelViewSet):
     ]
 
 
-def password_reset_view(request, uidb64, token):
+def password_reset_confirm(request, uidb64, token):
     context = {"uidb64": uidb64, "token": token}
-    return render(request, 'reset_password.html', context)
+    return render(request, 'reset_password_form.html', context)
+
+def password_reset_send_confirmation_view(request):
+    if request.method == "POST":
+        email = request.POST["email"]
+        post_email = requests.post('http://127.0.0.1:8000/vms/auth/users/reset_password/', {"email": email})
+        status_code = post_email.status_code
+        if status_code == 204:
+            context = {"success_message": "We've sent you an email, please check your inbox"}
+            return render(request, "reset_password_send_email.html", context)
+        else:
+            response = post_email.json()
+            context = {"error_message": response[0]}
+            print(context)
+            return render(request, "reset_password_send_email.html", context)
+    else:
+        return render(request, "reset_password_send_email.html")
 
 
 def password_reset_success_view(request):
     return render(request, 'password_reset_success.html')
 
 
+@login_required(login_url="/vms/login/")
 def approve_request_view(request, request_id):
     voucher_request = VoucherRequest.objects.get(pk=request_id)
     return render(request, 'approve_request.html', {
@@ -431,19 +450,15 @@ def approve_request_view(request, request_id):
         "request_ref": voucher_request.request_ref,
     })
 
+@login_required(login_url="/vms/login/")
 def index(request):
-    if request.user.is_authenticated:
-        return redirect('swagger-ui')
-    return redirect('/login')
+    return redirect('swagger-ui')
 
 def login_view(request):
     if request.method == "POST":
-        # Attempt to sign user in
         username = request.POST["username"]
         password = request.POST["password"]
         user = authenticate(request, username=username, password=password)
-
-        # Check if authentication successful
         if user is not None:
             login(request, user)
             return redirect("/")
