@@ -275,7 +275,7 @@ class VoucherRequestCrudSerializer(serializers.ModelSerializer):
               "date_time_approved",
               "approved_by",
               "quantity_of_vouchers",
-              "description",
+              "ammount", "vouchers_expity_date",
               #"vouchers"
             ]
         read_only_fields = ['date_time_recorded', 'request_ref', 'id']
