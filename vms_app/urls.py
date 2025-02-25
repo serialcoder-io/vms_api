@@ -33,7 +33,7 @@ urlpatterns = [
     path("vms/api/", include(router.urls)),
 
     # ------------------------- authentication ------------------------
-    path("auth/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("vms/auth/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("vms/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("vms/auth/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
     path("vms/auth/reset_password/<str:uidb64>/<str:token>/", password_reset_view, name="password_reset"),
