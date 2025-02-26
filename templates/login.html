@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -33,7 +34,13 @@
                                 <label for="password" class="form-label">Password</label>
                                 <input type="password" class="form-control" id="password" name="password" required>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100">Sign in</button>
+                            <input type="hidden" name="next" value="{{ next }}">
+                            <div class="w-100">
+                                <button class="btn btn-primary w-100" id="signin-btn">
+                                  <span class="spinner-border spinner-border-sm d-none" id="spinner" aria-hidden="true"></span>
+                                  <span role="status">SignIn</span>
+                                </button>
+                            </div>
                         </form>
                     </div>
                     <div class="card-footer text-center">
@@ -43,7 +50,7 @@
             </div>
         </div>
     </div>
-
+    <script defer type="module" src="{% static 'js/login.js' %}"></script>
     <!-- Liens vers Bootstrap JS -->
      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"

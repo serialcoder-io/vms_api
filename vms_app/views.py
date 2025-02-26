@@ -13,6 +13,7 @@ from rest_framework.permissions import (IsAdminUser, IsAuthenticated, AllowAny)
 from rest_framework import ( filters, generics, viewsets, status)
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.reverse import reverse_lazy
 
 from .utils import notify_requests_approvers
 from .permissions import (
@@ -416,7 +417,7 @@ def password_reset_confirm(request, uidb64, token):
     context = {"uidb64": uidb64, "token": token}
     return render(request, 'reset_password_form.html', context)
 
-def password_reset_send_confirmation_view(request):
+def password_reset_send_email(request):
     if request.method == "POST":
         email = request.POST["email"]
         post_email = requests.post('http://127.0.0.1:8000/vms/auth/users/reset_password/', {"email": email})
@@ -449,20 +450,26 @@ def approve_request_view(request, request_id):
 def index(request):
     return redirect('swagger-ui')
 
+
 def login_view(request):
+    # Get the next URL (the URL the user wanted to access before being redirected to the login page)
+    next_url = request.GET.get('next', '/')
     if request.method == "POST":
         username = request.POST["username"]
         password = request.POST["password"]
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect("/")
+            next_post = request.POST.get('next', '/')
+            return redirect(next_post)
         else:
             return render(request, "login.html", {
-                "message": "Invalid username and/or password."
+                "message": "Invalid username and/or password.",
+                "next": next_url
             })
     else:
-        return render(request, "login.html")
+        return render(request, "login.html", {"next": next_url})
+
 
 def logout_view(request):
     logout(request)

@@ -176,6 +176,7 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days= config('ACCESS_TOKEN_LIFETIME', cast=int)),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=config('REFRESH_TOKEN_LIFETIME', cast=int)),
     'BLACKLIST_AFTER_ROTATION': True,
+    "UPDATE_LAST_LOGIN": True,
 }
 
 # CORS SETUP

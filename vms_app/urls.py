@@ -14,7 +14,7 @@ from .views import (
     RedemptionViewSet, RedeemVoucherView, AuditTrailsViewset,
     password_reset_confirm, password_reset_success_view,
     GroupViewSet, PermissionListViewSet, approve_request_view, index, login_view, logout_view,
-    password_reset_send_confirmation_view,
+    password_reset_send_email,
 )
 
 router = DefaultRouter()
@@ -38,7 +38,7 @@ urlpatterns = [
     path("vms/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("vms/auth/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
     path("vms/auth/reset_password/<str:uidb64>/<str:token>/", password_reset_confirm, name="password_reset_confirm"),
-    path("vms/auth/reset_password_send_email/", password_reset_send_confirmation_view, name="reset_password"),
+    path("vms/auth/reset_password_send_email/", password_reset_send_email, name="reset_password"),
     path("vms/auth/reset_password_success/", password_reset_success_view, name="password_reset_success"),
     path("vms/auth/permissions/", PermissionListViewSet.as_view(), name="permissions"),
 
