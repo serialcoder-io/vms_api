@@ -1,5 +1,7 @@
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
+from django.utils import timezone
+
 from vms_app.models import VoucherRequest, Voucher
 from datetime import date, timedelta
 
@@ -7,7 +9,7 @@ from vms_app.utils import notify_requests_approvers
 
 
 @receiver(post_save, sender=VoucherRequest)
-def create_vouchers(sender, instance, created, **kwargs):
+def create_vouchers(instance, created, **kwargs):
     if created:
         # Automatically generate vouchers after a voucher request has been registered.
         amount = instance.amount
@@ -21,7 +23,7 @@ def create_vouchers(sender, instance, created, **kwargs):
 
 
 @receiver(pre_save, sender=VoucherRequest)
-def update_voucher_expiry(sender, instance, **kwargs):
+def update_voucher_expiry(instance, **kwargs):
     if instance.pk:
         # Retrieve the old instance before it is updated.
         old_instance = VoucherRequest.objects.get(pk=instance.pk)
@@ -39,9 +41,10 @@ def update_voucher_expiry(sender, instance, **kwargs):
         if old_status == 'paid' and new_status == 'approved':
             queryset = Voucher.objects.filter(voucher_request=instance)
             queryset.update(expiry_date=vouchers_expiry_date, voucher_status="issued")
+            instance.date_time_approved = timezone.now()
 
         if old_status == 'pending' and new_status == 'paid':
             """ 
                 Notify all users with approval rights when a voucher request status changes from 'pending' to 'paid'
             """
-            notify_requests_approvers(instance.id, instance.request_ref)
+            notify_requests_approvers(instance.request_ref)

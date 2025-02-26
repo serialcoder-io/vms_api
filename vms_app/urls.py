@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import path, include, re_path
 from drf_spectacular.views import SpectacularAPIView
 # from . import views
 from rest_framework.routers import DefaultRouter
@@ -54,6 +54,6 @@ urlpatterns = [
 
     #------------------- Redeem voucher -------------------------------
     path("vms/api/vouchers/<int:pk>/redeem/",  RedeemVoucherView.as_view(), name="redeem_voucher"),
-    path("vms/approve_request/<int:request_id>/", approve_request_view, name="approve_request_view"),
+    re_path(r"^vms/approve_request/(?P<request_ref>.+)/$", approve_request_view, name="approve_request_view"),
 
 ]

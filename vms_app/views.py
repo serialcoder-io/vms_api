@@ -439,12 +439,11 @@ def password_reset_success_view(request):
 
 
 @login_required(login_url="/vms/login/")
-def approve_request_view(request, request_id):
-    voucher_request = VoucherRequest.objects.get(pk=request_id)
-    return render(request, 'approve_request.html', {
-        "reuqest_id": request_id,
-        "request_ref": voucher_request.request_ref,
-    })
+def approve_request_view(request, request_ref):
+    voucher_request = VoucherRequest.objects.get(request_ref=request_ref)
+    requester = voucher_request.client if voucher_request.client else None
+    context = {"voucher_request": voucher_request, "requester": requester}
+    return render(request, 'approve_request.html', context)
 
 @login_required(login_url="/vms/login/")
 def index(request):
@@ -472,6 +471,10 @@ def login_view(request):
 
 
 def logout_view(request):
+    if request.method == "POST":
+        next_url = request.POST.get('next_url', '/')
+        logout(request)
+        return redirect(next_url)
     logout(request)
     return redirect("/")
 

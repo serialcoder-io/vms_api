@@ -268,7 +268,7 @@ class VoucherRequestCrudSerializer(serializers.ModelSerializer):
     class Meta:
         model = VoucherRequest
         fields = [
-              "id", "request_ref",
+              "id", "request_ref", "client",
               "request_status", "amount",
               "date_time_recorded",
               "quantity_of_vouchers",
@@ -341,6 +341,5 @@ class AuditTrailsSerializer(serializers.ModelSerializer):
 
 """
 4) @Todo: call logs_action_action in every serializer after insert, update and delete
-5) @Todo: customize django admin and install django jazzmin or daisy-ui
 6) @Todo: write all tests
 """

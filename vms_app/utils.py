@@ -67,14 +67,14 @@ def send_email_to_approvers(html_content, text_content):
         msg.send()
 
 
-def notify_requests_approvers(request_id, request_ref):
+def notify_requests_approvers(request_ref):
     """ this function emails all voucher_requests approvers after a request has been paid"""
     text_content = render_to_string(
         "emails/approve_request_email.txt",
-        context={"request_id": request_id, "request_ref": request_ref, "base_ulr": settings.BASE_URL}
+        context={"request_ref": request_ref, "base_ulr": settings.BASE_URL}
     )
     html_content = render_to_string(
         "emails/approve_request_email.html",
-        context={"request_id": request_id, "request_ref": request_ref, "base_ulr": settings.BASE_URL}
+        context={"request_ref": request_ref, "base_ulr": settings.BASE_URL}
     )
     send_email_to_approvers(html_content, text_content)
