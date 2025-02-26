@@ -19,7 +19,6 @@ def create_vouchers(instance, created, **kwargs):
                 amount=amount,
                 voucher_status='provisional',
             )
-        print(f"{instance.quantity_of_vouchers} vouchers created with amount {amount}.")
 
 
 @receiver(pre_save, sender=VoucherRequest)
