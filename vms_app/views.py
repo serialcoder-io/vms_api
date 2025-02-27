@@ -324,6 +324,23 @@ class VoucherViewSet(viewsets.ModelViewSet):
     permission_classes = [
         IsAuthenticated, CustomDjangoModelPermissions
     ]
+    def get_object(self):
+        """ find a client by id """
+        try:
+            return self.queryset.get(pk=self.kwargs['pk'])
+        except Client.DoesNotExist:
+            raise NotFound(detail="client not found")
+
+    def delete(self, request, *args, **kwargs):
+        voucher = self.get_object()
+        description = f"Deleted voucher: {voucher.voucher_ref}"
+        authenticated_user = request.user
+        # Log the audit action before deletion
+        logs_audit_action(voucher, AuditTrail.AuditTrailsAction.DELETE, description, authenticated_user)
+        # Proceed with deletion
+        voucher.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 
 class CompanyViewSet(viewsets.ModelViewSet):
@@ -408,8 +425,8 @@ class RedeemVoucherView(generics.GenericAPIView):
             }
             # log audit for after redemption
             description = (
-               f"Redemption for voucher  '{voucher.voucher_ref}', redeemed at "
-               f" {redemption['redeemed_at']} , on  '{redemption['redeemed_on']}'"
+               f"Redemption for voucher: {voucher.voucher_ref}.\n redeemed at: "
+               f" {redemption['redeemed_at']}.\n On '{redemption['redeemed_on']}'"
             )
             logs_audit_action(voucher.redemption, AuditTrail.AuditTrailsAction.ADD, description, authenticated_user)
             return Response(
