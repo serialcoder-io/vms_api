@@ -1,3 +1,5 @@
+from logging import exception
+
 import requests
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -440,10 +442,53 @@ def password_reset_success_view(request):
 
 @login_required(login_url="/vms/login/")
 def approve_request_view(request, request_ref):
-    voucher_request = VoucherRequest.objects.get(request_ref=request_ref)
+    try:
+        voucher_request = VoucherRequest.objects.get(request_ref=request_ref)
+    except VoucherRequest.DoesNotExist:
+        return render(request, '404.html')
+
     requester = voucher_request.client if voucher_request.client else None
+
+    if request.method == "POST":
+        validity_period = request.POST.get("validity_periode")
+        validity_type = request.POST.get("validity_type")
+        print(validity_period)
+        print(validity_type)
+        if validity_period and validity_type:
+            try:
+                voucher_request.validity_period = validity_period
+                voucher_request.validity_type = validity_type
+                voucher_request.request_status = "approved"
+                voucher_request.save()
+                return redirect("/vms/request_approved_success/")
+            except Exception as e:
+                context = {
+                    "error_message": "Sorry, something went wrong. Please try again later.",
+                    "voucher_request": voucher_request,
+                    "requester": requester,
+                }
+                return render(request, 'approve_request.html', context)
+        else:
+            context = {
+                "error_message": "Please fill in all required fields.",
+                "voucher_request": voucher_request,
+                "requester": requester,
+            }
+            return render(request, 'approve_request.html', context)
+
     context = {"voucher_request": voucher_request, "requester": requester}
     return render(request, 'approve_request.html', context)
+
+
+
+@login_required(login_url="/vms/login/")
+def request_approved_success_view(request):
+    return render(request, 'request_approved_success.html')
+
+
+def not_found_view(request):
+    return render(request, '404.html')
+
 
 @login_required(login_url="/vms/login/")
 def index(request):

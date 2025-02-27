@@ -280,6 +280,7 @@ class VoucherRequestCrudSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         # Ensure the instance is updated with the correct database values after creation
+        validated_data["request_status"] = "pending"
         instance = super().create(validated_data)
         instance.refresh_from_db()
         return instance

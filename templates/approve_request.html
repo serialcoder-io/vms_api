@@ -42,7 +42,7 @@
     </div>
     <div class="container d-flex justify-content-center mt-5">
         {% if voucher_request.request_status == "paid" %}
-            <form class="container-box mt-4 col-12" action="" method="post">
+            <form class="container-box mt-4 col-12" action="{% url 'vms_app:approve_request_view' request_ref=voucher_request.request_ref %}" method="post">
                 <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                   <div class="modal-dialog">
                     <div class="modal-content">
@@ -62,10 +62,10 @@
                 <p><em>Quantity of vouchers :</em> <strong>3</strong></p>
                 <div class="d-flex align-items-center">
                     <label class="me-2"><em>Validity :</em></label>
-                    <input type="number" class="form-control w-25 text-center"
-                           value={{ voucher_request.validity_periode }} min="1" max="12"
+                    <input type="number" class="form-control w-25 text-center" name="validity_periode"
+                           value={{ voucher_request.validity_periode }} min="1" max="12" required
                     >
-                    <select class="form-select w-auto ms-2 validity_type">
+                    <select class="form-select w-auto ms-2" name="validity_type" required>
                         <option value="week" {% if voucher_request.validity_type == "week" %}selected{% endif %}>
                             Week
                         </option>

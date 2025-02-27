@@ -29,7 +29,7 @@ def update_voucher_expiry(instance, **kwargs):
         old_status = old_instance.request_status
         new_status = instance.request_status
         validity_type = instance.validity_type
-        validity_periode = instance.validity_periode
+        validity_periode = int(instance.validity_periode)
 
         if validity_type == "week":
             vouchers_expiry_date = date.today() + timedelta(days=validity_periode * 7)
