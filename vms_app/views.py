@@ -211,8 +211,15 @@ class VoucherRequestCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         """
         Save the voucher request with the user who created it
+        and log the audit action.
         """
-        serializer.save(recorded_by=self.request.user)
+        # Créer l'objet sans le sauvegarder encore
+        voucher_request = serializer.save(recorded_by=self.request.user)
+
+        # Loguer l'action d'audit avant la création
+        description = f"Created voucher request: {voucher_request.request_ref}"
+        authenticated_user = self.request.user
+        logs_audit_action(voucher_request, AuditTrail.AuditTrailsAction.ADD, description, authenticated_user)
 
 
 class ClientListView(generics.ListAPIView):
@@ -331,14 +338,18 @@ class VoucherViewSet(viewsets.ModelViewSet):
         except Client.DoesNotExist:
             raise NotFound(detail="client not found")
 
-    def delete(self, request, *args, **kwargs):
+    def destroy(self, request, *args, **kwargs):
         voucher = self.get_object()
         description = f"Deleted voucher: {voucher.voucher_ref}"
         authenticated_user = request.user
+
         # Log the audit action before deletion
         logs_audit_action(voucher, AuditTrail.AuditTrailsAction.DELETE, description, authenticated_user)
+
         # Proceed with deletion
-        voucher.delete()
+        self.perform_destroy(voucher)
+
+        # Optionally, if you want to handle any post-deletion actions
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
