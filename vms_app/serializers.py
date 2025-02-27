@@ -1,4 +1,7 @@
 from typing import Optional, Dict, Any
+
+from drf_spectacular.utils import extend_schema
+
 # from django.contrib.auth import authenticate
 from .utils import logs_audit_action, validate_and_format_date
 from django.contrib.auth.models import Group, Permission

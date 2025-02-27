@@ -1,13 +1,12 @@
 from logging import exception
+from pydoc import describe
 
 import requests
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group, Permission
 from django.db import IntegrityError, DatabaseError
-from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
-from django.urls import reverse
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from rest_framework.exceptions import NotFound
@@ -15,9 +14,8 @@ from rest_framework.permissions import (IsAdminUser, IsAuthenticated, AllowAny)
 from rest_framework import ( filters, generics, viewsets, status)
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.reverse import reverse_lazy
 
-from .utils import notify_requests_approvers, logs_audit_action
+from .utils import logs_audit_action
 from .permissions import (
     RedeemVoucherPermissions,
     CustomDjangoModelPermissions
@@ -381,6 +379,7 @@ class RedeemVoucherView(generics.GenericAPIView):
         responses={201: VoucherSerializer}
     )
     def post(self, request, *args, **kwargs):
+        authenticated_user = request.user
         try:
             voucher = self.get_object()
             if voucher.voucher_status != Voucher.VoucherStatus.ISSUED:
@@ -407,6 +406,12 @@ class RedeemVoucherView(generics.GenericAPIView):
                 "redeemed_on": voucher.redemption.redemption_date,
                 "redeemed_at": f"{voucher.redemption.shop.company.company_name} {voucher.redemption.shop.location}",
             }
+            # log audit for after redemption
+            description = (
+               f"Redemption for voucher  '{voucher.voucher_ref}', redeemed at "
+               f" {redemption['redeemed_at']} , on  '{redemption['redeemed_on']}'"
+            )
+            logs_audit_action(voucher.redemption, AuditTrail.AuditTrailsAction.ADD, description, authenticated_user)
             return Response(
                 {
                     "details": f"Voucher '{voucher.voucher_ref}' was redeemed successfully.",
@@ -529,6 +534,7 @@ def approve_request_view(request, request_ref):
 
 @login_required(login_url="/vms/login/")
 def request_approved_success_view(request):
+    """succes page after a voucher request was approved"""
     return render(request, 'request_approved_success.html')
 
 
@@ -543,6 +549,9 @@ def index(request):
 
 def login_view(request):
     # Get the next URL (the URL the user wanted to access before being redirected to the login page)
+    """
+        login view that redirect to the swagger ui doc or view voucher_request approval view depending on param 'next'
+    """
     next_url = request.GET.get('next', '/')
     if request.method == "POST":
         username = request.POST["username"]
