@@ -8,6 +8,7 @@ from django.contrib.auth.models import Group, Permission
 from django.db import IntegrityError, DatabaseError
 from django.shortcuts import render, redirect
 from django.utils import timezone
+from django.utils.timezone import localtime
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import (IsAdminUser, IsAuthenticated, AllowAny)
@@ -138,6 +139,13 @@ class VoucherRequestCrudView(generics.GenericAPIView):
                     # associate the action with the approving user
                     serializer.validated_data["date_time_approved"] = timezone.now()
                     serializer.validated_data["approved_by"] = request.user
+                    description = f"Approved voucher_request: {voucher_request.request_ref}."
+                    # log audit after approved the request
+                    logs_audit_action(
+                        voucher_request,
+                        AuditTrail.AuditTrailsAction.UPDATE,
+                        description, request.user
+                    )
                 elif current_status == pending_status and new_request_status == approved_status:
                     return Response(
                         {
@@ -174,6 +182,16 @@ class VoucherRequestCrudView(generics.GenericAPIView):
 
             # Save changes and return the updated data
             serializer.save()
+            if current_status != new_request_status:
+                description = (
+                    f"change voucher request {voucher_request.request_ref} from "
+                    f"{current_status} to {new_request_status}."
+                )
+                logs_audit_action(
+                    voucher_request,
+                    AuditTrail.AuditTrailsAction.UPDATE,
+                    description, request.user
+                )
             return Response(serializer.data, status=status.HTTP_200_OK)
         # Return validation errors if the serializer is invalid
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -434,10 +452,12 @@ class RedeemVoucherView(generics.GenericAPIView):
                 "redeemed_on": voucher.redemption.redemption_date,
                 "redeemed_at": f"{voucher.redemption.shop.company.company_name} {voucher.redemption.shop.location}",
             }
+            redemption_date = localtime(redemption["redeemed_on"])
+            formatted_date = redemption_date.strftime('%d %b %Y, %H:%M')
             # log audit for after redemption
             description = (
                f"Redemption for voucher: {voucher.voucher_ref}.\n redeemed at: "
-               f" {redemption['redeemed_at']}.\n On '{redemption['redeemed_on']}'"
+               f" {redemption['redeemed_at']}.\n On '{formatted_date}'"
             )
             logs_audit_action(voucher.redemption, AuditTrail.AuditTrailsAction.ADD, description, authenticated_user)
             return Response(
