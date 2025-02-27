@@ -445,7 +445,7 @@ def approve_request_view(request, request_ref):
     try:
         voucher_request = VoucherRequest.objects.get(request_ref=request_ref)
     except VoucherRequest.DoesNotExist:
-        return render(request, '404.html')
+        return render(request, 'admin/404.html')
 
     requester = voucher_request.client if voucher_request.client else None
 
@@ -487,7 +487,7 @@ def request_approved_success_view(request):
 
 
 def not_found_view(request):
-    return render(request, '404.html')
+    return render(request, 'admin/404.html')
 
 
 @login_required(login_url="/vms/login/")
