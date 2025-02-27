@@ -78,17 +78,15 @@ class UserSerializer(serializers.ModelSerializer):
         if password:
             instance.set_password(password)
             instance.save()
-
         if groups:
             instance.groups.set(groups)
-
         if user_permissions:
             instance.user_permissions.set(user_permissions)
 
         # Log audit action for update
-        user = self.context['request'].user
-        description = f"updated data for {user.username}"
-        logs_audit_action(instance, AuditTrail.AuditTrailsAction.UPDATE, description, user)
+        authenticated_user = self.context['request'].user
+        description = f"updated data for {instance.username}"
+        logs_audit_action(instance, AuditTrail.AuditTrailsAction.UPDATE, description, authenticated_user)
 
         return instance
 
@@ -100,6 +98,7 @@ class UserSerializer(serializers.ModelSerializer):
 
         user = User(**validated_data)
         user.set_password(password)
+        user.is_active = True
         user.save()
 
         if groups:
@@ -108,12 +107,11 @@ class UserSerializer(serializers.ModelSerializer):
             user.user_permissions.set(user_permissions)
 
         # Log audit action for creation
-        description = f"added new user {user.username}"
+        description = f"added new user: '{user.username}'"
         authenticated_user = self.context['request'].user
         logs_audit_action(user, AuditTrail.AuditTrailsAction.ADD, description, authenticated_user)
 
         return user
-
 
 
 class CurrentUserSerializer(serializers.ModelSerializer):

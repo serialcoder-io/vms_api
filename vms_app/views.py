@@ -17,7 +17,7 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.reverse import reverse_lazy
 
-from .utils import notify_requests_approvers
+from .utils import notify_requests_approvers, logs_audit_action
 from .permissions import (
     RedeemVoucherPermissions,
     CustomDjangoModelPermissions
@@ -58,6 +58,18 @@ class UserViewSet(viewsets.ModelViewSet):
         CustomDjangoModelPermissions
     ]
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        description = f"Deleted user '{instance.username}'"
+        authenticated_user = request.user
+
+        # Log the audit action before deletion
+        logs_audit_action(instance, AuditTrail.AuditTrailsAction.DELETE, description, authenticated_user)
+
+        # Proceed with deletion
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class VoucherRequestListView(generics.ListAPIView):
     """
@@ -74,6 +86,7 @@ class VoucherRequestListView(generics.ListAPIView):
        IsAuthenticated,
        CustomDjangoModelPermissions
     ]
+
 
 
 class VoucherRequestCrudView(generics.GenericAPIView):
@@ -169,6 +182,13 @@ class VoucherRequestCrudView(generics.GenericAPIView):
 
     def delete(self, request, *args, **kwargs):
         voucher_request = self.get_object()
+        description = f"Deleted voucher request: ' {voucher_request.request_ref}'"
+        authenticated_user = request.user
+
+        # Log the audit action before deletion
+        logs_audit_action(voucher_request, AuditTrail.AuditTrailsAction.DELETE, description, authenticated_user)
+
+        # Proceed with deletion
         voucher_request.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -232,15 +252,26 @@ class ClientCRUDView(generics.GenericAPIView):
         return Response(serializer.data)
 
     def put(self, request, *args, **kwargs):
+        authenticated_user = request.user
         client = self.get_object()
         serializer = self.get_serializer(client, data=request.data, partial=True)
         if serializer.is_valid():
+            description = f"Updated data for client: fullname: ' {client.firstname} {client.lastname}' ; email: ' {client.email}'"
             serializer.save()
+            # Log the audit action after update
+            logs_audit_action(client, AuditTrail.AuditTrailsAction.UPDATE, description, authenticated_user)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, *args, **kwargs):
         client = self.get_object()
+        description = f"Deleted client: 'fullname: ' {client.firstname} {client.lastname}'; email: ' {client.email}'"
+        authenticated_user = request.user
+
+        # Log the audit action before deletion
+        logs_audit_action(client, AuditTrail.AuditTrailsAction.DELETE, description, authenticated_user)
+
+        # Proceed with deletion
         client.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -252,14 +283,29 @@ class ClientCreateView(generics.CreateAPIView):
         IsAuthenticated,
         CustomDjangoModelPermissions
     ]
+
     def post(self, request, *args, **kwargs):
         """
-            Add a new client
+            Add a new client and log the audit action
         """
+        authenticated_user = request.user
         serializer = self.get_serializer(data=request.data)
+
         if serializer.is_valid():
+            # Perform the creation of the client
             self.perform_create(serializer)
+
+            # Retrieve the created client instance
+            client = serializer.instance
+
+            # Description for the audit log
+            description = f"Added new client: fullname: {client.firstname} {client.lastname}; email: {client.email}"
+
+            # Log the audit action
+            logs_audit_action(client, AuditTrail.AuditTrailsAction.ADD, description, authenticated_user)
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
