@@ -1,8 +1,4 @@
 from typing import Optional, Dict, Any
-
-from drf_spectacular.utils import extend_schema
-
-# from django.contrib.auth import authenticate
 from .utils import logs_audit_action, validate_and_format_date
 from django.contrib.auth.models import Group, Permission
 from rest_framework import serializers
@@ -85,12 +81,6 @@ class UserSerializer(serializers.ModelSerializer):
             instance.groups.set(groups)
         if user_permissions:
             instance.user_permissions.set(user_permissions)
-
-        # Log audit action for update
-        authenticated_user = self.context['request'].user
-        description = f"updated data for {instance.username}"
-        logs_audit_action(instance, AuditTrail.AuditTrailsAction.UPDATE, description, authenticated_user)
-
         return instance
 
     def create(self, validated_data):
@@ -108,12 +98,6 @@ class UserSerializer(serializers.ModelSerializer):
             user.groups.set(groups)
         if user_permissions:
             user.user_permissions.set(user_permissions)
-
-        # Log audit action for creation
-        description = f"added new user: '{user.username}'"
-        authenticated_user = self.context['request'].user
-        logs_audit_action(user, AuditTrail.AuditTrailsAction.ADD, description, authenticated_user)
-
         return user
 
 

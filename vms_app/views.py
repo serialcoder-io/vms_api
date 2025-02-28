@@ -1,5 +1,4 @@
-from logging import exception
-from pydoc import describe
+import json
 
 import requests
 from django.contrib.auth import authenticate, login, logout
@@ -41,7 +40,6 @@ from .paginations import (
     ClientsPagination, UserPagination
 )
 
-
 class UserViewSet(viewsets.ModelViewSet):
     """created, read, update, delete users:
     view only for authenticated users with right permissions
@@ -56,6 +54,50 @@ class UserViewSet(viewsets.ModelViewSet):
         IsAuthenticated,
         CustomDjangoModelPermissions
     ]
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        new_user = User.objects.get(pk=response.data['id'])  # Récupérer l'objet créé à partir de la réponse
+        description = f"Added new user: \n username: '{new_user.email}'\n email: '{new_user.email}'"
+        authenticated_user = request.user
+
+        # Log the audit action for creation
+        logs_audit_action(
+            instance=new_user,
+            action=AuditTrail.AuditTrailsAction.ADD,
+            description=description,
+            user=authenticated_user
+        )
+
+        return response
+
+    def update(self, request, *args, **kwargs):
+        # old user data before update
+        user = self.get_object()
+        old_data = UserSerializer(user).data
+        old_data.pop('password', None)
+
+        # update
+        response = super().update(request, *args, **kwargs)
+        # new user_data
+        new_data = UserSerializer(user).data
+        new_data.pop('password', None)
+
+        # format logs
+        description = (
+            f"Updated user:\nBefore:\n{json.dumps(old_data, indent=4)}\n"
+            f"After:\n{json.dumps(new_data, indent=4)}"
+        )
+        authenticated_user = request.user
+
+        # Log the audit action for update
+        logs_audit_action(
+            instance=user,
+            action=AuditTrail.AuditTrailsAction.UPDATE,
+            description=description,
+            user=authenticated_user
+        )
+        return response
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -231,7 +273,6 @@ class VoucherRequestCreateView(generics.CreateAPIView):
         Save the voucher request with the user who created it
         and log the audit action.
         """
-        # Créer l'objet sans le sauvegarder encore
         voucher_request = serializer.save(recorded_by=self.request.user)
 
         # Loguer l'action d'audit avant la création
@@ -277,12 +318,20 @@ class ClientCRUDView(generics.GenericAPIView):
     def put(self, request, *args, **kwargs):
         authenticated_user = request.user
         client = self.get_object()
+        old_data = ClientCrudSerializer(client).data
+
         serializer = self.get_serializer(client, data=request.data, partial=True)
         if serializer.is_valid():
-            description = f"Updated data for client: fullname: ' {client.firstname} {client.lastname}' ; email: ' {client.email}'"
             serializer.save()
+            new_data = serializer.data
+            description = (
+                f"Updated client data:\nBefore:\n{json.dumps(old_data, indent=4)}\n"
+                f"After:\n{json.dumps(new_data, indent=4)}"
+            )
+
             # Log the audit action after update
             logs_audit_action(client, AuditTrail.AuditTrailsAction.UPDATE, description, authenticated_user)
+
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -322,7 +371,7 @@ class ClientCreateView(generics.CreateAPIView):
             client = serializer.instance
 
             # Description for the audit log
-            description = f"Added new client: fullname: {client.firstname} {client.lastname}; email: {client.email}"
+            description = f"Added new client: fullname: {client.firstname} {client.lastname};\n email: {client.email}"
 
             # Log the audit action
             logs_audit_action(client, AuditTrail.AuditTrailsAction.ADD, description, authenticated_user)
@@ -386,6 +435,62 @@ class CompanyViewSet(viewsets.ModelViewSet):
         if self.request.method == 'GET':
             return [AllowAny()]
         return super().get_permissions()
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        company = Company.objects.get(pk=response.data['id'])  # Récupérer l'objet créé à partir de la réponse
+        description = f"Added new company: '{company.company_name}'"
+        authenticated_user = request.user
+
+        # Log the audit action for creation
+        logs_audit_action(
+            instance=company,
+            action=AuditTrail.AuditTrailsAction.ADD,
+            description=description,
+            user=authenticated_user
+        )
+
+        return response
+
+    def update(self, request, *args, **kwargs):
+        company_before_update = self.get_object()
+        old_company_name = company_before_update.company_name
+        # save changes
+        response = super().update(request, *args, **kwargs)
+
+        company_after_update = self.get_object()
+        new_company_name = company_after_update.company_name
+
+        # Vérifier si le nom a changé
+        if old_company_name != new_company_name:
+            description = f"Updated company, changed company_name.\n from '{old_company_name}' to '{new_company_name}'"
+        else:
+            description = f"Updated company: {new_company_name}"
+
+        authenticated_user = request.user
+
+        # Log the audit action for update
+        logs_audit_action(
+            instance=company_after_update,
+            action=AuditTrail.AuditTrailsAction.UPDATE,
+            description=description,
+            user=authenticated_user
+        )
+
+        return response
+
+    def destroy(self, request, *args, **kwargs):
+        company = self.get_object()
+        description = f"Deleted company: '{company.company_name}'"
+        authenticated_user = request.user
+
+        # Log the audit action before deletion
+        logs_audit_action(company, AuditTrail.AuditTrailsAction.DELETE, description, authenticated_user)
+
+        # Proceed with deletion
+        self.perform_destroy(company)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class ShopViewSet(viewsets.ModelViewSet):
     queryset = Shop.objects.all()
@@ -519,6 +624,7 @@ def password_reset_confirm(request, uidb64, token):
     return render(request, 'reset_password_form.html', context)
 
 def password_reset_send_email(request):
+
     if request.method == "POST":
         email = request.POST["email"]
         post_email = requests.post('http://127.0.0.1:8000/vms/auth/users/reset_password/', {"email": email})
@@ -598,7 +704,8 @@ def index(request):
 def login_view(request):
     # Get the next URL (the URL the user wanted to access before being redirected to the login page)
     """
-        login view that redirect to the swagger ui doc or view voucher_request approval view depending on param 'next'
+        login view that redirect to the swagger ui doc or
+        view voucher_request approval view depending on param 'next'
     """
     next_url = request.GET.get('next', '/')
     if request.method == "POST":
