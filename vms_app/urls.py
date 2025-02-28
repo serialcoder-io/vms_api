@@ -14,7 +14,7 @@ from .views import (
     RedemptionViewSet, RedeemVoucherView, AuditTrailsViewset,
     password_reset_confirm, password_reset_success_view,
     GroupViewSet, PermissionListViewSet, approve_request_view, index, login_view, logout_view,
-    password_reset_send_email, request_approved_success_view, not_found_view,
+    password_reset_send_email, request_approved_success_view, not_found_view, test_pdf,
 )
 
 router = DefaultRouter()
@@ -57,5 +57,6 @@ urlpatterns = [
     re_path(r"^vms/approve_request/(?P<request_ref>.+)/$", approve_request_view, name="approve_request_view"),
     path("vms/request_approved_success/", request_approved_success_view, name="request_approved_success"),
     path("vms/not-found/", not_found_view, name="not_found"),
+    path("vms/test_pdf/", test_pdf, name="test_pdf")
 
 ]

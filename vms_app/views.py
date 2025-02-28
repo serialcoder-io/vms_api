@@ -732,6 +732,9 @@ def logout_view(request):
     logout(request)
     return redirect("/")
 
+def test_pdf(request):
+    return render(request, "voucher_pdf_template.html")
+
 """
 @Todo: reset password in admin and login view for documentation
 @Approve coucher request in browser

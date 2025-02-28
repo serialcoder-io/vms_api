@@ -1,0 +1,112 @@
+{% load static %}
+<html lang="">
+    <head>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                padding: 25px 50px;
+            }
+            .header {
+                text-align: right;
+            }
+            .title {
+                text-align: center;
+                color: red;
+                font-size: 24px;
+                font-weight: bold;
+            }
+            .details {
+                width: 100%;
+                margin-top: 20px;
+            }
+            .details td {
+                padding: 5px;
+            }
+            .box {
+                border: 1px solid black;
+                padding: 5px;
+            }
+            .signature {
+                margin-top: 50px;
+            }
+            .conditions {
+                margin-top: 30px;
+                font-size: 10px;
+            }
+            .validity {
+                text-align: right;
+                font-style: italic;
+                margin-top: 20px;
+            }
+            table{
+                border-collapse: collapse;
+            }
+        </style>
+        <title></title>
+    </head>
+    <body>
+        <div class="header">
+            <table>
+                <tr>
+                    <td style="width: 30%;">
+                        <img src="{% static 'images/newlogo-1.png' %}" style="width: 150px;"><br>
+                        <p>Date: 20 - 08 - 2021 </p>
+                    </td>
+                    <td></td>
+                    <td style="width: 70%; text-align: right;">
+                        <p style="font-size: 18px;">
+                            SOFLO DISTRIBUTION LTD<br>
+                            BRN: C15132985 VAT No.: VAT27359538<br>
+                            3. LISLET GEOFFROY STREET, CUREPIPE — TEL.: 670 7788<br>
+                        </p>
+                        <p>No.: SDL/2021/08/008</p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="title" style="padding-block: 30px; margin-block: 20px">
+            <img src={% static "images/voucher-gift-text.png" %} alt="voucher-gift-text">
+        </div>
+
+        <table class="details">
+            <tr>
+                <td class="box">
+                    <span>Pay or Order: </span>
+                    <span style="margin-left: 10px"><strong>MARQUE ET BEAUTE</strong></span>
+                </td>
+
+                <td class="box">
+                    <div class="title">
+                        <img src={% static "images/newlogo-1.png" %} alt="voucher-gift-text" style="width: 200px; height: 50px">
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="box">MUR: ONE THOUSAND TWO HUNDRED ONLY</td>
+                <td class="box" style="text-align: right;">
+                    <p style="font-size: 18px;"><strong>1,200</strong></p>
+                </td>
+            </tr>
+        </table>
+
+        <div class="validity">Validity: 31 - OCTOBER - 2021</div>
+
+        <div class="signature">
+            ______________________________<br>
+            Frederique HOW HONG<br>
+            Chief Operating Officer
+        </div>
+
+        <div class="conditions">
+            <b>Conditions:</b><br>
+            <p style="font-size: 15px;">
+                1. Vouchers redeemable at Intermart Bagatelle, Curepipe<br>
+                Soflo Floreal, Quatre Bornes, Calodyne & Mahogany Beau Plan Only. <br>
+                2. Proof of National Identity Card to be produced upon request<br>
+                3. No cash refund upon redemption of this voucher.<br>
+                4. Management reserves the right to refuse this voucher in the event of alteration and tampering.
+            </p>
+        </div>
+    </body>
+</html>
