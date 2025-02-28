@@ -251,8 +251,8 @@ JAZZMIN_UI_TWEAKS = {
 JAZZMIN_SETTINGS = {
     "site_title": "MSUL",
     "site_header": "MSUL",
-    "site_brand": "msul",
-    "site_logo": "M",
+    "site_brand": "intermart",
+    "site_logo": "images/logo.png",
     "welcome_sign": "Welcom to Msul VMS",
     "copyright": "msul",
     "show_sidebar": True,
