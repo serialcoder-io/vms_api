@@ -1,5 +1,6 @@
 from django.contrib.auth.models import Group
-
+import logging
+logger = logging.getLogger(__name__)
 from .models import AuditTrail
 from datetime import datetime, date
 from django.core.mail import EmailMultiAlternatives
@@ -7,6 +8,7 @@ from django.template.loader import render_to_string
 from django.conf import settings
 
 def logs_audit_action(instance, action, description, user):
+    """ log audit after create, update and delete and object in the database"""
     try:
         AuditTrail.objects.create(
             user=user,
@@ -16,7 +18,7 @@ def logs_audit_action(instance, action, description, user):
             action=action,
         )
     except Exception as e:
-        print(f"Erreur lors de l'enregistrement de l'audit: {e}")
+        logger.error(f"Erreur lors de l'enregistrement de l'audit pour {instance}: {e}")
 
 
 def validate_and_format_date(date_input):
