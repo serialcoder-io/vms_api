@@ -22,7 +22,7 @@ def create_vouchers(instance, created, **kwargs):
 
 
 @receiver(pre_save, sender=VoucherRequest)
-def update_voucher_expiry(instance, **kwargs):
+def update_voucher_expiry_and_status_after_request_approval(instance, **kwargs):
     if instance.pk:
         # Retrieve the old instance before it is updated.
         old_instance = VoucherRequest.objects.get(pk=instance.pk)

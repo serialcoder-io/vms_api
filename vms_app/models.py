@@ -111,10 +111,6 @@ class VoucherRequest(models.Model):
         null=True, blank=True, default=1,
         help_text="Maximum validity period (1 to 12 months or weeks)"
     )
-    def set_date_time_approved(self):
-        """Set the approval timestamp when the request is approved."""
-        self.date_time_approved = timezone.now()
-        self.save()
 
     def clean(self):
         # retrieve request_status before update

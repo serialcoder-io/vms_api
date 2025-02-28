@@ -1,15 +1,11 @@
 from django.contrib import admin, messages
-from django.http import HttpResponse
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
-from io import BytesIO
 from .models import (
     VoucherRequest, Shop,
     Voucher, Client, User,
     AuditTrail, Company,
     Redemption
 )
-from .utils import validate_and_format_date, notify_requests_approvers
+from .utils import validate_and_format_date
 
 class VoucherInline(admin.StackedInline):
     model = Voucher
@@ -109,30 +105,6 @@ class VoucherAdmin(admin.ModelAdmin):
 
         super().save_model(request, obj, form, change)
 
-    def generate_bon_pdf(self, request, queryset):
-        buffer = BytesIO()
-
-        # Créer un objet canvas ReportLab pour générer le PDF
-        p = canvas.Canvas(buffer, pagesize=A4)
-
-        # Exemple de contenu du PDF (à personnaliser selon votre besoin)
-        for bon in queryset:
-            p.drawString(100, 750, f"Bon Ref: {bon.voucher_ref}")
-            p.drawString(100, 725, f"Date: {bon.date_time_created}")
-            p.drawString(100, 700, f"Montant: {bon.amount}")
-            p.showPage()  # Créer une nouvelle page dans le PDF pour chaque bon
-
-        # Terminer la génération du PDF
-        p.save()
-
-        # Revenir au début du buffer
-        buffer.seek(0)
-
-        # Créer une réponse HTTP avec le contenu du PDF
-        response = HttpResponse(buffer, content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename="bon.pdf"'
-
-        return response
 
 
 class VoucherRequestInline(admin.StackedInline):
