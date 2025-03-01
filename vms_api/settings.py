@@ -15,30 +15,23 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-from decouple import config
+from decouple import config, Csv
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('DJANGO_SECRET_KEY')
-
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
-if DEBUG:
-    BASE_URL = 'http://127.0.0.1:8000'
-else:
-    BASE_URL = 'http://127.0.0.1:8000'
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
+HOST = config('HOST', cast=str)
 
-ALLOWED_HOSTS = [
-    "localhost", "127.0.0.1",
-    "192.168.226.83", "192.168.26.83",
-    "192.168.7.11", "192.168.71.83",
-    "192.168.56.1"
-]
+if DEBUG:
+    BASE_URL = "http://127.0.0.1:8000"
+else:
+    BASE_URL = f"https://{HOST}"
 
 LOGIN_URL = '/vms/login/'
-
 # Application definition
 INSTALLED_APPS = [
     'jazzmin',

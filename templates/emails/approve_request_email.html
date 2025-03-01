@@ -12,7 +12,7 @@
             <strong>Reference: {{ request_ref }}</strong>
         </p>
         <p>Please click the link below to log in and approve the request.</p>
-        <p><a href="http://192.168.56.1:8000/vms/approve_request/{{ request_ref }}/">Click here to approve the request</a></p>
+        <p><a href="{{ base_url }}/vms/approve_request/{{ request_ref }}/">Click here to approve the request</a></p>
         <p>You can also log in to the desktop app to approve the request.</p>
         <p>If you're not concerned with this email, please ignore it.</p>
         <br>
