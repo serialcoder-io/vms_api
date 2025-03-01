@@ -1,22 +1,87 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Approve Voucher Request - {{ request_ref }}</title>
-    </head>
-    <body>
-        <h2>Hello,</h2>
-        <p>
-            A new voucher request has been paid. <br>
-            <strong>Reference: {{ request_ref }}</strong>
-        </p>
-        <p>Please click the link below to log in and approve the request.</p>
-        <p><a href="{{ base_url }}/vms/approve_request/{{ request_ref }}/">Click here to approve the request</a></p>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approve Voucher Request - {{ request_ref }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+            line-height: 1.6;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 0;
+            border-radius: 8px 8px 0 0;
+        }
+        .header img {
+            max-width: 100px;
+            margin-bottom: 10px;
+        }
+        h2 {
+            color: #333;
+        }
+        p {
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        .cta-button {
+            display: inline-block;
+            padding: 12px 20px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .cta-button:hover {
+            background-color: #218838;
+        }
+        .footer {
+            text-align: center;
+            font-size: 14px;
+            color: #888;
+            margin-top: 30px;
+        }
+        .footer a {
+            color: #d0d0d0;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src={% static 'images/logo.png' %} alt="Company-logo">
+            <h2>{{ greeting }}</h2>
+        </div>
+        <p>A new voucher request has been paid.<br>
+        <strong>Reference: {{ request_ref }}</strong></p>
+        <p>Please click the link below to log in and approve the request:</p>
+        <p><a href="{{ base_url }}/vms/approve_request/{{ request_ref }}/" class="cta-button">Click here to approve the request</a></p>
         <p>You can also log in to the desktop app to approve the request.</p>
         <p>If you're not concerned with this email, please ignore it.</p>
-        <br>
-        <p>Best regards,</p>
-        <p>The Voucher Management Team</p>
-    </body>
+
+        <div class="footer">
+            <p>Best regards,<br>The Voucher Management Team</p>
+        </div>
+    </div>
+</body>
 </html>

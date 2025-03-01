@@ -1,5 +1,9 @@
 from django.contrib.auth.models import Group
 import logging
+
+from django.utils import timezone
+from django.utils.timezone import localtime
+
 logger = logging.getLogger(__name__)
 from .models import AuditTrail
 from datetime import datetime, date
@@ -49,7 +53,7 @@ def validate_and_format_date(date_input):
 
 def get_approvers_emails():
     try:
-        group, created = Group.objects.get(name='request_approver')
+        group = Group.objects.get(name='request_approver')  # Pas besoin de décomposer
         approvers = group.user_set.all()
         emails = [user.email for user in approvers]
         return emails if emails else []
@@ -70,14 +74,24 @@ def send_email_to_approvers(html_content, text_content):
         msg.send()
 
 
+def get_greeting():
+    current_hour = timezone.localtime(timezone.now()).hour
+    if 5 <= current_hour < 12:
+        return "Good Morning"
+    elif 12 <= current_hour < 18:
+        return "Good Afternoon"
+    else:
+        return "Good Evening"
+
+
 def notify_requests_approvers(request_ref):
     """ this function emails all voucher_requests approvers after a request has been paid"""
     text_content = render_to_string(
         "emails/approve_request_email.txt",
-        context={"request_ref": request_ref, "base_url": settings.BASE_URL},
+        context={"request_ref": request_ref, "base_url": settings.BASE_URL, "greeting": get_greeting()},
     )
     html_content = render_to_string(
         "emails/approve_request_email.html",
-        context={"request_ref": request_ref, "base_url": settings.BASE_URL}
+        context={"request_ref": request_ref, "base_url": settings.BASE_URL, "greeting": get_greeting()},
     )
     send_email_to_approvers(html_content, text_content)

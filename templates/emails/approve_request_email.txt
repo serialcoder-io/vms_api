@@ -1,4 +1,4 @@
-Hello,
+{{gretting}},
 
 A new voucher request has been paid.
 Reference: {{ request_ref }}
