@@ -1,4 +1,7 @@
 from typing import Optional, Dict, Any
+
+from drf_spectacular.utils import extend_schema_field
+
 from .utils import logs_audit_action, validate_and_format_date
 from django.contrib.auth.models import Group, Permission
 from rest_framework import serializers
@@ -199,6 +202,7 @@ class RedemptionSerializer(serializers.ModelSerializer):
         model = Redemption
         fields = ["id", "redeemed_on", "till_no", "redeemed_by", "redeemed_at", "voucher"]
 
+    @extend_schema_field(str)
     def get_redeemed_at(self, obj):
         # Access the related `shop` object and combine company_name and location
         return f"{obj.shop.company.company_name} {obj.shop.location}"
@@ -232,6 +236,7 @@ class VoucherSerializer(serializers.ModelSerializer):
         instance.refresh_from_db()
         return instance
 
+    @extend_schema_field(serializers.ListField(child=serializers.CharField()))
     def get_redemption(self, obj)-> Optional[Dict[str, Any]]:
         # Retrieve the redemption related to the voucher if available
         try:
@@ -314,6 +319,7 @@ class GroupCustomSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'permissions']
         read_only_fields = ['id']
 
+    @extend_schema_field(serializers.ListField(child=serializers.CharField()))
     def get_permissions(self, obj):
         return [permission.codename for permission in obj.user_permissions.all()]
 
