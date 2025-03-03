@@ -220,12 +220,13 @@ DJOSER = {
 }
 
 PASSWORD_RESET_TIMEOUT = config('PASSWORD_RESET_TIMEOUT', cast=int)
-SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', cast=int)
-SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', cast=bool)
-SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', cast=bool)
-CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', cast=bool)
-SECURE_HSTS_INCLUDE_SUBDOMAINS = config('SECURE_HSTS_INCLUDE_SUBDOMAINS', cast=bool)
-SECURE_HSTS_PRELOAD = config('SECURE_HSTS_PRELOAD', cast=bool)
+if not DEBUG:
+    SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', cast=int)
+    SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', cast=bool)
+    SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', cast=bool)
+    CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', cast=bool)
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = config('SECURE_HSTS_INCLUDE_SUBDOMAINS', cast=bool)
+    SECURE_HSTS_PRELOAD = config('SECURE_HSTS_PRELOAD', cast=bool)
 
 # DRF-SPECTACULAR SETUP
 PROJECT_DESCRIPTION = """
@@ -299,4 +300,23 @@ JAZZMIN_SETTINGS = {
     "login_title": "Welcome",
     "login_show_sidebar": False,
     "login_footer_text": "msul",
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': 'django_errors.log',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
 }

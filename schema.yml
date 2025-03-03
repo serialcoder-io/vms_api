@@ -56,7 +56,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: A unique integer value identifying this audit trails.
+        description: A unique integer value identifying this audit trail.
         required: true
       tags:
       - vms
@@ -77,7 +77,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: A unique integer value identifying this audit trails.
+        description: A unique integer value identifying this audit trail.
         required: true
       tags:
       - vms
@@ -109,7 +109,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: A unique integer value identifying this audit trails.
+        description: A unique integer value identifying this audit trail.
         required: true
       tags:
       - vms
@@ -141,7 +141,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: A unique integer value identifying this audit trails.
+        description: A unique integer value identifying this audit trail.
         required: true
       tags:
       - vms
@@ -252,7 +252,7 @@ paths:
   /vms/api/clients/add/:
     post:
       operationId: vms_api_clients_add_create
-      description: Add a new client
+      description: Add a new client and log the audit action
       tags:
       - vms
       requestBody:
@@ -2034,12 +2034,15 @@ components:
         table_name:
           type: string
           readOnly: true
+          nullable: true
         object_id:
           type: integer
           readOnly: true
+          nullable: true
         description:
           type: string
           readOnly: true
+          nullable: true
         executed_by:
           type: string
           readOnly: true
@@ -2177,7 +2180,7 @@ components:
         permissions:
           type: array
           items:
-            type: integer
+            $ref: '#/components/schemas/PermissionsList'
       required:
       - id
       - name
@@ -2309,12 +2312,15 @@ components:
         table_name:
           type: string
           readOnly: true
+          nullable: true
         object_id:
           type: integer
           readOnly: true
+          nullable: true
         description:
           type: string
           readOnly: true
+          nullable: true
         executed_by:
           type: string
           readOnly: true
@@ -2369,7 +2375,7 @@ components:
         permissions:
           type: array
           items:
-            type: integer
+            $ref: '#/components/schemas/PermissionsList'
     PatchedRedemption:
       type: object
       properties:
@@ -2459,10 +2465,10 @@ components:
         company:
           type: integer
           nullable: true
-        user_permissions_code_name:
+        permissions:
           type: string
           readOnly: true
-        groups_name:
+        user_groups:
           type: string
           readOnly: true
         groups:
@@ -2490,6 +2496,7 @@ components:
           type: string
           format: decimal
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
         voucher_request:
           type: integer
         date_time_created:
@@ -2498,6 +2505,7 @@ components:
         expiry_date:
           type: string
           format: date
+          nullable: true
         extention_date:
           type: string
           format: date
@@ -2505,9 +2513,9 @@ components:
         voucher_status:
           $ref: '#/components/schemas/VoucherStatusEnum'
         redemption:
-          type: object
-          additionalProperties: {}
-          nullable: true
+          type: array
+          items:
+            type: string
           readOnly: true
     PermissionsList:
       type: object
@@ -2739,10 +2747,10 @@ components:
         company:
           type: integer
           nullable: true
-        user_permissions_code_name:
+        permissions:
           type: string
           readOnly: true
-        groups_name:
+        user_groups:
           type: string
           readOnly: true
         groups:
@@ -2758,10 +2766,10 @@ components:
             writeOnly: true
           writeOnly: true
       required:
-      - groups_name
       - id
       - last_login
-      - user_permissions_code_name
+      - permissions
+      - user_groups
     UsernameResetConfirm:
       type: object
       properties:
@@ -2774,6 +2782,14 @@ components:
           maxLength: 150
       required:
       - new_username
+    ValidityTypeEnum:
+      enum:
+      - week
+      - month
+      type: string
+      description: |-
+        * `week` - Week
+        * `month` - Month
     Voucher:
       type: object
       properties:
@@ -2787,6 +2803,7 @@ components:
           type: string
           format: decimal
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
         voucher_request:
           type: integer
         date_time_created:
@@ -2795,6 +2812,7 @@ components:
         expiry_date:
           type: string
           format: date
+          nullable: true
         extention_date:
           type: string
           format: date
@@ -2802,13 +2820,11 @@ components:
         voucher_status:
           $ref: '#/components/schemas/VoucherStatusEnum'
         redemption:
-          type: object
-          additionalProperties: {}
-          nullable: true
+          type: array
+          items:
+            type: string
           readOnly: true
       required:
-      - amount
-      - expiry_date
       - id
       - redemption
       - voucher_request
@@ -2822,25 +2838,44 @@ components:
           type: string
           readOnly: true
           nullable: true
+        client:
+          type: integer
+          nullable: true
         request_status:
           $ref: '#/components/schemas/RequestStatusEnum'
+        amount:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
         date_time_recorded:
           type: string
           format: date-time
           readOnly: true
+        quantity_of_vouchers:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        validity_type:
+          allOf:
+          - $ref: '#/components/schemas/ValidityTypeEnum'
+          description: |-
+            Type of validity, either 'week' or 'month'
+
+            * `week` - Week
+            * `month` - Month
+        validity_periode:
+          type: integer
+          maximum: 12
+          minimum: -2147483648
+          nullable: true
+          description: Maximum validity period (1 to 12 months or weeks)
         date_time_approved:
           type: string
           format: date-time
           nullable: true
         approved_by:
           type: integer
-          nullable: true
-        quantity_of_vouchers:
-          type: integer
-          maximum: 2147483647
-          minimum: -2147483648
-        description:
-          type: string
           nullable: true
       required:
       - date_time_recorded
@@ -2856,8 +2891,6 @@ components:
           type: string
           readOnly: true
           nullable: true
-        request_status:
-          $ref: '#/components/schemas/RequestStatusEnum'
         date_time_recorded:
           type: string
           format: date-time
@@ -2866,13 +2899,31 @@ components:
           type: integer
           maximum: 2147483647
           minimum: -2147483648
-        description:
-          type: string
+        amount:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
           nullable: true
+        request_status:
+          $ref: '#/components/schemas/RequestStatusEnum'
         date_time_approved:
           type: string
           format: date-time
           nullable: true
+        validity_type:
+          allOf:
+          - $ref: '#/components/schemas/ValidityTypeEnum'
+          description: |-
+            Type of validity, either 'week' or 'month'
+
+            * `week` - Week
+            * `month` - Month
+        validity_periode:
+          type: integer
+          maximum: 12
+          minimum: -2147483648
+          nullable: true
+          description: Maximum validity period (1 to 12 months or weeks)
         recorded_by:
           type: integer
           nullable: true
