@@ -2,7 +2,7 @@ const baseUrl = 'https://vms-api-hg6f.onrender.com';
 
 async function resetPassword(newPassword, uid, token) {
     try {
-        const response = await fetch(`https://vms-api-hg6f.onrender.com/vms/auth/users/reset_password_confirm/`, {
+        const response = await fetch(`${baseUrl}/vms/auth/users/reset_password_confirm/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
