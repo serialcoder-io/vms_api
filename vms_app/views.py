@@ -624,7 +624,7 @@ def password_reset_confirm(request, uidb64, token):
     return render(request, 'reset_password_form.html', context)
 
 def password_reset_send_email(request):
-    url = "https://vms-api-hg6f.onrender.com/vms/auth/users/reset_password/"
+    url = "http://127.0.0.1:8000/vms/auth/users/reset_password/"
     if request.method == "POST":
         email = request.POST["email"]
         post_email = requests.post(url, {"email": email})

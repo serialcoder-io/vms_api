@@ -1,4 +1,4 @@
-const baseUrl = 'https://vms-api-hg6f.onrender.com';
+const baseUrl = 'http://127.0.0.1:8000';
 
 async function resetPassword(newPassword, uid, token) {
     try {
