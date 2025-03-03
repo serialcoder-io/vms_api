@@ -28,10 +28,8 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
 HOST = config('HOST', cast=str)
 
-if DEBUG:
-    BASE_URL = "http://127.0.0.1:8000"
-else:
-    BASE_URL = f"https://{HOST}"
+
+BASE_URL = f"https://{HOST}"
 
 LOGIN_URL = '/vms/login/'
 # Application definition
