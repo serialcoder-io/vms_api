@@ -302,7 +302,7 @@ JAZZMIN_SETTINGS = {
     "login_footer_text": "msul",
 }
 
-LOGGING = {
+"""LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
@@ -319,4 +319,4 @@ LOGGING = {
             'propagate': True,
         },
     },
-}
+}"""
