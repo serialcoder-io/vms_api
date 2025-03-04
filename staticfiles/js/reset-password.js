@@ -71,23 +71,20 @@ document.addEventListener("DOMContentLoaded", ()=>{
         }
         const uid = document.getElementById("uid").value;
         const token = document.getElementById("token").value;
-
         try {
-            spinner.classList.remove("d-none");
             const resetPwd = await resetPassword(passwordField.value.trim(), uid, token);
             if (resetPwd.detail) {
+                spinner.classList.add("d-none");
                 alert(resetPwd.detail);
             } else if (resetPwd.no_content === 204) {
                 window.location.replace(`${baseUrl}/vms/auth/reset_password_success`);
             } else {
+                spinner.classList.add("d-none");
                 alert("Sorry, something went wrong, please try again later.");
             }
         } catch (err) {
-            alert("Something went wrong, failed to reset password. Please try again later.");
-            console.error(err);
-        } finally {
-            // Cacher le spinner après la réponse (réussite ou échec)
             spinner.classList.add("d-none");
+            alert("Something went wrong, failed to reset password. Please try again later.");
         }
         [passwordField, confirmPasswordField].forEach((input) => {input.value = ""})
     })
@@ -106,7 +103,11 @@ document.addEventListener("DOMContentLoaded", ()=>{
  */
 function validatePassword(password, passwordConfirm) {
     const regExPwd = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const spinner = document.getElementById("spinner");
     if (!regExPwd.test(password.trim())) {
+        if(spinner){
+            spinner.classList.add("d-none");
+        }
         alert(
             "Password must be at least 8 characters long, including at least " +
             "1 uppercase letter, 1 lowercase letter, 1 digit, and 1 special character( @ $ ! % * ? & )"
@@ -114,8 +115,14 @@ function validatePassword(password, passwordConfirm) {
         return false;
     }
     if (password.trim() !== passwordConfirm.trim()) {
+        if (spinner){
+            spinner.classList.add("d-none");
+        }
         alert("Sorry, Passwords don't match!")
         return false;
+    }
+    if (spinner){
+        spinner.classList.remove("d-none");
     }
     return true;
 }
