@@ -76,13 +76,13 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
         const resetPwd = await resetPassword(passwordField.value.trim(), uid, token);
         if (resetPwd.detail) {
-            spinner.classList.remove("d-none");
+            spinner.classList.add("d-none");
             alert(resetPwd.detail);
         }else if(resetPwd.no_content === 204){
-            spinner.classList.remove("d-none");
+            spinner.classList.add("d-none");
             window.location.replace(`${baseUrl}/vms/auth/reset_password_success`);
         }else{
-            spinner.classList.remove("d-none");
+            spinner.classList.add("d-none");
             alert("Sorry something went wrong, please try again later.");
         }
         [passwordField, confirmPasswordField].forEach((input) => {input.value = ""})
