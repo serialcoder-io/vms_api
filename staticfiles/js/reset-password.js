@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
     const resetPwdForm = document.getElementById("reset-pwd-form")
     const passwordField = document.getElementById("password")
     const confirmPasswordField = document.getElementById("confirm-password")
-    const togglePasswordIcons = document.querySelectorAll("span");
+    const togglePasswordIcons = document.querySelectorAll(".pwd-icon");
     const spinner = document.getElementById("spinner");
 
     togglePasswordIcons.forEach(icon => {
@@ -104,8 +104,16 @@ document.addEventListener("DOMContentLoaded", ()=>{
 function validatePassword(password, passwordConfirm) {
     const regExPwd = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     const spinner = document.getElementById("spinner");
+    const passwordFieldEmpty = password.trim().length <= 0;
+    const passwordConfirmEmpty = password.trim().length <= 0;
+    if((!passwordConfirmEmpty || !passwordConfirmEmpty)){
+        if (spinner && !spinner.classList.contains("d-none")) {
+            spinner.classList.add("d-none");
+        }
+        return false;
+    }
     if (!regExPwd.test(password.trim())) {
-        if(spinner){
+        if (spinner && !spinner.classList.contains("d-none")) {
             spinner.classList.add("d-none");
         }
         alert(
@@ -115,7 +123,7 @@ function validatePassword(password, passwordConfirm) {
         return false;
     }
     if (password.trim() !== passwordConfirm.trim()) {
-        if (spinner){
+        if (spinner && !spinner.classList.contains("d-none")) {
             spinner.classList.add("d-none");
         }
         alert("Sorry, Passwords don't match!")
