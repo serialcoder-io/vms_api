@@ -1,10 +1,6 @@
 const baseUrl = 'https://vms-api-hg6f.onrender.com';
 
 async function resetPassword(newPassword, uid, token) {
-    const spinner = document.getElementById("spinner");
-    if (spinner){
-        spinner.classList.remove("d-none");
-    }
     try {
         const response = await fetch(`${baseUrl}/vms/auth/users/reset_password_confirm/`, {
             method: 'POST',
@@ -44,10 +40,6 @@ async function resetPassword(newPassword, uid, token) {
     } catch (err) {
         alert("Something went wrong, Failed to reset password. Please try again later.");
         console.error(err);
-    }finally {
-        if (spinner) {
-            spinner.classList.add("d-none");
-        }
     }
 }
 
@@ -57,6 +49,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
     const passwordField = document.getElementById("password")
     const confirmPasswordField = document.getElementById("confirm-password")
     const togglePasswordIcons = document.querySelectorAll("span");
+    const spinner = document.getElementById("spinner");
 
     togglePasswordIcons.forEach(icon => {
         icon.addEventListener("click", (e) => {
@@ -72,8 +65,10 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
     resetPwdForm.addEventListener("submit", async(event)=>{
         event.preventDefault()
+        spinner.classList.remove("d-none");
         const isPasswordValid = validatePassword(passwordField.value, confirmPasswordField.value)
         if (!isPasswordValid) {
+            spinner.classList.add("d-none");
             return
         }
         const uid = document.getElementById("uid").value;
@@ -81,11 +76,13 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
         const resetPwd = await resetPassword(passwordField.value.trim(), uid, token);
         if (resetPwd.detail) {
+            spinner.classList.remove("d-none");
             alert(resetPwd.detail);
         }else if(resetPwd.no_content === 204){
-            console.log(resetPwd.no_content);
+            spinner.classList.remove("d-none");
             window.location.replace(`${baseUrl}/vms/auth/reset_password_success`);
         }else{
+            spinner.classList.remove("d-none");
             alert("Sorry something went wrong, please try again later.");
         }
         [passwordField, confirmPasswordField].forEach((input) => {input.value = ""})
