@@ -24,7 +24,7 @@ async function resetPassword(newPassword, uid, token) {
             if (errorData.token) {
                 return {
                     detail: "The password reset link has either expired or is invalid. " +
-                        "send your emails address again to receive a new reset link.",
+                        "send your email address again to receive a new reset link.",
                     http_status: response.status
                 };
             } else if (errorData.uid) {
@@ -75,7 +75,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
         if (resetPwd.detail) {
             alert(resetPwd.detail);
         }else if(resetPwd.no_content === 204){
-            console.log(resetPwd.no_content);
             window.location.replace(`${baseUrl}/vms/auth/reset_password_success`);
         }else{
             alert("Sorry something went wrong, please try again later.");
