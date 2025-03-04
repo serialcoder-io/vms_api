@@ -8,6 +8,7 @@ from django.db import IntegrityError, DatabaseError
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.utils.timezone import localtime
+from django.views.decorators.csrf import csrf_exempt
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import (IsAdminUser, IsAuthenticated, AllowAny)
@@ -623,8 +624,9 @@ def password_reset_confirm(request, uidb64, token):
     context = {"uidb64": uidb64, "token": token}
     return render(request, 'reset_password_form.html', context)
 
+
 def password_reset_send_email(request):
-    url = "https://vms-api-hg6f.onrender.com/vms/auth/users/reset_password/"
+    """url = "https://vms-api-hg6f.onrender.com/vms/auth/users/reset_password/"
     if request.method == "POST":
         email = request.POST["email"]
         post_email = requests.post(url, {"email": email})
@@ -635,10 +637,9 @@ def password_reset_send_email(request):
         else:
             response = post_email.json()
             context = {"error_message": response[0]}
-            print(context)
             return render(request, "reset_password_send_email.html", context)
-    else:
-        return render(request, "reset_password_send_email.html")
+    else:"""
+    return render(request, "reset_password_send_email.html")
 
 
 def password_reset_success_view(request):
@@ -735,8 +736,3 @@ def logout_view(request):
 
 def test_pdf(request):
     return render(request, "voucher_pdf_template.html")
-
-"""
-@Todo: reset password in admin and login view for documentation
-@Approve coucher request in browser
-"""

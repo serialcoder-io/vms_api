@@ -51,7 +51,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    # 'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -177,7 +177,7 @@ CORS_ALLOW_HEADERS = (
 )
 
 CORS_ALLOW_ALL_ORIGINS = False
-# CORS_ALLOW_ORIGINS = []
+CORS_ALLOW_ORIGINS = ["http://127.0.0.1:8000", "http://localhost:8000", "https://vms-api-hg6f.onrender.com"]
 
 PASSWORD_RESET_TIMEOUT = config('PASSWORD_RESET_TIMEOUT', cast=int)
 SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', cast=int)
