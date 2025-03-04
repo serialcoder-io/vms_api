@@ -1,6 +1,10 @@
 const baseUrl = 'https://vms-api-hg6f.onrender.com';
 
 async function resetPassword(newPassword, uid, token) {
+    const spinner = document.getElementById("spinner");
+    if (spinner){
+        spinner.classList.remove("d-none");
+    }
     try {
         const response = await fetch(`${baseUrl}/vms/auth/users/reset_password_confirm/`, {
             method: 'POST',
@@ -40,6 +44,10 @@ async function resetPassword(newPassword, uid, token) {
     } catch (err) {
         alert("Something went wrong, Failed to reset password. Please try again later.");
         console.error(err);
+    }finally {
+        if (spinner) {
+            spinner.classList.add("d-none");
+        }
     }
 }
 

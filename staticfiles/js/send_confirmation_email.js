@@ -1,9 +1,12 @@
-  document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
     const form = document.querySelector("form");
+    const spinner = document.getElementById("spinner");
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const email = document.getElementById("email").value;
+        const emailField = document.getElementById("email");
+        const email = emailField.value;
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        spinner.classList.remove("d-none");
         try {
             const response = await fetch("https://vms-api-hg6f.onrender.com/vms/auth/users/reset_password/", {
                 method: 'POST',
@@ -28,6 +31,9 @@
         } catch (err) {
             alert("Something went wrong, failed to send confirmation email. Please try again later.");
             console.error(err);
+        }finally {
+            spinner.classList.add("d-none");
+            emailField.value = "";
         }
     });
 });
