@@ -106,7 +106,7 @@ function validatePassword(password, passwordConfirm) {
     const spinner = document.getElementById("spinner");
     const passwordFieldEmpty = password.trim().length <= 0;
     const passwordConfirmEmpty = password.trim().length <= 0;
-    if((!passwordConfirmEmpty || !passwordConfirmEmpty)){
+    if((passwordConfirmEmpty || passwordConfirmEmpty)){
         if (spinner && !spinner.classList.contains("d-none")) {
             spinner.classList.add("d-none");
         }
