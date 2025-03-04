@@ -68,22 +68,27 @@ document.addEventListener("DOMContentLoaded", ()=>{
         const isPasswordValid = validatePassword(passwordField.value, confirmPasswordField.value)
         spinner.classList.add("d-none");
         if (!isPasswordValid) {
-            spinner.classList.remove("d-none");
-            return
+            return;
         }
+        spinner.classList.remove("d-none");
         const uid = document.getElementById("uid").value;
         const token = document.getElementById("token").value;
 
-        const resetPwd = await resetPassword(passwordField.value.trim(), uid, token);
-        if (resetPwd.detail) {
+        try {
+            const resetPwd = await resetPassword(passwordField.value.trim(), uid, token);
+            if (resetPwd.detail) {
+                alert(resetPwd.detail);
+            } else if (resetPwd.no_content === 204) {
+                window.location.replace(`${baseUrl}/vms/auth/reset_password_success`);
+            } else {
+                alert("Sorry, something went wrong, please try again later.");
+            }
+        } catch (err) {
+            alert("Something went wrong, failed to reset password. Please try again later.");
+            console.error(err);
+        } finally {
+            // Cacher le spinner après la réponse (réussite ou échec)
             spinner.classList.add("d-none");
-            alert(resetPwd.detail);
-        }else if(resetPwd.no_content === 204){
-            spinner.classList.add("d-none");
-            window.location.replace(`${baseUrl}/vms/auth/reset_password_success`);
-        }else{
-            spinner.classList.add("d-none");
-            alert("Sorry something went wrong, please try again later.");
         }
         [passwordField, confirmPasswordField].forEach((input) => {input.value = ""})
     })
