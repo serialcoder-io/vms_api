@@ -65,11 +65,11 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
     resetPwdForm.addEventListener("submit", async(event)=>{
         event.preventDefault()
-        spinner.classList.remove("d-none");
         const isPasswordValid = validatePassword(passwordField.value, confirmPasswordField.value)
         if (!isPasswordValid) {
-            spinner.classList.add("d-none");
             return
+        }else{
+            spinner.classList.remove("d-none");
         }
         const uid = document.getElementById("uid").value;
         const token = document.getElementById("token").value;
