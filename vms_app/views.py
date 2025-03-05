@@ -658,13 +658,12 @@ def approve_request_view(request, request_ref):
     if request.method == "POST":
         validity_period = request.POST.get("validity_periode")
         validity_type = request.POST.get("validity_type")
-        print(validity_period)
-        print(validity_type)
         if validity_period and validity_type:
             try:
                 voucher_request.validity_period = validity_period
                 voucher_request.validity_type = validity_type
                 voucher_request.request_status = "approved"
+                voucher_request.approved_by = request.user
                 voucher_request.save()
                 return redirect("/vms/request_approved_success/")
             except Exception as e:
