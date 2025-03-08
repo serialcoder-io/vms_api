@@ -22,7 +22,7 @@ from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 
 urlpatterns = [
-    path('vms/msul-vms-adminsite/', admin.site.urls),
+    path('vms/vms-adminsite/', admin.site.urls),
     path('', include('vms_app.urls')),
     path('vms/auth/', include('djoser.urls')),
     path('vms/api/schema/', SpectacularAPIView.as_view(), name='schema'),
