@@ -116,13 +116,17 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 @permission_classes(IsAuthenticated)
-def get_current_user_perms(request):
-    user = request.user
-    user_perms = user.user_permissions.all().values_list('codename', flat=True)
-    return JsonResponse({
-        'current_user_permissions': list(user_perms),
-    })
-
+def get_user_perms(request, pk):
+    try:
+        user = User.objects.get(pk=pk)
+        user_perms = Permission.objects.filter(user=user).values_list('codename', flat=True)
+        group_perms = Permission.objects.filter(group__user=user).values_list('codename', flat=True)
+        all_perms = list(set(user_perms) | set(group_perms))  # Combine permissions
+        return JsonResponse({
+            'current_user_permissions': all_perms,
+        })
+    except User.DoesNotExist:
+        return JsonResponse({"detail": "user doesn't exist", }, status=404)
 
 class VoucherRequestListView(generics.ListAPIView):
     """
