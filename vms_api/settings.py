@@ -91,7 +91,7 @@ WSGI_APPLICATION = 'vms_api.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-"""
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -105,11 +105,10 @@ DATABASES = {
         },
     }
 }
-"""
-import dj_database_url
+"""import dj_database_url
 DATABASES = {
     'default': dj_database_url.parse(config('DATABASE_URL'))
-}
+}"""
 
 # user model
 AUTH_USER_MODEL = 'vms_app.User'
