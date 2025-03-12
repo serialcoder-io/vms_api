@@ -2,7 +2,6 @@ from django.contrib.auth.models import Group
 import logging
 
 from django.utils import timezone
-from django.utils.timezone import localtime
 
 logger = logging.getLogger(__name__)
 from .models import AuditTrail

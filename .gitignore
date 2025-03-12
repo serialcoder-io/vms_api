@@ -1,3 +1,9 @@
 .idea/
 .env
 .env.prod
+venv/
+.git
+__pycache__/
+*.pyc
+*.pyo
+django_errors.log

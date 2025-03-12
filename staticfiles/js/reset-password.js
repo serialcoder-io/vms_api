@@ -1,8 +1,8 @@
-const baseUrl = 'http://127.0.0.1:8000';
+const baseUrl = 'https://vms-api-hg6f.onrender.com';
 
 async function resetPassword(newPassword, uid, token) {
     try {
-        const response = await fetch(`http://127.0.0.1:8000/vms/auth/users/reset_password_confirm/`, {
+        const response = await fetch(`${baseUrl}/vms/auth/users/reset_password_confirm/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -48,7 +48,8 @@ document.addEventListener("DOMContentLoaded", ()=>{
     const resetPwdForm = document.getElementById("reset-pwd-form")
     const passwordField = document.getElementById("password")
     const confirmPasswordField = document.getElementById("confirm-password")
-    const togglePasswordIcons = document.querySelectorAll("span");
+    const togglePasswordIcons = document.querySelectorAll(".pwd-icon");
+    const spinner = document.getElementById("spinner");
 
     togglePasswordIcons.forEach(icon => {
         icon.addEventListener("click", (e) => {
@@ -66,19 +67,24 @@ document.addEventListener("DOMContentLoaded", ()=>{
         event.preventDefault()
         const isPasswordValid = validatePassword(passwordField.value, confirmPasswordField.value)
         if (!isPasswordValid) {
-            return
+            return;
         }
         const uid = document.getElementById("uid").value;
         const token = document.getElementById("token").value;
-
-        const resetPwd = await resetPassword(passwordField.value.trim(), uid, token);
-        if (resetPwd.detail) {
-            alert(resetPwd.detail);
-        }else if(resetPwd.no_content === 204){
-            console.log(resetPwd.no_content);
-            window.location.replace(`${baseUrl}/vms/auth/reset_password_success`);
-        }else{
-            alert("Sorry something went wrong, please try again later.");
+        try {
+            const resetPwd = await resetPassword(passwordField.value.trim(), uid, token);
+            if (resetPwd.detail) {
+                spinner.classList.add("d-none");
+                alert(resetPwd.detail);
+            } else if (resetPwd.no_content === 204) {
+                window.location.replace(`${baseUrl}/vms/auth/reset_password_success`);
+            } else {
+                spinner.classList.add("d-none");
+                alert("Sorry, something went wrong, please try again later.");
+            }
+        } catch (err) {
+            spinner.classList.add("d-none");
+            alert("Something went wrong, failed to reset password. Please try again later.");
         }
         [passwordField, confirmPasswordField].forEach((input) => {input.value = ""})
     })
@@ -97,7 +103,19 @@ document.addEventListener("DOMContentLoaded", ()=>{
  */
 function validatePassword(password, passwordConfirm) {
     const regExPwd = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const spinner = document.getElementById("spinner");
+    const passwordFieldEmpty = password.trim().length <= 0;
+    const passwordConfirmEmpty = password.trim().length <= 0;
+    if((passwordConfirmEmpty || passwordConfirmEmpty)){
+        if (spinner && !spinner.classList.contains("d-none")) {
+            spinner.classList.add("d-none");
+        }
+        return false;
+    }
     if (!regExPwd.test(password.trim())) {
+        if (spinner && !spinner.classList.contains("d-none")) {
+            spinner.classList.add("d-none");
+        }
         alert(
             "Password must be at least 8 characters long, including at least " +
             "1 uppercase letter, 1 lowercase letter, 1 digit, and 1 special character( @ $ ! % * ? & )"
@@ -105,8 +123,14 @@ function validatePassword(password, passwordConfirm) {
         return false;
     }
     if (password.trim() !== passwordConfirm.trim()) {
+        if (spinner && !spinner.classList.contains("d-none")) {
+            spinner.classList.add("d-none");
+        }
         alert("Sorry, Passwords don't match!")
         return false;
+    }
+    if (spinner){
+        spinner.classList.remove("d-none");
     }
     return true;
 }

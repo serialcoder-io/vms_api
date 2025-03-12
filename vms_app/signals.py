@@ -41,6 +41,9 @@ def update_voucher_expiry_and_status_after_request_approval(instance, **kwargs):
             queryset = Voucher.objects.filter(voucher_request=instance)
             queryset.update(expiry_date=vouchers_expiry_date, voucher_status="issued")
             instance.date_time_approved = timezone.now()
+        if old_status != 'rejected' and new_status == 'rejected':
+            queryset = Voucher.objects.filter(voucher_request=instance)
+            queryset.update(voucher_status="cancelled")
 
         if old_status == 'pending' and new_status == 'paid':
             """ 

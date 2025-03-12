@@ -1,13 +1,17 @@
 import json
 import requests
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group, Permission
 from django.db import IntegrityError, DatabaseError
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.utils.timezone import localtime
+from django.views.decorators.csrf import csrf_exempt
 from drf_spectacular.utils import extend_schema, OpenApiResponse
+from rest_framework.decorators import permission_classes
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import (IsAdminUser, IsAuthenticated, AllowAny)
 from rest_framework import ( filters, generics, viewsets, status)
@@ -110,6 +114,19 @@ class UserViewSet(viewsets.ModelViewSet):
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
+@permission_classes(IsAuthenticated)
+def get_user_perms(request, pk):
+    try:
+        user = User.objects.get(pk=pk)
+        user_perms = Permission.objects.filter(user=user).values_list('codename', flat=True)
+        group_perms = Permission.objects.filter(group__user=user).values_list('codename', flat=True)
+        all_perms = list(set(user_perms) | set(group_perms))  # Combine permissions
+        return JsonResponse({
+            'current_user_permissions': all_perms,
+        })
+    except User.DoesNotExist:
+        return JsonResponse({"detail": "user doesn't exist", }, status=404)
 
 class VoucherRequestListView(generics.ListAPIView):
     """
@@ -622,11 +639,12 @@ def password_reset_confirm(request, uidb64, token):
     context = {"uidb64": uidb64, "token": token}
     return render(request, 'reset_password_form.html', context)
 
-def password_reset_send_email(request):
 
+def password_reset_send_email(request):
+    """url = "https://vms-api-hg6f.onrender.com/vms/auth/users/reset_password/"
     if request.method == "POST":
         email = request.POST["email"]
-        post_email = requests.post('http://127.0.0.1:8000/vms/auth/users/reset_password/', {"email": email})
+        post_email = requests.post(url, {"email": email})
         status_code = post_email.status_code
         if status_code == 204:
             context = {"success_message": "We've sent you an email, please check your inbox"}
@@ -634,10 +652,9 @@ def password_reset_send_email(request):
         else:
             response = post_email.json()
             context = {"error_message": response[0]}
-            print(context)
             return render(request, "reset_password_send_email.html", context)
-    else:
-        return render(request, "reset_password_send_email.html")
+    else:"""
+    return render(request, "reset_password_send_email.html")
 
 
 def password_reset_success_view(request):
@@ -656,13 +673,12 @@ def approve_request_view(request, request_ref):
     if request.method == "POST":
         validity_period = request.POST.get("validity_periode")
         validity_type = request.POST.get("validity_type")
-        print(validity_period)
-        print(validity_type)
         if validity_period and validity_type:
             try:
                 voucher_request.validity_period = validity_period
                 voucher_request.validity_type = validity_type
                 voucher_request.request_status = "approved"
+                voucher_request.approved_by = request.user
                 voucher_request.save()
                 return redirect("/vms/request_approved_success/")
             except Exception as e:
@@ -734,8 +750,3 @@ def logout_view(request):
 
 def test_pdf(request):
     return render(request, "voucher_pdf_template.html")
-
-"""
-@Todo: reset password in admin and login view for documentation
-@Approve coucher request in browser
-"""

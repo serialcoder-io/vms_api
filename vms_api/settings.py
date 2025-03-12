@@ -13,6 +13,8 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+from django.contrib import staticfiles
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 from decouple import config, Csv
@@ -25,13 +27,9 @@ SECRET_KEY = config('DJANGO_SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
 HOST = config('HOST', cast=str)
-
-if DEBUG:
-    BASE_URL = "http://127.0.0.1:8000"
-else:
-    BASE_URL = f"https://{HOST}"
-
+BASE_URL = f"https://{HOST}"
 LOGIN_URL = '/vms/login/'
+
 # Application definition
 INSTALLED_APPS = [
     'jazzmin',
@@ -53,7 +51,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    # 'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -61,7 +59,14 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
+
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 ROOT_URLCONF = 'vms_api.urls'
 
@@ -86,7 +91,7 @@ WSGI_APPLICATION = 'vms_api.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
+"""
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -99,6 +104,11 @@ DATABASES = {
             'client_encoding': 'UTF8',
         },
     }
+}
+"""
+import dj_database_url
+DATABASES = {
+    'default': dj_database_url.parse(config('DATABASE_URL'))
 }
 
 # user model
@@ -139,7 +149,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
@@ -151,35 +161,11 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-# JWT SETUP
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-}
-
-SIMPLE_JWT = {
-    'ROTATE_REFRESH_TOKENS': True,
-    'ACCESS_TOKEN_LIFETIME': timedelta(days= config('ACCESS_TOKEN_LIFETIME', cast=int)),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=config('REFRESH_TOKEN_LIFETIME', cast=int)),
-    'BLACKLIST_AFTER_ROTATION': True,
-    "UPDATE_LAST_LOGIN": True,
-}
-
 # CORS SETUP
 CORS_ALLOW_METHODS = (
-    "DELETE",
-    "GET",
-    "OPTIONS",
-    "PATCH",
-    "POST",
-    "PUT",
+    "DELETE", "GET",
+    "OPTIONS", "PUT",
+    "POST","PATCH",
 )
 
 CORS_ALLOW_HEADERS = (
@@ -191,7 +177,48 @@ CORS_ALLOW_HEADERS = (
 )
 
 CORS_ALLOW_ALL_ORIGINS = False
-# CORS_ALLOW_ORIGINS = []
+CORS_ALLOW_ORIGINS = ["http://127.0.0.1:8000", "http://localhost:8000", "https://vms-api-hg6f.onrender.com"]
+
+PASSWORD_RESET_TIMEOUT = config('PASSWORD_RESET_TIMEOUT', cast=int)
+SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', cast=int)
+SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', cast=bool)
+SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', cast=bool)
+CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', cast=bool)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = config('SECURE_HSTS_INCLUDE_SUBDOMAINS', cast=bool)
+SECURE_HSTS_PRELOAD = config('SECURE_HSTS_PRELOAD', cast=bool)
+
+
+# EMAIL
+EMAIL_BACKEND = config('EMAIL_BACKEND')
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_PORT = config('EMAIL_PORT')
+EMAIL_USE_TLS = config('EMAIL_USE_TLS')
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+
+# JWT SETUP
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_RENDERER_CLASSES': [
+         'rest_framework.renderers.JSONRenderer',
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SIMPLE_JWT = {
+    'ROTATE_REFRESH_TOKENS': True,
+    'ACCESS_TOKEN_LIFETIME': timedelta(days= config('ACCESS_TOKEN_LIFETIME', cast=int)),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=config('REFRESH_TOKEN_LIFETIME', cast=int)),
+    'BLACKLIST_AFTER_ROTATION': True,
+    "UPDATE_LAST_LOGIN": True,
+}
 
 # DJOSER SETUP
 PASSWORD_RESET_CONFIRM_URL = 'vms/auth/reset_password/{uid}/{token}/'
@@ -207,15 +234,6 @@ DJOSER = {
     }
 }
 
-PASSWORD_RESET_TIMEOUT = config('PASSWORD_RESET_TIMEOUT', cast=int)
-if not DEBUG:
-    SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', cast=int)
-    SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', cast=bool)
-    SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', cast=bool)
-    CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', cast=bool)
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = config('SECURE_HSTS_INCLUDE_SUBDOMAINS', cast=bool)
-    SECURE_HSTS_PRELOAD = config('SECURE_HSTS_PRELOAD', cast=bool)
-
 # DRF-SPECTACULAR SETUP
 PROJECT_DESCRIPTION = """
     API for managing vouchers, including creation, generation, and status updates (paid, expired, redeemed). 
@@ -229,19 +247,6 @@ SPECTACULAR_SETTINGS = {
     'REDOC_DIST': 'SIDECAR',
     'SWAGGER_UI_DIST': 'SIDECAR'
 }
-
-# EMAIL
-if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-else:
-    EMAIL_BACKEND = config('EMAIL_BACKEND')
-    EMAIL_HOST = config('EMAIL_HOST')
-    EMAIL_PORT = config('EMAIL_PORT')
-    EMAIL_USE_TLS = config('EMAIL_USE_TLS')
-    EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-    DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
-
 
 # JAZZMIN
 JAZZMIN_UI_TWEAKS = {
