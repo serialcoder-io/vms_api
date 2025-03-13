@@ -572,6 +572,7 @@ class RedeemVoucherView(generics.GenericAPIView):
             redemption = {
                 "redeemed_on": voucher.redemption.redemption_date,
                 "redeemed_at": f"{voucher.redemption.shop.company.company_name} {voucher.redemption.shop.location}",
+                "till_no": voucher.redemption.till_no,
             }
             redemption_date = localtime(redemption["redeemed_on"])
             formatted_date = redemption_date.strftime('%d %b %Y, %H:%M')
