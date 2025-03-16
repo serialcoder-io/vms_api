@@ -126,7 +126,7 @@ class UserAdmin(admin.ModelAdmin):
     fieldsets = (
         ('profile', {
             'fields': (
-                'first_name', 'last_name', 'username', 'email', 'last_login')
+                'first_name', 'last_name', 'username', 'password' 'email', 'last_login')
         }),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'user_permissions', 'groups')}),
     )
