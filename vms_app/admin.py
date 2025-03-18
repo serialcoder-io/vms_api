@@ -5,7 +5,9 @@ from .models import (
     AuditTrail, Company,
     Redemption
 )
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from .utils import validate_and_format_date
+from django import forms
 
 class VoucherInline(admin.StackedInline):
     model = Voucher
@@ -117,16 +119,46 @@ class ClientAdmin(admin.ModelAdmin):
     list_per_page = 10
     inlines = [VoucherRequestInline]
 
+class CustomUserCreationForm(UserCreationForm):
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data["password"])  # Hachage du mot de passe
+        if commit:
+            user.save()
+        return user
+
+class CustomUserChangeForm(UserChangeForm):
+    # Champ mot de passe qui ne s'affiche pas (nécessaire même si pas modifié)
+    password = forms.CharField(widget=forms.PasswordInput, required=False)
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+
+        # Vérifier si le mot de passe est modifié et qu'il est en clair
+        if self.cleaned_data["password"]:
+            # Seulement si un mot de passe a été fourni (en clair), on le hache
+            user.set_password(self.cleaned_data["password"])
+
+        elif not self.cleaned_data["password"] and user.password != self.instance.password:
+            # Si le mot de passe n'a pas été modifié, on garde l'ancien mot de passe
+            user.password = self.instance.password
+
+        if commit:
+            user.save()
+        return user
 
 class UserAdmin(admin.ModelAdmin):
+    form = CustomUserChangeForm
+    add_form = CustomUserCreationForm 
+
     list_display = ['username', 'email']
     list_per_page = 10
     search_fields = ['username', 'email']
-    readonly_fields = ['id', 'password', 'last_login', 'date_joined']
+    readonly_fields = ['id', 'last_login', 'date_joined']
     fieldsets = (
         ('profile', {
             'fields': (
-                'first_name', 'last_name', 'username', 'email', 'last_login')
+                'first_name', 'last_name', 'username', 'password', 'email', 'last_login')
         }),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'user_permissions', 'groups')}),
     )

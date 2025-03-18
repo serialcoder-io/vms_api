@@ -1,6 +1,4 @@
 import json
-import requests
-from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group, Permission
@@ -9,7 +7,6 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.utils.timezone import localtime
-from django.views.decorators.csrf import csrf_exempt
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from rest_framework.decorators import permission_classes
 from rest_framework.exceptions import NotFound
@@ -572,6 +569,7 @@ class RedeemVoucherView(generics.GenericAPIView):
             redemption = {
                 "redeemed_on": voucher.redemption.redemption_date,
                 "redeemed_at": f"{voucher.redemption.shop.company.company_name} {voucher.redemption.shop.location}",
+                "till_no": voucher.redemption.till_no,
             }
             redemption_date = localtime(redemption["redeemed_on"])
             formatted_date = redemption_date.strftime('%d %b %Y, %H:%M')
