@@ -177,7 +177,7 @@ class RegisterUserSerializer(serializers.ModelSerializer):
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
-        fields = "__all__"
+        fields = ['id', 'company_name', 'prefix', 'logo']
 
 
 class ShopSerializer(serializers.ModelSerializer):
