@@ -50,6 +50,8 @@ class User(AbstractUser):
 
 
 class Client(models.Model):
+    company_name = models.CharField(max_length=80, blank=True, null=True)
+    company_address = models.CharField(max_length=150, blank=True, null=True)
     firstname = models.CharField(max_length=70)
     lastname = models.CharField(max_length=70)
     email = models.EmailField(max_length=50)

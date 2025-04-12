@@ -113,7 +113,7 @@ class VoucherRequestInline(admin.StackedInline):
     model = VoucherRequest
     extra = 1
 class ClientAdmin(admin.ModelAdmin):
-    list_display = ['firstname', 'lastname', 'email']
+    list_display = ['company_name', 'firstname', 'lastname', 'email']
     search_fields = ['email']
     readonly_fields = ['id']
     list_per_page = 10
@@ -122,25 +122,23 @@ class ClientAdmin(admin.ModelAdmin):
 class CustomUserCreationForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.set_password(self.cleaned_data["password"])  # Hachage du mot de passe
+        user.set_password(self.cleaned_data["password"])
         if commit:
             user.save()
         return user
 
 class CustomUserChangeForm(UserChangeForm):
-    # Champ mot de passe qui ne s'affiche pas (nécessaire même si pas modifié)
+    # hide password field on update(don't display current password hash)
     password = forms.CharField(widget=forms.PasswordInput, required=False)
 
     def save(self, commit=True):
         user = super().save(commit=False)
 
-        # Vérifier si le mot de passe est modifié et qu'il est en clair
+        #
         if self.cleaned_data["password"]:
-            # Seulement si un mot de passe a été fourni (en clair), on le hache
             user.set_password(self.cleaned_data["password"])
 
         elif not self.cleaned_data["password"] and user.password != self.instance.password:
-            # Si le mot de passe n'a pas été modifié, on garde l'ancien mot de passe
             user.password = self.instance.password
 
         if commit:

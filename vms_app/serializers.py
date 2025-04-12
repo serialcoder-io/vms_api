@@ -293,6 +293,8 @@ class ClientCrudSerializer(serializers.ModelSerializer):
         model = Client
         fields = [
             "id",
+            "company_name",
+            "company_address",
             "firstname",
             "lastname",
             "email",
