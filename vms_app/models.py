@@ -11,7 +11,7 @@ from rest_framework import serializers
 class Company(models.Model):
     company_name = models.CharField(max_length=70)
     prefix = models.CharField(max_length=3, blank=True, null=True)
-    logo = models.BinaryField(blank=True, null=True)  # <-- This stores PNG as bytea in PostgreSQL
+    company_logo = models.BinaryField(blank=True, null=True)  # <-- This stores PNG as bytea in PostgreSQL
 
     class Meta:
         ordering = ['company_name']
