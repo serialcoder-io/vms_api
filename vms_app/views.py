@@ -6,10 +6,12 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group, Permission
 from django.db import IntegrityError, DatabaseError
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.utils.timezone import localtime
 from drf_spectacular.utils import extend_schema, OpenApiResponse
+from rest_framework.decorators import permission_classes
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import (IsAdminUser, IsAuthenticated, AllowAny)
 from rest_framework import ( filters, generics, viewsets, status)
@@ -118,6 +120,20 @@ class UserViewSet(viewsets.ModelViewSet):
         # Proceed with deletion
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@permission_classes(IsAuthenticated)
+def get_user_perms(request, pk):
+    try:
+        user = User.objects.get(pk=pk)
+        user_perms = Permission.objects.filter(user=user).values_list('codename', flat=True)
+        group_perms = Permission.objects.filter(group__user=user).values_list('codename', flat=True)
+        all_perms = list(set(user_perms) | set(group_perms))  # Combine permissions
+        return JsonResponse({
+            'current_user_permissions': all_perms,
+        })
+    except User.DoesNotExist:
+        return JsonResponse({"detail": "user doesn't exist", }, status=404)
 
 
 class VoucherRequestListView(generics.ListAPIView):

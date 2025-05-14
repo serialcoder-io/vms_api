@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
+import csv
 import os
 from datetime import timedelta
 from pathlib import Path
@@ -24,10 +25,20 @@ from decouple import config, Csv
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('DJANGO_SECRET_KEY')
-DEBUG = False
-ALLOWED_HOSTS = ['postgresql-msul.alwaysdata.net', 'www.postgresql-msul.alwaysdata.net']
-HOST = config('HOST', cast=str)
-BASE_URL = config('BASE_URL', default="https://postgresql-msul.alwaysdata.net/vms/auth/users/reset_password/")
+DEBUG = config('DEBUG', cast=bool)
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
+
+if DEBUG:
+    'localhost'
+else:
+    HOST = config('HOST', cast=str)
+
+
+if DEBUG:
+    'http://127.0.0.1:8000'
+else:
+    BASE_URL = config('BASE_URL', default="https://msul.alwaysdata.net")
+
 LOGIN_URL = '/vms/login/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
