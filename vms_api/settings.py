@@ -106,16 +106,18 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'vms_api.wsgi.application'
 
-
+DB_NAME = 'vms' if DEBUG else config('DB_NAME')
+DB_USER = 'postgres' if DEBUG else config('DB_USER')
+DB_HOST = 'localhost' if DEBUG else config('DB_HOST')
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
+        'NAME': DB_NAME,
+        'USER': DB_USER,
         'PASSWORD': config('PASSWORD'),
-        'HOST': config('DB_HOST'),
+        'HOST': DB_HOST,
         'PORT': config('PORT'),
         'OPTIONS': {
             'client_encoding': 'UTF8',
