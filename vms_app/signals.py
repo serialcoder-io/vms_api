@@ -13,13 +13,13 @@ def create_vouchers(instance, created, **kwargs):
     if created:
         # Automatically generate vouchers after a voucher request has been registered.
         amount = instance.amount
-        for _ in range(instance.quantity_of_vouchers):
+        '''for _ in range(instance.quantity_of_vouchers):
             Voucher.objects.create(
                 voucher_request=instance,
                 amount=amount,
                 voucher_status='provisional',
             )
-
+'''
 
 @receiver(pre_save, sender=VoucherRequest)
 def update_voucher_expiry_and_status_after_request_approval(instance, **kwargs):
@@ -28,13 +28,8 @@ def update_voucher_expiry_and_status_after_request_approval(instance, **kwargs):
         old_instance = VoucherRequest.objects.get(pk=instance.pk)
         old_status = old_instance.request_status
         new_status = instance.request_status
-        validity_type = instance.validity_type
         validity_periode = int(instance.validity_periode)
-
-        if validity_type == "week":
-            vouchers_expiry_date = date.today() + timedelta(days=validity_periode * 7)
-        else:
-            vouchers_expiry_date = date.today() + timedelta(days=validity_periode * 30)
+        vouchers_expiry_date = date.today() + timedelta(days=validity_periode * 30)
 
         # Si le statut passe de 'paid' à 'approved', on met à jour les vouchers
         if old_status == 'paid' and new_status == 'approved':

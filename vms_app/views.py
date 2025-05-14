@@ -1,3 +1,4 @@
+import base64
 import json
 import requests
 from django.conf import settings
@@ -14,6 +15,13 @@ from rest_framework.permissions import (IsAdminUser, IsAuthenticated, AllowAny)
 from rest_framework import ( filters, generics, viewsets, status)
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
+from django.core.files.uploadedfile import UploadedFile
+
+from rest_framework.generics import ListCreateAPIView
+from .models import VoucherRequest
+from .serializers import VoucherRequestCrudSerializer
+import logging
+logger = logging.getLogger(__name__)
 
 from .utils import logs_audit_action
 from .permissions import (
@@ -163,67 +171,91 @@ class VoucherRequestCrudView(generics.GenericAPIView):
             401: OpenApiResponse(description="Non authorize(not authenticated)"),
         }
     )
+
+
     def put(self, request, *args, **kwargs):
         pending_status = VoucherRequest.RequestStatus.PENDING
         approved_status = VoucherRequest.RequestStatus.APPROVED
         paid_status = VoucherRequest.RequestStatus.PAID
         rejected_status = VoucherRequest.RequestStatus.REJECTED
+
         voucher_request = self.get_object()
+
         serializer = self.get_serializer(voucher_request, data=request.data, partial=True)
+
         if serializer.is_valid():
-            new_request_status = serializer.validated_data.get('request_status')
+            validated_data = serializer.validated_data
+
+            # ✅ Remove invalid or memoryview files before save
+            for field in ["request_doc_pdf", "pop_doc_pdf"]:
+                if field in validated_data:
+                    file_candidate = validated_data[field]
+                    if not isinstance(file_candidate, UploadedFile):
+                        validated_data.pop(field)
+
+            new_request_status = validated_data.get('request_status')
             current_status = voucher_request.request_status
-            connot_be_modified = (current_status == approved_status or current_status == rejected_status or
-                  (current_status == paid_status and new_request_status  == pending_status) )
+
+            cannot_be_modified = (
+                    current_status == approved_status or
+                    current_status == rejected_status or
+                    (current_status == paid_status and new_request_status == pending_status)
+            )
+
             try:
                 if current_status == paid_status and new_request_status == approved_status:
-                    # If the request is approved, set the approval timestamp and
-                    # associate the action with the approving user
-                    serializer.validated_data["date_time_approved"] = timezone.now()
-                    serializer.validated_data["approved_by"] = request.user
+                    validated_data["date_time_approved"] = timezone.now()
+                    validated_data["approved_by"] = request.user
                     description = f"Approved voucher_request: {voucher_request.request_ref}."
-                    # log audit after approved the request
                     logs_audit_action(
                         voucher_request,
                         AuditTrail.AuditTrailsAction.UPDATE,
                         description, request.user
                     )
+
                 elif current_status == pending_status and new_request_status == approved_status:
                     return Response(
                         {
-                            "detail": f"The request must be in 'Paid' status before it can be approved."
+                            "detail": "The request must be in 'Paid' status before it can be approved."
                         },
                         status=status.HTTP_400_BAD_REQUEST
                     )
-                elif connot_be_modified:
-                    # Prevent changing the status if the voucher request is already approved/rejected
+
+                elif cannot_be_modified:
                     return Response(
                         {
                             "detail": f"This voucher request is already {voucher_request.request_status}. You cannot modify it."
                         },
                         status=status.HTTP_400_BAD_REQUEST
                     )
+
             except IntegrityError:
-                # Handle integrity issues, such as foreign key constraints or unique constraints
                 return Response(
                     {"detail": "There was a data integrity issue."},
                     status=status.HTTP_400_BAD_REQUEST
                 )
+
             except DatabaseError:
-                # Handle general database issues, such as connection problems
                 return Response(
                     {"detail": "A database error occurred."},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
+
             except Exception as e:
-                # Catch all other unexpected errors
                 return Response(
                     {"detail": f"An unexpected error occurred: {str(e)}"},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
 
-            # Save changes and return the updated data
-            serializer.save()
+            if hasattr(voucher_request, "request_doc_pdf") and isinstance(voucher_request.request_doc_pdf, memoryview):
+                voucher_request.request_doc_pdf = None
+
+            if hasattr(voucher_request, "pop_doc_pdf") and isinstance(voucher_request.pop_doc_pdf, memoryview):
+                voucher_request.pop_doc_pdf = None
+
+            # ✅ Use validated_data directly to update and bypass bad file input
+            serializer.update(voucher_request, validated_data)
+
             if current_status != new_request_status:
                 description = (
                     f"change voucher request {voucher_request.request_ref} from "
@@ -234,8 +266,9 @@ class VoucherRequestCrudView(generics.GenericAPIView):
                     AuditTrail.AuditTrailsAction.UPDATE,
                     description, request.user
                 )
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        # Return validation errors if the serializer is invalid
+
+            return Response(self.serializer_class(voucher_request).data, status=status.HTTP_200_OK)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, *args, **kwargs):
@@ -250,6 +283,9 @@ class VoucherRequestCrudView(generics.GenericAPIView):
         voucher_request.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+def flatten_querydict(querydict):
+    return {k: v[0] if isinstance(v, list) else v for k, v in querydict.lists()}
+
 
 class VoucherRequestCreateView(generics.CreateAPIView):
     queryset = VoucherRequest.objects.all()
@@ -258,15 +294,26 @@ class VoucherRequestCreateView(generics.CreateAPIView):
         IsAuthenticated,
         CustomDjangoModelPermissions
     ]
+
     def post(self, request, *args, **kwargs):
-        """
-        Create a new VoucherRequest
-        """
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            self.perform_create(serializer)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            data = flatten_querydict(request.data)
+            files = {k: request.FILES.getlist(k)[0] for k in request.FILES}
+            serializer = self.get_serializer(data={**data, **files})
+
+            if serializer.is_valid():
+                try:
+                    self.perform_create(serializer)
+                except Exception as e:
+                    import traceback
+                    traceback.print_exc()
+                    return Response({"detail": f"Storage error: {str(e)}"}, status=500)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
 
     def perform_create(self, serializer):
         """
@@ -337,7 +384,7 @@ class ClientCRUDView(generics.GenericAPIView):
 
     def delete(self, request, *args, **kwargs):
         client = self.get_object()
-        description = f"Deleted client: 'fullname: ' {client.firstname} {client.lastname}'; email: ' {client.email}'"
+        description = f"Deleted client: 'fullname: ' {client.clientname} {client.lastname}'; email: ' {client.email}'"
         authenticated_user = request.user
 
         # Log the audit action before deletion
@@ -371,7 +418,7 @@ class ClientCreateView(generics.CreateAPIView):
             client = serializer.instance
 
             # Description for the audit log
-            description = f"Added new client: fullname: {client.firstname} {client.lastname};\n email: {client.email}"
+            description = f"Added new client: fullname: {client.clientname};\n email: {client.email}"
 
             # Log the audit action
             logs_audit_action(client, AuditTrail.AuditTrailsAction.ADD, description, authenticated_user)
@@ -419,38 +466,21 @@ class VoucherViewSet(viewsets.ModelViewSet):
         # Optionally, if you want to handle any post-deletion actions
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
-
 class CompanyViewSet(viewsets.ModelViewSet):
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
+    permission_classes = [IsAuthenticated, CustomDjangoModelPermissions]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ['company_name']
-    permission_classes = [
-        IsAuthenticated,
-        CustomDjangoModelPermissions
-    ]
 
-    def get_permissions(self):
-        if self.request.method == 'GET':
-            return [AllowAny()]
-        return super().get_permissions()
-
-    def create(self, request, *args, **kwargs):
-        response = super().create(request, *args, **kwargs)
-        company = Company.objects.get(pk=response.data['id'])  # Récupérer l'objet créé à partir de la réponse
-        description = f"Added new company: '{company.company_name}'"
-        authenticated_user = request.user
-
-        # Log the audit action for creation
+    def perform_create(self, serializer):
+        company = serializer.save()
         logs_audit_action(
             instance=company,
             action=AuditTrail.AuditTrailsAction.ADD,
-            description=description,
-            user=authenticated_user
+            description=f"Added new company: '{company.company_name}'",
+            user=self.request.user
         )
-
-        return response
 
     def update(self, request, *args, **kwargs):
         company_before_update = self.get_object()

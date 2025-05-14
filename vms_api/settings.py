@@ -24,11 +24,24 @@ from decouple import config, Csv
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('DJANGO_SECRET_KEY')
-DEBUG = config('DEBUG', default=False, cast=bool)
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
+DEBUG = False
+ALLOWED_HOSTS = ['postgresql-msul.alwaysdata.net', 'www.postgresql-msul.alwaysdata.net']
 HOST = config('HOST', cast=str)
-BASE_URL = "http://127.0.0.1:8000/vms/auth/users/reset_password/"
+BASE_URL = config('BASE_URL', default="https://postgresql-msul.alwaysdata.net/vms/auth/users/reset_password/")
 LOGIN_URL = '/vms/login/'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "OPTIONS": {
+            "location": MEDIA_ROOT,
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
 
 # Application definition
 INSTALLED_APPS = [
@@ -61,12 +74,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
-
-STORAGES = {
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
 
 ROOT_URLCONF = 'vms_api.urls'
 

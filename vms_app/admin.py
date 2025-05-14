@@ -111,7 +111,7 @@ class VoucherRequestInline(admin.StackedInline):
     model = VoucherRequest
     extra = 1
 class ClientAdmin(admin.ModelAdmin):
-    list_display = ['firstname', 'lastname', 'email']
+    list_display = ['clientname', 'contact', 'email']
     search_fields = ['email']
     readonly_fields = ['id']
     list_per_page = 10
