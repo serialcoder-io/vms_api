@@ -5,9 +5,7 @@ from .models import (
     AuditTrail, Company,
     Redemption
 )
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from .utils import validate_and_format_date
-from django import forms
 
 class VoucherInline(admin.StackedInline):
     model = Voucher
@@ -113,50 +111,22 @@ class VoucherRequestInline(admin.StackedInline):
     model = VoucherRequest
     extra = 1
 class ClientAdmin(admin.ModelAdmin):
-    list_display = ['company_name', 'firstname', 'lastname', 'email']
+    list_display = ['clientname', 'contact', 'email']
     search_fields = ['email']
     readonly_fields = ['id']
     list_per_page = 10
     inlines = [VoucherRequestInline]
 
-class CustomUserCreationForm(UserCreationForm):
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        user.set_password(self.cleaned_data["password"])
-        if commit:
-            user.save()
-        return user
-
-class CustomUserChangeForm(UserChangeForm):
-    # hide password field on update(don't display current password hash)
-    password = forms.CharField(widget=forms.PasswordInput, required=False)
-
-    def save(self, commit=True):
-        user = super().save(commit=False)
-
-        #
-        if self.cleaned_data["password"]:
-            user.set_password(self.cleaned_data["password"])
-
-        elif not self.cleaned_data["password"] and user.password != self.instance.password:
-            user.password = self.instance.password
-
-        if commit:
-            user.save()
-        return user
 
 class UserAdmin(admin.ModelAdmin):
-    form = CustomUserChangeForm
-    add_form = CustomUserCreationForm 
-
     list_display = ['username', 'email']
     list_per_page = 10
     search_fields = ['username', 'email']
-    readonly_fields = ['id', 'last_login', 'date_joined']
+    readonly_fields = ['id', 'password', 'last_login', 'date_joined']
     fieldsets = (
         ('profile', {
             'fields': (
-                'first_name', 'last_name', 'username', 'password', 'email', 'last_login')
+                'first_name', 'last_name', 'username', 'email')
         }),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'user_permissions', 'groups')}),
     )

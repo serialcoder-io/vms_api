@@ -1,4 +1,9 @@
+import base64
 from typing import Optional, Dict, Any
+from urllib.parse import urljoin
+from django.conf import settings
+from django.core.files.uploadedfile import UploadedFile
+from django.db import IntegrityError
 
 from drf_spectacular.utils import extend_schema_field
 
@@ -175,9 +180,45 @@ class RegisterUserSerializer(serializers.ModelSerializer):
 
 
 class CompanySerializer(serializers.ModelSerializer):
+    prefix = serializers.CharField(required=False)
+    logo = serializers.SerializerMethodField()
+
     class Meta:
         model = Company
         fields = ['id', 'company_name', 'prefix', 'logo']
+
+    def get_logo(self, obj):
+        try:
+            if obj.company_logo:
+                return base64.b64encode(obj.company_logo).decode('utf-8')
+        except Exception as e:
+            # Log error and continue gracefully
+            print(f"[Error] Invalid logo encoding for Company {obj.id}: {e}")
+        return None
+
+    def create(self, validated_data):
+        logo_b64 = self.initial_data.get('logo')
+        if logo_b64:
+            try:
+                validated_data["company_logo"] = base64.b64decode(logo_b64)
+            except Exception:
+                raise serializers.ValidationError({"logo": "Invalid Base64 string for logo."})
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        logo_b64 = self.initial_data.get('logo')
+        if logo_b64:
+            try:
+                instance.company_logo = base64.b64decode(logo_b64)
+            except Exception:
+                raise serializers.ValidationError({"logo": "Invalid Base64 string for logo."})
+
+        instance.company_name = validated_data.get('company_name', instance.company_name)
+        instance.prefix = validated_data.get('prefix', instance.prefix)
+
+        instance.save()
+        return instance
+
 
 
 class ShopSerializer(serializers.ModelSerializer):
@@ -255,54 +296,98 @@ class VoucherRequestListSerializer(serializers.ModelSerializer):
 
 
 class VoucherRequestCrudSerializer(serializers.ModelSerializer):
+    request_doc_pdf = serializers.FileField(required=False)
+    request_doc_pdf_url = serializers.SerializerMethodField()
+    pop_doc_pdf = serializers.FileField(required=False, allow_null=True)
+    payment_remarks = serializers.CharField(required=False, allow_blank=True)
+    date_time_paid = serializers.DateTimeField(required=False)
+
     class Meta:
         model = VoucherRequest
         fields = [
-              "id", "request_ref", "client",
-              "request_status", "amount",
-              "date_time_recorded",
-              "quantity_of_vouchers",
-              "validity_type", "validity_periode",
-              "date_time_approved",
-              "approved_by",
-            ]
+            "id", "request_ref", "client", "company",  # <- ADD company
+            "request_status", "amount",
+            "date_time_recorded", "quantity_of_vouchers",
+            "validity_periode", "date_time_approved", "approved_by",
+            "request_doc_pdf", "request_doc_pdf_url",
+            "pop_doc_pdf", "payment_remarks", "date_time_paid",
+        ]
         read_only_fields = ['date_time_recorded', 'request_ref', 'id']
 
-    def create(self, validated_data):
-        # Ensure the instance is updated with the correct database values after creation
-        validated_data["request_status"] = "pending"
-        instance = super().create(validated_data)
-        instance.refresh_from_db()
-        return instance
+    def get_request_doc_pdf_url(self, obj):
+        if obj.request_doc_pdf and hasattr(obj.request_doc_pdf, 'url'):
+            base_url = getattr(settings, "BASE_URL", "http://localhost:8000")
+            return urljoin(base_url, obj.request_doc_pdf.url)
+        return None
 
+    def create(self, validated_data):
+        try:
+            # Ensure the instance is updated with the correct database values after creation
+            validated_data["request_status"] = "pending"
+            instance = super().create(validated_data)
+            # Create provisional vouchers
+            quantity = validated_data.get('quantity_of_vouchers', 0)
+            for i in range(quantity):
+                Voucher.objects.create(
+                    voucher_request=instance,
+                    voucher_status=Voucher.VoucherStatus.PROVISIONAL,
+                    amount=instance.amount
+                )
+
+            instance.refresh_from_db()
+            return instance
+        except IntegrityError as e:
+            raise serializers.ValidationError({"detail": f"Database integrity error: {str(e)}"})
+
+
+    def update(self, instance, validated_data):
+        # 🛡️ Defensive check to prevent saving a memoryview
+        file = validated_data.get("request_doc_pdf")
+        if file and not isinstance(file, UploadedFile):
+            validated_data.pop("request_doc_pdf")
+
+        return super().update(instance, validated_data)
 
 class ClientListSerializer(serializers.ModelSerializer):
     """serializer for client list"""
     class Meta:
         model = Client
-        fields = "__all__"
+        fields = ['id', 'clientname', 'email', 'contact', 'brn', 'vat', 'nic', 'iscompany', 'logo']
         read_only_fields = ['id']
 
+    def get_logo(self, obj):
+        if obj.logo:
+            return base64.b64encode(obj.logo).decode('utf-8')
+        return ""
 
 class ClientCrudSerializer(serializers.ModelSerializer):
-    """serializer for client crud"""
-    # client requests
     client_voucher_requests = VoucherRequestListSerializer(many=True, read_only=True)
 
     class Meta:
         model = Client
         fields = [
-            "id",
-            "company_name",
-            "company_address",
-            "firstname",
-            "lastname",
-            "email",
-            "contact",
-            "logo",
-            "client_voucher_requests"
+            "id", "iscompany", "clientname", "vat", "brn", "nic",
+            "email", "contact", "logo", "client_voucher_requests"
         ]
         read_only_fields = ['id']
+
+    def create(self, validated_data):
+        logo_b64 = self.initial_data.get('logo')
+        if logo_b64:
+            try:
+                validated_data['logo'] = base64.b64decode(logo_b64)
+            except Exception:
+                raise serializers.ValidationError({'logo': 'Invalid Base64 string'})
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        logo_b64 = self.initial_data.get('logo')
+        if logo_b64:
+            try:
+                validated_data['logo'] = base64.b64decode(logo_b64)
+            except Exception:
+                raise serializers.ValidationError({'logo': 'Invalid Base64 string'})
+        return super().update(instance, validated_data)
 
 
 class PermissionsListSerializer(serializers.ModelSerializer):

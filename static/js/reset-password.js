@@ -1,4 +1,4 @@
-const baseUrl = 'https://vms-api-hg6f.onrender.com';
+const baseUrl = 'http://127.0.0.1:8000';
 
 async function resetPassword(newPassword, uid, token) {
     try {
@@ -24,7 +24,7 @@ async function resetPassword(newPassword, uid, token) {
             if (errorData.token) {
                 return {
                     detail: "The password reset link has either expired or is invalid. " +
-                        "send your emails address again to receive a new reset link.",
+                        "send your email address again to receive a new reset link.",
                     http_status: response.status
                 };
             } else if (errorData.uid) {
@@ -71,6 +71,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
         }
         const uid = document.getElementById("uid").value;
         const token = document.getElementById("token").value;
+<<<<<<< HEAD
         try {
             const resetPwd = await resetPassword(passwordField.value.trim(), uid, token);
             if (resetPwd.detail) {
@@ -85,6 +86,16 @@ document.addEventListener("DOMContentLoaded", ()=>{
         } catch (err) {
             spinner.classList.add("d-none");
             alert("Something went wrong, failed to reset password. Please try again later.");
+=======
+
+        const resetPwd = await resetPassword(passwordField.value.trim(), uid, token);
+        if (resetPwd.detail) {
+            alert(resetPwd.detail);
+        }else if(resetPwd.no_content === 204){
+            window.location.replace(`${baseUrl}/vms/auth/reset_password_success`);
+        }else{
+            alert("Sorry something went wrong, please try again later.");
+>>>>>>> dev
         }
         [passwordField, confirmPasswordField].forEach((input) => {input.value = ""})
     })

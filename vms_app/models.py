@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.core.validators import MaxValueValidator
-from django.db import models, transaction
+from django.db import models, transaction, IntegrityError
 from django.utils import timezone
 from django.utils.timezone import localtime
 from drf_spectacular.utils import extend_schema_field
@@ -10,8 +10,13 @@ from rest_framework import serializers
 
 class Company(models.Model):
     company_name = models.CharField(max_length=70)
-    prefix = models.CharField(max_length=3, blank=True, null=True)
-    company_logo = models.BinaryField(blank=True, null=True)  # <-- This stores PNG as bytea in PostgreSQL
+    prefix = models.CharField(max_length=3, blank=True, null=True )
+    company_logo = models.BinaryField(blank=True, null=True)
+    vat = models.CharField(max_length=8, blank=True, null=True)
+    brn = models.CharField(max_length=9, blank=True, null=True)
+    address = models.CharField(max_length=100, blank=True, null=True)
+    tel = models.CharField(max_length=8, blank=True, null=True)
+
 
     class Meta:
         ordering = ['company_name']
@@ -45,24 +50,27 @@ class User(AbstractUser):
         null=True
     )
 
+    signature = models.BinaryField(blank=True, null=True)
+
     def __str__(self):
         return self.username
 
 
 class Client(models.Model):
-    company_name = models.CharField(max_length=80, blank=True, null=True)
-    company_address = models.CharField(max_length=150, blank=True, null=True)
-    firstname = models.CharField(max_length=70)
-    lastname = models.CharField(max_length=70)
+    iscompany = models.BooleanField(default=True)
+    clientname = models.CharField(max_length=70)
+    vat = models.CharField(max_length=8)
+    brn = models.CharField(max_length=9)
+    nic = models.CharField(max_length=14, blank=True, null=True)
     email = models.EmailField(max_length=50)
-    contact = models.CharField(max_length=20)
-    logo = models.URLField(max_length=255, blank=True, null=True)
+    contact = models.CharField(max_length=70)
+    logo = models.BinaryField(blank=True, null=True)
 
     class Meta:
-        ordering = ['lastname', 'firstname']
+        ordering = ['clientname']
 
     def __str__(self):
-        return f"{self.firstname} {self.lastname}"
+        return f"{self.clientname}"
 
 
 class VoucherRequest(models.Model):
@@ -71,10 +79,6 @@ class VoucherRequest(models.Model):
         PAID = 'paid', 'Paid'
         APPROVED = 'approved', 'Approved'
         REJECTED = 'rejected', 'Rejected'
-
-    class ValidityType(models.TextChoices):
-        WEEK = 'week', 'Week'
-        MONTH = 'month', 'Month'
 
     class Meta:
         ordering = ['request_ref']
@@ -90,6 +94,17 @@ class VoucherRequest(models.Model):
     amount = models.IntegerField(null=True, blank=True)
     request_status = models.CharField(max_length=20, choices=RequestStatus.choices, default=RequestStatus.PENDING)
     date_time_approved = models.DateTimeField(null=True, blank=True)
+    request_doc_pdf = models.FileField(
+        upload_to='voucher_requests/doc/',
+        null=True,
+        blank=True,
+        help_text='PDF of email received from the initiating client'
+    )
+    pop_doc_pdf = models.FileField(upload_to='voucher_requests/pop/', null=True, blank=True,
+                                   help_text='PDF of PoP received from the client')
+    payment_remarks = models.TextField(null=True, blank=True)
+    date_time_paid = models.DateTimeField(null=True, blank=True)
+
     recorded_by = models.ForeignKey(
         User, on_delete=models.CASCADE,
         related_name='user_voucher_requests', null=True, blank=True
@@ -100,24 +115,61 @@ class VoucherRequest(models.Model):
     )
 
     client = models.ForeignKey(
-        Client, on_delete=models.CASCADE, null=True, blank=True,
+        'Client', on_delete=models.CASCADE, null=True, blank=True,
         related_name='client_voucher_requests'
     )
 
-    validity_type = models.CharField(
-        max_length=5,
-        choices=ValidityType.choices,
-        default=ValidityType.WEEK,
-        help_text="Type of validity, either 'week' or 'month'"
+    company = models.ForeignKey(
+        'Company', on_delete=models.CASCADE, null=True, blank=True,
+        related_name='voucher_requests'
     )
+
     validity_periode = models.IntegerField(
         validators=[MaxValueValidator(12)],
         null=True, blank=True, default=1,
-        help_text="Maximum validity period (1 to 12 months or weeks)"
+        help_text="Validity period in months from the date of approval (1 to 12 months)"
     )
 
+
+    def save(self, *args, **kwargs):
+        if not self.request_ref and self.company:
+            for _ in range(5):  # Retry 5 times if duplicate error occurs
+                self.request_ref = self.generate_request_ref()
+                try:
+                    super().save(*args, **kwargs)
+                    return
+                except IntegrityError as e:
+                    if 'duplicate key value violates unique constraint' in str(e):
+                        continue  # Try again with a new sequence
+                    else:
+                        raise
+            raise IntegrityError("Failed to generate a unique request_ref after multiple attempts.")
+        else:
+            super().save(*args, **kwargs)
+
+    def generate_request_ref(self):
+        year_suffix = timezone.now().strftime('%y')
+        company_prefix = self.company.prefix.upper()
+
+        # Get all refs from the current year (regardless of company)
+        year_start = timezone.now().replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+        all_refs = VoucherRequest.objects.filter(
+            date_time_recorded__gte=year_start
+        ).values_list('request_ref', flat=True)
+
+        sequence = 1
+        for ref in sorted(all_refs, reverse=True):
+            try:
+                parts = ref.split('-')
+                if len(parts) == 4 and parts[2] == year_suffix:
+                    sequence = int(parts[3].replace('#', '')) + 1
+                    break
+            except Exception:
+                continue
+
+        return f"VRQ-{company_prefix}-{year_suffix}-#{sequence}"
+
     def clean(self):
-        # retrieve request_status before update
         if self.pk:
             old_status = VoucherRequest.objects.get(pk=self.pk).request_status
 
@@ -132,7 +184,6 @@ class VoucherRequest(models.Model):
 
     def __str__(self):
         return f"Voucher Request ref: {self.request_ref}"
-
 
 class Voucher(models.Model):
     class VoucherStatus(models.TextChoices):
@@ -179,6 +230,35 @@ class Voucher(models.Model):
 
     def __str__(self):
         return f"Ref: {self.voucher_ref};\n Amount: {self.amount} MUR"
+
+    def save(self, *args, **kwargs):
+        if not self.voucher_ref:
+            self.voucher_ref = self.generate_voucher_ref()
+        super().save(*args, **kwargs)
+
+    def generate_voucher_ref(self):
+        from django.utils.timezone import now
+        year_suffix = now().strftime('%y')
+        prefix = self.voucher_request.company.prefix.upper()
+
+        base_code = f"{prefix}-{year_suffix}"
+        similar_refs = Voucher.objects.filter(
+            voucher_ref__startswith=base_code
+        ).values_list('voucher_ref', flat=True)
+
+        max_seq = 0
+        for ref in similar_refs:
+            try:
+                parts = ref.split('-')
+                if len(parts) == 3 and parts[0] == prefix and parts[1] == year_suffix:
+                    seq = int(parts[2])
+                    if seq > max_seq:
+                        max_seq = seq
+            except:
+                continue
+
+        new_seq = str(max_seq + 1).zfill(4)
+        return f"{prefix}-{year_suffix}-{new_seq}"
 
 
 class Redemption(models.Model):
