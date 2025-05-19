@@ -45,7 +45,7 @@ from .paginations import (
 
 class UserViewSet(viewsets.ModelViewSet):
     """created, read, update, delete users:
-    view only for authenticated users with right permissions
+    view only for authenticated users with rights permissions
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -131,7 +131,7 @@ def get_user_perms(request, pk):
 class VoucherRequestListView(generics.ListAPIView):
     """
         created, read, update, delete Voucher_requests:
-        view only for authenticated users with right permissions
+        view only for authenticated users with rights permissions
     """
     queryset = VoucherRequest.objects.all()
     serializer_class = VoucherRequestListSerializer
@@ -400,7 +400,7 @@ class ClientCreateView(generics.CreateAPIView):
 class VoucherViewSet(viewsets.ModelViewSet):
     """
         created, read, update, delete Vouchers:
-        view only for authenticated users with right permissions
+        view only for authenticated users with rights permissions
     """
     queryset = Voucher.objects.all()
     serializer_class = VoucherSerializer
