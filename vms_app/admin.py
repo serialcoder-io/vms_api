@@ -1,4 +1,6 @@
 from django.contrib import admin, messages
+from django.contrib.admin.models import LogEntry
+
 from .models import (
     VoucherRequest, Shop,
     Voucher, Client, User,
@@ -159,6 +161,20 @@ class ShopAdmin(admin.ModelAdmin):
     search_fields = ['location']
 
 
+class LogEntryAdmin(admin.ModelAdmin):
+    list_display = ('action_time', 'user', 'content_type', 'object_repr', 'action_flag', 'change_message')
+    list_filter = ('user', 'content_type', 'action_flag')
+    search_fields = ('object_repr', 'change_message')
+    readonly_fields = [f.name for f in LogEntry._meta.fields]  # rendre tous les champs en lecture seule
+    list_per_page = 10
+
+    def has_add_permission(self, request):
+        return False  # empêche l'ajout manuel
+
+    def has_change_permission(self, request, obj=None):
+        return False  # empêche la modification
+
+
 admin.site.register(VoucherRequest, VoucherRequestAdmin)
 admin.site.register(Voucher, VoucherAdmin)
 admin.site.register(Client, ClientAdmin)
@@ -166,3 +182,4 @@ admin.site.register(User, UserAdmin)
 admin.site.register(AuditTrail, AuditTrailAdmin)
 admin.site.register(Company, CompanyAdmin)
 admin.site.register(Shop, ShopAdmin)
+admin.site.register(LogEntry, LogEntryAdmin)

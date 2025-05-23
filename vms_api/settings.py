@@ -281,6 +281,7 @@ JAZZMIN_SETTINGS = {
         "vms_app.Shop": "fas fa-store",
         "token_blacklist.OutstandingToken": "fas fa-hourglass-half",
         "token_blacklist.BlacklistedToken": "fas fa-ban",
+        "admin.LogEntry": "fas fa-clipboard-list"
     },
     "topmenu_links": [
         {"name": "Swigger-ui doc",  "url": "/vms/api/schema/swagger-ui/"},
