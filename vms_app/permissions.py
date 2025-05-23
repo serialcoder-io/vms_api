@@ -3,7 +3,7 @@ from rest_framework.permissions import DjangoModelPermissions
 
 class RedeemVoucherPermissions(permissions.BasePermission):
     """
-    Custom permission that allow users to redeem vouchers (only for shop supervisors).
+    Custom permission that allows users to redeem vouchers (only for shop supervisors).
     """
     message = 'You are not allowed to redeem vouchers.'
     def has_permission(self, request, view):

@@ -14,15 +14,16 @@ from drf_spectacular.utils import extend_schema, OpenApiResponse
 from rest_framework.decorators import permission_classes
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import (IsAdminUser, IsAuthenticated, AllowAny)
-from rest_framework import ( filters, generics, viewsets, status)
+from rest_framework import (filters, generics, viewsets, status)
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.core.files.uploadedfile import UploadedFile
 
-from rest_framework.generics import ListCreateAPIView
-from .models import VoucherRequest
-from .serializers import VoucherRequestCrudSerializer
+# from rest_framework.generics import ListCreateAPIView
+# from .models import VoucherRequest
+# from .serializers import VoucherRequestCrudSerializer
 import logging
+
 logger = logging.getLogger(__name__)
 
 from .utils import logs_audit_action
@@ -46,9 +47,10 @@ from .models import (
     Company, Redemption, AuditTrail,
 )
 from .paginations import (
-    VoucherRequestPagination,VoucherPagination,
+    VoucherRequestPagination, VoucherPagination,
     ClientsPagination, UserPagination
 )
+
 
 class UserViewSet(viewsets.ModelViewSet):
     """created, read, update, delete users:
@@ -148,10 +150,9 @@ class VoucherRequestListView(generics.ListAPIView):
     search_fields = ['=request_ref']
     filterset_fields = ['request_status']
     permission_classes = [
-       IsAuthenticated,
-       CustomDjangoModelPermissions
+        IsAuthenticated,
+        CustomDjangoModelPermissions
     ]
-
 
 
 class VoucherRequestCrudView(generics.GenericAPIView):
@@ -161,6 +162,7 @@ class VoucherRequestCrudView(generics.GenericAPIView):
         IsAuthenticated,
         CustomDjangoModelPermissions
     ]
+
     def get_object(self):
         """ Find a VoucherRequest by id """
         pk = self.kwargs.get('pk')
@@ -181,14 +183,12 @@ class VoucherRequestCrudView(generics.GenericAPIView):
             200: OpenApiResponse(description="modified", response=VoucherRequestCrudSerializer),
             400: OpenApiResponse(
                 description="Bad request: When the status is 'pending', the request can only be"
-                " modified to 'paid' or 'rejected'. When the status is 'paid', it can only be modified to "
-                "'rejected' or 'approved'. Once the status is 'approved' or 'rejected', it cannot be modified."),
+                            " modified to 'paid' or 'rejected'. When the status is 'paid', it can only be modified to "
+                            "'rejected' or 'approved'. Once the status is 'approved' or 'rejected', it cannot be modified."),
             403: OpenApiResponse(description="Forbiden"),
             401: OpenApiResponse(description="Non authorize(not authenticated)"),
         }
     )
-
-
     def put(self, request, *args, **kwargs):
         pending_status = VoucherRequest.RequestStatus.PENDING
         approved_status = VoucherRequest.RequestStatus.APPROVED
@@ -298,6 +298,7 @@ class VoucherRequestCrudView(generics.GenericAPIView):
         # Proceed with deletion
         voucher_request.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 def flatten_querydict(querydict):
     return {k: v[0] if isinstance(v, list) else v for k, v in querydict.lists()}
@@ -461,6 +462,7 @@ class VoucherViewSet(viewsets.ModelViewSet):
     permission_classes = [
         IsAuthenticated, CustomDjangoModelPermissions
     ]
+
     def get_object(self):
         """ find a client by id """
         try:
@@ -481,6 +483,7 @@ class VoucherViewSet(viewsets.ModelViewSet):
 
         # Optionally, if you want to handle any post-deletion actions
         return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class CompanyViewSet(viewsets.ModelViewSet):
     queryset = Company.objects.all()
@@ -544,6 +547,7 @@ class CompanyList(generics.ListAPIView):
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
     permission_classes = [AllowAny]
+
 
 # this view only returns a list of all shops without authentication
 # (necessary to allow mobile app users to set up the app(select the shop))
@@ -623,8 +627,8 @@ class RedeemVoucherView(generics.GenericAPIView):
             formatted_date = redemption_date.strftime('%d %b %Y, %H:%M')
             # log audit for after redemption
             description = (
-               f"Redemption for voucher: {voucher.voucher_ref}.\n redeemed at: "
-               f" {redemption['redeemed_at']}.\n On '{formatted_date}'"
+                f"Redemption for voucher: {voucher.voucher_ref}.\n redeemed at: "
+                f" {redemption['redeemed_at']}.\n On '{formatted_date}'"
             )
             logs_audit_action(voucher.redemption, AuditTrail.AuditTrailsAction.ADD, description, authenticated_user)
             return Response(
@@ -656,6 +660,7 @@ class GroupViewSet(viewsets.ModelViewSet):
         CustomDjangoModelPermissions
     ]
 
+
 class PermissionListViewSet(generics.ListAPIView):
     """
         This view allows listing all the permissions available in the application.
@@ -685,8 +690,9 @@ def password_reset_confirm(request, uidb64, token):
     context = {"uidb64": uidb64, "token": token}
     return render(request, 'reset_password_form.html', context)
 
+
 def password_reset_send_email(request):
-    url = "http://127.0.0.1:8000/vms/auth/users/reset_password/"
+    url = f"{settings.BASE_URL}/vms/auth/users/reset_password/"
     if request.method == "POST":
         email = request.POST["email"]
         post_email = requests.post(url, {"email": email})
@@ -746,7 +752,6 @@ def approve_request_view(request, request_ref):
     return render(request, 'approve_request.html', context)
 
 
-
 @login_required(login_url="/vms/login/")
 def request_approved_success_view(request):
     """succes page after a voucher request was approved"""
@@ -794,10 +799,12 @@ def logout_view(request):
     logout(request)
     return redirect("/")
 
+
 def test_pdf(request):
     return render(request, "voucher_pdf_template.html")
 
+
 """
 @Todo: reset password in admin and login view for documentation
-@Approve coucher request in browser
+@Approve voucher request in browser
 """
