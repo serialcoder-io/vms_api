@@ -151,7 +151,7 @@ class RegisterUserSerializer(serializers.ModelSerializer):
 
         # Vérifier l'unicité de l'emails
         if email and User.objects.filter(email=email).exists():
-            raise serializers.ValidationError({"emails": "A user with that emails already exists."})
+            raise serializers.ValidationError({"email": "A user with that emails already exists."})
 
     def create(self, validated_data):
         """Create a new user."""
