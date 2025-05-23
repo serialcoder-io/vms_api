@@ -507,7 +507,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
         company_after_update = self.get_object()
         new_company_name = company_after_update.company_name
 
-        # Vérifier si le nom a changé
+        # check in the name changed
         if old_company_name != new_company_name:
             description = f"Updated company, changed company_name.\n from '{old_company_name}' to '{new_company_name}'"
         else:
@@ -536,6 +536,22 @@ class CompanyViewSet(viewsets.ModelViewSet):
         # Proceed with deletion
         self.perform_destroy(company)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# this view only returns a list of all companies without authentication
+# (necessary to allow mobile app users to set up the app(select the company))
+class CompanyList(generics.ListAPIView):
+    queryset = Company.objects.all()
+    serializer_class = CompanySerializer
+    permission_classes = [AllowAny]
+
+# this view only returns a list of all shops without authentication
+# (necessary to allow mobile app users to set up the app(select the shop))
+class ShopList(generics.ListAPIView):
+    queryset = Shop.objects.all()
+    serializer_class = ShopSerializer
+    filterset_fields = ['company']
+    permission_classes = [AllowAny]
 
 
 class ShopViewSet(viewsets.ModelViewSet):

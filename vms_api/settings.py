@@ -106,7 +106,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'vms_api.wsgi.application'
 
-DB_NAME = 'vms' if DEBUG else config('DB_NAME')
+DB_NAME = 'vms_database' if DEBUG else config('DB_NAME')
 DB_USER = 'postgres' if DEBUG else config('DB_USER')
 DB_HOST = 'localhost' if DEBUG else config('DB_HOST')
 # Database

@@ -13,13 +13,12 @@ def create_vouchers(instance, created, **kwargs):
     if created:
         # Automatically generate vouchers after a voucher request has been registered.
         amount = instance.amount
-        '''for _ in range(instance.quantity_of_vouchers):
+        for _ in range(instance.quantity_of_vouchers):
             Voucher.objects.create(
                 voucher_request=instance,
                 amount=amount,
                 voucher_status='provisional',
             )
-'''
 
 @receiver(pre_save, sender=VoucherRequest)
 def update_voucher_expiry_and_status_after_request_approval(instance, **kwargs):

@@ -9,7 +9,7 @@ class RedeemVoucherPermissions(permissions.BasePermission):
     def has_permission(self, request, view):
         return (
             request.user.is_authenticated and
-            request.user.has_perm('vms_app.redeem_voucher')
+            request.user.has_perm('vms_app.add_redemption')
         )
 
 
