@@ -167,7 +167,7 @@ class RegisterUserSerializer(serializers.ModelSerializer):
         user.save()
 
         # Ajouter l'utilisateur au groupe 'shop_supervisor'
-        group, created = Group.objects.get_or_create(name='shop_supervisor')
+        group, created = Group.objects.get_or_create(name='Shop')
         user.groups.add(group)
 
         # Assigner les permissions du shop_supervisor

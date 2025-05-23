@@ -133,7 +133,7 @@ class VoucherRequest(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.request_ref and self.company:
-            for _ in range(5):  # Retry 5 times if duplicate error occurs
+            for _ in range(5):  # Retry 5 times if a duplicate error occurs
                 self.request_ref = self.generate_request_ref()
                 try:
                     super().save(*args, **kwargs)
@@ -206,7 +206,7 @@ class Voucher(models.Model):
 
     def redeem(self, user, shop, till_no):
         """Redeem the voucher by creating a Redemption and updating status."""
-        if not user.has_perm('app_name.redeem_voucher'):
+        if not user.has_perm('vms_app.redeem_voucher'):
             raise PermissionDenied("You do not have permission to redeem vouchers.")
 
         if self.voucher_status != Voucher.VoucherStatus.ISSUED:

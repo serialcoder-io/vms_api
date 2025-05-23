@@ -649,7 +649,9 @@ class RedeemVoucherView(generics.GenericAPIView):
         except KeyError as e:
             return Response({"details": f"Missing field: {e}"}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({"details": "Sorry something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            import traceback
+            traceback.print_exc()
+            return Response({"details": f"Sorry something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class GroupViewSet(viewsets.ModelViewSet):
