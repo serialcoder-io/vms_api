@@ -68,12 +68,23 @@ def send_email_to_approvers(html_content, text_content):
             settings.DEFAULT_FROM_EMAIL,
             approvers_emails,
         )
-        # add html version of the email
+        # add an HTML version of the email
         msg.attach_alternative(html_content, "text/html")
         msg.send()
 
 
 def get_greeting():
+    """
+        Return a time-based greeting for use in emails.
+
+        This function determines the current local hour and returns an appropriate
+        greeting message based on the time of day:
+            - "Good Morning" for hours between 5 AM and 12 PM,
+            - "Good Afternoon" for hours between 12 PM and 6 PM,
+            - "Good Evening" for all other times.
+
+        Useful for dynamically personalizing email templates with a context-aware greeting.
+        """
     current_hour = timezone.localtime(timezone.now()).hour
     if 5 <= current_hour < 12:
         return "Good Morning"
