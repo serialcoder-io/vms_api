@@ -143,7 +143,7 @@ class RegisterUserSerializer(serializers.ModelSerializer):
     def validate_unique_fields(self, data):
         """Check uniqueness of username and emails for creation."""
         username = data.get('username')
-        email = data.get('emails')
+        email = data.get('email')
 
         # Vérifier l'unicité du nom d'utilisateur
         if username and User.objects.filter(username=username).exists():
