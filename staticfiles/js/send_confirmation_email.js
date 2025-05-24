@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+    console.log("ok")
     const form = document.querySelector("form");
     const spinner = document.getElementById("spinner");
     form.addEventListener("submit", async (e) => {
@@ -8,7 +9,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         spinner.classList.remove("d-none");
         try {
-            const response = await fetch("https://vms-api-hg6f.onrender.com/vms/auth/users/reset_password/", {
+            const baseUrl = new URL(window.location.href).origin;
+            const response = await fetch(`${baseUrl}/vms/auth/users/reset_password/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

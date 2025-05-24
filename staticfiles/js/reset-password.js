@@ -1,5 +1,4 @@
-const baseUrl = 'http://127.0.0.1:8000';
-
+const baseUrl = new URL(window.location.href).origin;
 async function resetPassword(newPassword, uid, token) {
     try {
         const response = await fetch(`${baseUrl}/vms/auth/users/reset_password_confirm/`, {
@@ -43,11 +42,10 @@ async function resetPassword(newPassword, uid, token) {
     }
 }
 
-
-document.addEventListener("DOMContentLoaded", ()=>{
-    const resetPwdForm = document.getElementById("reset-pwd-form")
-    const passwordField = document.getElementById("password")
-    const confirmPasswordField = document.getElementById("confirm-password")
+document.addEventListener("DOMContentLoaded", () => {
+    const resetPwdForm = document.getElementById("reset-pwd-form");
+    const passwordField = document.getElementById("password");
+    const confirmPasswordField = document.getElementById("confirm-password");
     const togglePasswordIcons = document.querySelectorAll(".pwd-icon");
     const spinner = document.getElementById("spinner");
 
@@ -57,21 +55,21 @@ document.addEventListener("DOMContentLoaded", ()=>{
                 el.classList.toggle("d-none");
             });
             [passwordField, confirmPasswordField].forEach((input) => {
-                input.type === "password" ? input.setAttribute("type", "text") :
-                    input.setAttribute("type", "password");
-            })
-        })
-    })
+                input.type === "password"
+                    ? input.setAttribute("type", "text")
+                    : input.setAttribute("type", "password");
+            });
+        });
+    });
 
-    resetPwdForm.addEventListener("submit", async(event)=>{
-        event.preventDefault()
-        const isPasswordValid = validatePassword(passwordField.value, confirmPasswordField.value)
+    resetPwdForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const isPasswordValid = validatePassword(passwordField.value, confirmPasswordField.value);
         if (!isPasswordValid) {
             return;
         }
         const uid = document.getElementById("uid").value;
         const token = document.getElementById("token").value;
-<<<<<<< HEAD
         try {
             const resetPwd = await resetPassword(passwordField.value.trim(), uid, token);
             if (resetPwd.detail) {
@@ -86,21 +84,14 @@ document.addEventListener("DOMContentLoaded", ()=>{
         } catch (err) {
             spinner.classList.add("d-none");
             alert("Something went wrong, failed to reset password. Please try again later.");
-=======
-
-        const resetPwd = await resetPassword(passwordField.value.trim(), uid, token);
-        if (resetPwd.detail) {
-            alert(resetPwd.detail);
-        }else if(resetPwd.no_content === 204){
-            window.location.replace(`${baseUrl}/vms/auth/reset_password_success`);
-        }else{
-            alert("Sorry something went wrong, please try again later.");
->>>>>>> dev
+            [passwordField, confirmPasswordField].forEach((input) => {
+                input.value = "";
+            });
         }
-        [passwordField, confirmPasswordField].forEach((input) => {input.value = ""})
-    })
+    });
+});
 
-})
+
 
 /**
  * Verifies the validity of the password by checking if both passwords match,
