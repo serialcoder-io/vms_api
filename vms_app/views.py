@@ -12,7 +12,7 @@ from django.utils import timezone
 from django.utils.timezone import localtime
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from rest_framework.decorators import permission_classes
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, NotAuthenticated, PermissionDenied
 from rest_framework.permissions import (IsAdminUser, IsAuthenticated, AllowAny)
 from rest_framework import (filters, generics, viewsets, status)
 from rest_framework.response import Response
@@ -648,9 +648,18 @@ class RedeemVoucherView(generics.GenericAPIView):
             return Response({"details": "Shop not found."}, status=status.HTTP_404_NOT_FOUND)
         except KeyError as e:
             return Response({"details": f"Missing field: {e}"}, status=status.HTTP_400_BAD_REQUEST)
+        except NotAuthenticated as e:
+            return Response(
+                {"details": "Authentication required. Please log in to continue."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        except PermissionDenied as e:
+            return Response(
+                {"details": "You do not have permission to redeem this voucher."},
+                status=status.HTTP_403_FORBIDDEN
+            )
         except Exception as e:
-            import traceback
-            traceback.print_exc()
             return Response({"details": f"Sorry something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
