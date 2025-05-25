@@ -24,6 +24,8 @@ from django.core.files.uploadedfile import UploadedFile
 # from .serializers import VoucherRequestCrudSerializer
 import logging
 
+from rest_framework.views import APIView
+
 logger = logging.getLogger(__name__)
 
 from .utils import logs_audit_action
@@ -815,7 +817,18 @@ def test_pdf(request):
     return render(request, "voucher_pdf_template.html")
 
 
-"""
-@Todo: reset password in admin and login view for documentation
-@Approve voucher request in browser
-"""
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        old_password = request.data.get("old_password")
+        new_password = request.data.get("new_password")
+
+        if not user.check_password(old_password):
+            return Response({"detail": "Incorrect current password."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(new_password)
+        user.save()
+
+        return Response({"detail": "Password changed successfully."}, status=status.HTTP_200_OK)
