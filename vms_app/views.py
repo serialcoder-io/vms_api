@@ -777,7 +777,7 @@ def not_found_view(request):
 
 @login_required(login_url="/vms/login/")
 def index(request):
-    return redirect('swagger-ui')
+    return render(request, 'index.html')
 
 
 def login_view(request):
@@ -811,10 +811,6 @@ def logout_view(request):
         return redirect(next_url)
     logout(request)
     return redirect("/")
-
-
-def test_pdf(request):
-    return render(request, "voucher_pdf_template.html")
 
 
 class ChangePasswordView(APIView):

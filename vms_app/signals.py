@@ -8,7 +8,7 @@ from datetime import date, timedelta
 from vms_app.utils import notify_requests_approvers
 
 
-@receiver(post_save, sender=VoucherRequest)
+"""@receiver(post_save, sender=VoucherRequest)
 def create_vouchers(instance, created, **kwargs):
     if created:
         # Automatically generate vouchers after a voucher request has been registered.
@@ -18,7 +18,7 @@ def create_vouchers(instance, created, **kwargs):
                 voucher_request=instance,
                 amount=amount,
                 voucher_status='provisional',
-            )
+            )"""
 
 @receiver(pre_save, sender=VoucherRequest)
 def update_voucher_expiry_and_status_after_request_approval(instance, **kwargs):
@@ -39,8 +39,6 @@ def update_voucher_expiry_and_status_after_request_approval(instance, **kwargs):
             queryset = Voucher.objects.filter(voucher_request=instance)
             queryset.update(voucher_status="cancelled")
 
-        if old_status == 'pending' and new_status == 'paid':
-            """ 
-                Notify all users with approval rights when a voucher request status changes from 'pending' to 'paid'
-            """
-            notify_requests_approvers(instance.request_ref)
+        """if old_status == 'pending' and new_status == 'paid':
+                # Notify all users with approval rights when a voucher request status changes from 'pending' to 'paid'
+            notify_requests_approvers(instance.request_ref)"""
