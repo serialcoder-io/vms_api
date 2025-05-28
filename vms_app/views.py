@@ -316,7 +316,7 @@ class VoucherRequestCreateView(generics.CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         try:
-            data = request.data.copy()  # Copie simple, pas besoin de flatten_querydict ici
+            data = request.data.copy()  # Simple copy, no need flatten_querydict ehre
             files = {k: request.FILES.getlist(k)[0] for k in request.FILES}
             serializer = self.get_serializer(data={**data, **files})
 
