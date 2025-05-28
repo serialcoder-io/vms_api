@@ -13,25 +13,27 @@ from vms_app.models import (
 # models
 class VoucherRequestTestCase(TestCase):
     def setUp(self):
-        client_1 = Client.objects.create(
-            firstname="client1_firstname",
-            lastname="client1_lastname",
-            email="client1-emails@gmail.com",
+        new_client = Client.objects.create(
+            clientname="new_client",
+            vat="vat#1",
+            brn="brn_cl",
+            nic="nic_cli",
+            email="new_client-emails@gmail.com",
             contact="+230 5429 7857",
         )
-        conpany_1 = Company.objects.create(company_name="company-1")
+        new_conpany = Company.objects.create(company_name="new_company", prefix="NCP")
         user = User.objects.create_user(
-            username="user-1",
-            first_name="user1_firstname",
-            last_name="user1_lastname",
-            email="user1@gmail.com",
+            username="new_user",
+            first_name="user_firstname",
+            last_name="user_lastname",
+            email="new_user@gmail.com",
             password="Strong-P4$5word",
-            company=conpany_1,
+            company=new_conpany,
         )
         voucher_request = VoucherRequest.objects.create(
             recorded_by=user,
             request_ref="VRQ-00001-1/1",
-            client=client_1,
+            client=new_client,
             quantity_of_vouchers=3,
         )
         Voucher.objects.create(

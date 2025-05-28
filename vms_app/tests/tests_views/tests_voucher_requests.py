@@ -5,7 +5,7 @@ from django.contrib.auth.models import Permission, Group
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
-from vms_app.models import User, VoucherRequest, Voucher, Client
+from vms_app.models import User, VoucherRequest, Voucher, Client, Company
 
 
 class ClientViewsTestCase(TestCase):
@@ -14,7 +14,7 @@ class ClientViewsTestCase(TestCase):
         self.voucher_request_post_url = "/vms/api/voucher_requests/add/"
         # Create a test user
         user1 = User.objects.create_user(username='user_with_perms', password='password')
-        # create user with no permission
+        # create a user with no permission
         user_without_perms = User.objects.create_user(
             username='user_without_perms',
             password='password'
@@ -31,9 +31,11 @@ class ClientViewsTestCase(TestCase):
 
         # Create a client for testing
         client1 = Client.objects.create(
-            firstname="client1_firstname",
-            lastname="client1_lastname",
-            email="client1-emails@gmail.com",
+            clientname="new_client1",
+            vat="vat15",
+            brn="brn_cli15",
+            nic="nic_cli15",
+            email="new_client1-emails@gmail.com",
             contact="+230 5429 7857",
         )
 
@@ -73,16 +75,23 @@ class ClientViewsTestCase(TestCase):
         self.client.login(username='user_with_perms', password='password')
         user = User.objects.get(username='user_with_perms')
         client = Client.objects.create(
-            firstname="client_firstname",
-            lastname="client_lastname",
-            email="client-emails@gmail.com",
+            clientname="new_client2",
+            vat="vat6",
+            brn="brn_cli2",
+            nic="nic_cli2",
+            email="new_client2-emails@gmail.com",
             contact="+230 5429 7857",
+        )
+        company = Company.objects.create(
+            company_name="Test Company",
+            prefix="TC"
         )
         response = self.client.post(self.voucher_request_post_url, {
             "quantity_of_vouchers":  2,
             "amount": 1000,
             "recorded_by": user.id,
             "client": client.id,
+            "company": company.id,
         }, format='json')
         data = response.json()
         voucher_request = VoucherRequest.objects.get(pk=data['id'])
@@ -105,19 +114,26 @@ class ClientViewsTestCase(TestCase):
         self.client.login(username='user_with_perms', password='password')
         user = User.objects.get(username='user_with_perms')
         client = Client.objects.create(
-            firstname="client_firstname",
-            lastname="client_lastname",
-            email="client-emails@gmail.com",
+            clientname="new_cli2",
+            vat="vat#6",
+            brn="brn_cl#2",
+            nic="nic_cl#2",
+            email="new_client2-emails@gmail.com",
             contact="+230 5429 7857",
         )
-        # approver group(after the request status change from pending to pending,
+        # approver's group (after the request status change from pending to pending,
         request_approver_group, created = Group.objects.get_or_create(name='request_approver')
         user.groups.add(request_approver_group)
+        company = Company.objects.create(
+            company_name="New Company",
+            prefix="NC"
+        )
         response = self.client.post(self.voucher_request_post_url, {
             "quantity_of_vouchers": 2,
             "amount": 1000,
             "recorded_by": user.id,
             "client": client.id,
+            "company": company.id,
         }, format='json')
         data = response.json()
         request_id = data["id"]

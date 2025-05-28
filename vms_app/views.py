@@ -316,7 +316,7 @@ class VoucherRequestCreateView(generics.CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         try:
-            data = flatten_querydict(request.data)
+            data = request.data.copy()  # Copie simple, pas besoin de flatten_querydict ici
             files = {k: request.FILES.getlist(k)[0] for k in request.FILES}
             serializer = self.get_serializer(data={**data, **files})
 
@@ -328,11 +328,16 @@ class VoucherRequestCreateView(generics.CreateAPIView):
                     traceback.print_exc()
                     return Response({"detail": f"Storage error: {str(e)}"}, status=500)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
+
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
             import traceback
             traceback.print_exc()
+            return Response(
+                {"detail": f"Unhandled server error: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     def perform_create(self, serializer):
         """

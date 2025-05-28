@@ -10,7 +10,7 @@ class ClientViewsTestCase(TestCase):
         self.client_list_url = "/vms/api/clients/"
         # Create a test user
         user1 = User.objects.create_user(username='testuser', password='testpassword')
-        # create user with no permission
+        # create a user with no permission
         User.objects.create_user(username='testuser2', password='testpassword')
 
         # Add Django ModelPermissions for this user
@@ -24,9 +24,11 @@ class ClientViewsTestCase(TestCase):
 
         # Create a client for testing
         Client.objects.create(
-            firstname="client1_firstname",
-            lastname="client1_lastname",
-            email="client1-emails@gmail.com",
+            clientname="new_client1",
+            vat="vat12",
+            brn="brn_cli1",
+            nic="nic_cli1",
+            email="new_client1-emails@gmail.com",
             contact="+230 5429 7857",
         )
         # Initialize API client for testing
@@ -60,10 +62,12 @@ class ClientViewsTestCase(TestCase):
         # Login with the test user
         self.client.login(username='testuser', password='testpassword')
         response = self.client.post(f"{self.client_list_url}add/", {
-            'firstname': 'testclient_firstname',
-            'lastname': 'testclient_lastname',
-            'email': 'testclient_email@gmail.com',
-            'contact': '+230 5429 7857',
+            "clientname": "new_client",
+            "vat": "vat34",
+            "brn": "brn_cli",
+            "nic": "nic_cli",
+            "email": "new_client-emails@gmail.com",
+            "contact": "+230 5429 7857",
         }, format='json')
 
         data = response.json()
@@ -73,22 +77,26 @@ class ClientViewsTestCase(TestCase):
             response.status_code, status.HTTP_201_CREATED,
             f"Expected status code 201 after created new client, but got {response.status_code}"
         )
-        self.assertEqual(data['firstname'], 'testclient_firstname')
-        self.assertEqual(data['lastname'], 'testclient_lastname')
-        self.assertEqual(data['email'], 'testclient_email@gmail.com')
+        self.assertEqual(data['clientname'], 'new_client')
+        self.assertEqual(data['vat'], 'vat34')
+        self.assertEqual(data['brn'], 'brn_cli')
+        self.assertEqual(data['nic'], 'nic_cli')
+        self.assertEqual(data['email'], 'new_client-emails@gmail.com')
         self.assertEqual(data['contact'], '+230 5429 7857')
 
 
     def test_add_client_user_not_authenticated(self):
-        """post data to create new client when the user is not authenticated"""
+        """post data to create a new client when the user is not authenticated"""
         response = self.client.post(f"{self.client_list_url}add/", {
-            'firstname': 'testclient_firstname',
-            'lastname': 'testclient_lastname',
-            'email': 'testclient_email@gmail.com',
-            'contact': '+230 5429 7857',
+            "clientname": "new_client",
+            "vat": "vat134",
+            "brn": "brn_clie",
+            "nic": "nic_cl",
+            "email": "new_client-emails@gmail.com",
+            "contact": "+230 5429 7857",
         }, format='json')
 
-        # Assert that the response code is 401 is the user is not authenticated
+        # Assert that the response code is 401 if the user is not authenticated
         self.assertEqual(
             response.status_code,
             status.HTTP_401_UNAUTHORIZED,
@@ -97,17 +105,19 @@ class ClientViewsTestCase(TestCase):
 
 
     def test_add_client_unauthorized_user(self):
-        """post data to create new client when the user has not add_client permission"""
+        """post data to create a new client when the user has not add_client permission"""
         self.client.login(username='testuser2', password='testpassword')
         response = self.client.post(f"{self.client_list_url}add/", {
-            'firstname': 'testclient_firstname',
-            'lastname': 'testclient_lastname',
-            'email': 'testclient_email@gmail.com',
-            'contact': '+230 5429 7857',
+            "clientname": "new_client",
+            "vat": "vat14",
+            "brn": "brn_12",
+            "nic": "nic",
+            "email": "new_client-emails@gmail.com",
+            "contact": "+230 5429 7857",
         }, format='json')
 
 
-        # Assert that the response code is 403 is the user is not authenticated
+        # Assert that the response code is 403 if the user is not authenticated
         self.assertEqual(
             response.status_code,
             status.HTTP_403_FORBIDDEN,
@@ -122,8 +132,7 @@ class ClientViewsTestCase(TestCase):
         # Make the PUT request to update the client
         client = Client.objects.first()
         response = self.client.put(f"{self.client_list_url}{client.id}/", {
-            'firstname': 'updated_firstname',
-            'lastname': 'updated_lastname',
+            'clientname': 'updated_clientname',
             'email': client.email,
             'contact': client.contact,
         }, format='json')
@@ -135,8 +144,7 @@ class ClientViewsTestCase(TestCase):
             response.status_code, status.HTTP_200_OK,
             f"Expected status code 200 after updating client, but got {response.status_code}"
         )
-        self.assertEqual(data['firstname'], 'updated_firstname')
-        self.assertEqual(data['lastname'], 'updated_lastname')
+        self.assertEqual(data['clientname'], 'updated_clientname')
 
 
 
