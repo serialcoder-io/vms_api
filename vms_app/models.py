@@ -133,16 +133,14 @@ class VoucherRequest(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.request_ref and self.company:
-            for _ in range(5):  # Retry 5 times if a duplicate error occurs
-                self.request_ref = self.generate_request_ref()
+            for _ in range(5):  # On réessaie jusqu’à 5 fois
                 try:
-                    super().save(*args, **kwargs)
-                    return
-                except IntegrityError as e:
-                    if 'duplicate key value violates unique constraint' in str(e):
-                        continue  # Try again with a new sequence
-                    else:
-                        raise
+                    with transaction.atomic():
+                        self.request_ref = self.generate_request_ref()
+                        super().save(*args, **kwargs)
+                        return
+                except IntegrityError:
+                    continue
             raise IntegrityError("Failed to generate a unique request_ref after multiple attempts.")
         else:
             super().save(*args, **kwargs)
