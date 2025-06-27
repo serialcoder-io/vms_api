@@ -1,5 +1,8 @@
 from django.contrib import admin, messages
 from django.contrib.admin.models import LogEntry
+from django.contrib.auth import get_user_model
+from django import forms
+from django.contrib.auth.hashers import make_password
 
 from .models import (
     VoucherRequest, Shop,
@@ -120,7 +123,35 @@ class ClientAdmin(admin.ModelAdmin):
     inlines = [VoucherRequestInline]
 
 
+User = get_user_model()
+
+class CustomUserChangeForm(forms.ModelForm):
+    password = forms.CharField(
+        label="Nouveau mot de passe",
+        required=False,
+        widget=forms.PasswordInput,
+        help_text="Laissez vide pour ne pas changer le mot de passe."
+    )
+
+    class Meta:
+        model = User
+        fields = '__all__'
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        new_password = self.cleaned_data.get('password')
+        if new_password:
+            user.password = make_password(new_password)
+        if commit:
+            user.save()
+            self.save_m2m()
+        return user
+
+
 class UserAdmin(admin.ModelAdmin):
+    
+    form = CustomUserChangeForm
+    
     list_display = ['username', 'email']
     list_per_page = 10
     search_fields = ['username', 'email']
