@@ -135,16 +135,17 @@ class CustomUserChangeForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = '__all__'
+        fields = [  # tous les champs sauf 'password'
+            'username', 'email', 'first_name', 'last_name',
+            'company', 'is_active', 'is_staff', 'is_superuser',
+            'groups', 'user_permissions'
+        ]
 
     def save(self, commit=True):
         user = super().save(commit=False)
         new_password = self.cleaned_data.get('new_password')
-
-        # Change password only if password field if filled
-        if new_password and new_password.strip() != '':
+        if new_password:
             user.set_password(new_password)
-
         if commit:
             user.save()
             self.save_m2m()
@@ -161,7 +162,7 @@ class UserAdmin(admin.ModelAdmin):
     fieldsets = (
         ('profile', {
             'fields': (
-                'first_name', 'last_name', 'username', 'email', 'company', 'password')
+                'first_name', 'last_name', 'username', 'email', 'company', 'new_password')
         }),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'user_permissions', 'groups')}),
     )
