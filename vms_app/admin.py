@@ -126,11 +126,11 @@ class ClientAdmin(admin.ModelAdmin):
 User = get_user_model()
 
 class CustomUserChangeForm(forms.ModelForm):
-    password = forms.CharField(
+    new_password = forms.CharField(
         label="Nouveau mot de passe",
         required=False,
         widget=forms.PasswordInput,
-        help_text="Laissez vide pour ne pas changer le mot de passe."
+        help_text="Laissez vide si vous ne voulez pas changer le mot de passe."
     )
 
     class Meta:
@@ -139,14 +139,16 @@ class CustomUserChangeForm(forms.ModelForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        new_password = self.cleaned_data.get('password')
-        if new_password:
-            user.password = make_password(new_password)
+        new_password = self.cleaned_data.get('new_password')
+
+        # Change password only if password field if filled
+        if new_password and new_password.strip() != '':
+            user.set_password(new_password)
+
         if commit:
             user.save()
             self.save_m2m()
         return user
-
 
 class UserAdmin(admin.ModelAdmin):
     
