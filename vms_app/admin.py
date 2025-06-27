@@ -155,7 +155,7 @@ class UserAdmin(admin.ModelAdmin):
     list_display = ['username', 'email']
     list_per_page = 10
     search_fields = ['username', 'email']
-    readonly_fields = ['id', 'password', 'last_login', 'date_joined']
+    readonly_fields = ['id', 'last_login', 'date_joined']
     fieldsets = (
         ('profile', {
             'fields': (
