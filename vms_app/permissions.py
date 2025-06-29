@@ -1,5 +1,6 @@
 from rest_framework import permissions
-from rest_framework.permissions import DjangoModelPermissions
+from rest_framework.permissions import DjangoModelPermissions, BasePermission
+
 
 class RedeemVoucherPermissions(permissions.BasePermission):
     """
@@ -49,4 +50,7 @@ class CustomDjangoModelPermissions(permissions.BasePermission):
         return perms.has_permission(request, view)
 
 
+class IsSuperUser(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.is_superuser
 

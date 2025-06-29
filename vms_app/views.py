@@ -11,7 +11,7 @@ from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.utils.timezone import localtime
 from drf_spectacular.utils import extend_schema, OpenApiResponse
-from rest_framework.decorators import permission_classes
+from rest_framework.decorators import permission_classes, api_view
 from rest_framework.exceptions import NotFound, NotAuthenticated, PermissionDenied
 from rest_framework.permissions import (IsAdminUser, IsAuthenticated, AllowAny)
 from rest_framework import (filters, generics, viewsets, status)
@@ -31,7 +31,8 @@ logger = logging.getLogger(__name__)
 from .utils import logs_audit_action
 from .permissions import (
     RedeemVoucherPermissions,
-    CustomDjangoModelPermissions
+    CustomDjangoModelPermissions,
+    IsSuperUser
 )
 
 from vms_app.serializers import (
@@ -833,3 +834,38 @@ class ChangePasswordView(APIView):
         user.save()
 
         return Response({"detail": "Password changed successfully."}, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, IsSuperUser])
+def send_reset_password_link(request):
+    """
+    this view is used only by superusers to send a link to a user to reset his password
+    """
+    user_id = request.data.get("user_id")
+
+    if not user_id:
+        return Response({"detail": "Please provide user id."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        user = User.objects.get(pk=user_id)
+    except User.DoesNotExist:
+        return Response({"detail": "User does not exist."}, status=status.HTTP_404_NOT_FOUND)
+
+    email = user.email
+    url = f"{settings.BASE_URL}/vms/auth/users/reset_password/"
+
+    try:
+        response = requests.post(url, data={"email": email})
+        if response.status_code == 204:
+            return Response({"detail": "Email sent."}, status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(
+                {"detail": "Failed to send email.", "status_code": response.status_code},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    except requests.RequestException as e:
+        return Response(
+            {"detail": "Error sending request.", "error": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

@@ -17,7 +17,7 @@ from .views import (
     password_reset_confirm, password_reset_success_view,
     GroupViewSet, PermissionListViewSet, approve_request_view, index, login_view, logout_view,
     password_reset_send_email, request_approved_success_view, not_found_view, get_user_perms,
-    ShopList, CompanyList, ChangePasswordView
+    ShopList, CompanyList, ChangePasswordView, send_reset_password_link
 )
 
 router = DefaultRouter()
@@ -46,6 +46,7 @@ urlpatterns = [
     path("vms/auth/permissions/", PermissionListViewSet.as_view(), name="permissions"),
     path("vms/auth/users/<int:pk>/permissions/", get_user_perms, name="current_user_permissions"),
     path("vms/auth/change_password/", ChangePasswordView.as_view(), name="change-password"),
+    path("vms/auth/send_reset_password_link/", send_reset_password_link, name="send_reset_password_link"),
 
     # -------- urls related to client model ----------
     path("vms/api/clients/", ClientListView.as_view(), name="clients_list"),
