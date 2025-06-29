@@ -870,5 +870,5 @@ def send_reset_password_link(request):
     except requests.RequestException as e:
         return Response(
             {"detail": "Error sending request.", "error": str(e)},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status=status.HTTP_502_BAD_GATEWAY
         )
