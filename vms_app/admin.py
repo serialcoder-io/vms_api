@@ -136,7 +136,7 @@ class CustomUserChangeForm(forms.ModelForm):
     class Meta:
         model = User
         fields = [  # tous les champs sauf 'password'
-            'username', 'email', 'first_name', 'last_name',
+            'id', 'username', 'email', 'first_name', 'last_name',
             'company', 'is_active', 'is_staff', 'is_superuser',
             'groups', 'user_permissions'
         ]
