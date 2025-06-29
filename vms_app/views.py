@@ -858,11 +858,14 @@ def send_reset_password_link(request):
     try:
         response = requests.post(url, data={"email": email})
         if response.status_code == 204:
-            return Response({"detail": "Email sent."}, status=status.HTTP_204_NO_CONTENT)
+            return Response({"detail": "Email sent."}, status=status.HTTP_200_OK)
         else:
             return Response(
-                {"detail": "Failed to send email.", "status_code": response.status_code},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                {
+                    "detail": "Failed to send email.",
+                    "status_code": response.status_code
+                },
+                status=response.status_code
             )
     except requests.RequestException as e:
         return Response(
