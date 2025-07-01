@@ -108,7 +108,7 @@ WSGI_APPLICATION = 'vms_api.wsgi.application'
 
 DB_NAME = "vms_db" if DEBUG else config('DB_NAME')
 DB_USER = "postgres" if DEBUG else config('DB_USER')
-DB_HOST = "localhost" if DEBUG else config('DB_HOST')
+DB_HOST = "localhost:000" if DEBUG else config('DB_HOST')
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 DATABASES = {

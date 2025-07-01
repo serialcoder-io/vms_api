@@ -59,8 +59,8 @@ class User(AbstractUser):
 class Client(models.Model):
     iscompany = models.BooleanField(default=True)
     clientname = models.CharField(max_length=70)
-    vat = models.CharField(max_length=8)
-    brn = models.CharField(max_length=9)
+    vat = models.CharField(max_length=8, blank=True, null=True)
+    brn = models.CharField(max_length=9, blank=True, null=True)
     nic = models.CharField(max_length=14, blank=True, null=True)
     email = models.EmailField(max_length=50)
     contact = models.CharField(max_length=70)
