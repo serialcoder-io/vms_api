@@ -150,7 +150,7 @@ class VoucherRequestListView(generics.ListAPIView):
     serializer_class = VoucherRequestListSerializer
     pagination_class = VoucherRequestPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    search_fields = ['=request_ref']
+    search_fields = ['request_ref']
     filterset_fields = ['request_status']
     permission_classes = [
         IsAuthenticated,
@@ -359,7 +359,7 @@ class ClientListView(generics.ListAPIView):
     serializer_class = ClientListSerializer
     filter_backends = [filters.SearchFilter]
     pagination_class = ClientsPagination
-    search_fields = ['=email']
+    search_fields = ['email']
     permission_classes = [
         IsAuthenticated,
         CustomDjangoModelPermissions
@@ -462,7 +462,7 @@ class VoucherViewSet(viewsets.ModelViewSet):
     serializer_class = VoucherSerializer
     pagination_class = VoucherPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    search_fields = ['=voucher_ref']
+    search_fields = ['voucher_ref']
     filterset_fields = [
         'voucher_status', 'redemption__shop',
         'redemption__redemption_date', "voucher_request"
