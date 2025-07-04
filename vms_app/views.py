@@ -63,7 +63,7 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     pagination_class = UserPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    search_fields = ['emails']
+    search_fields = ['email']
     filterset_fields = ['company']
     permission_classes = [
         IsAuthenticated,
@@ -359,7 +359,7 @@ class ClientListView(generics.ListAPIView):
     serializer_class = ClientListSerializer
     filter_backends = [filters.SearchFilter]
     pagination_class = ClientsPagination
-    search_fields = ['=emails']
+    search_fields = ['=email']
     permission_classes = [
         IsAuthenticated,
         CustomDjangoModelPermissions
