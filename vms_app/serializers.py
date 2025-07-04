@@ -384,9 +384,11 @@ class ClientCrudSerializer(serializers.ModelSerializer):
         logo_b64 = self.initial_data.get('logo')
         if logo_b64:
             try:
-                validated_data['logo'] = base64.b64decode(logo_b64)
-            except Exception:
-                raise serializers.ValidationError({'logo': 'Invalid Base64 string'})
+                if isinstance(logo_b64, str) and logo_b64.strip() != "":
+                    validated_data['logo'] = base64.b64decode(logo_b64)
+            except Exception as e:
+                raise serializers.ValidationError({'logo': f'Invalid Base64 string: {str(e)}'})
+    
         return super().update(instance, validated_data)
 
 
