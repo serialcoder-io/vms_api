@@ -409,7 +409,7 @@ class ClientCRUDView(generics.GenericAPIView):
 
     def delete(self, request, *args, **kwargs):
         client = self.get_object()
-        description = f"Deleted client: 'fullname: ' {client.clientname} {client.lastname}'; email: ' {client.email}'"
+        description = f"Deleted client: 'client name: ' {client.clientname}; email: ' {client.email}'"
         authenticated_user = request.user
 
         # Log the audit action before deletion
