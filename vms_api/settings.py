@@ -37,7 +37,7 @@ else:
 if DEBUG:
     BASE_URL = 'http://127.0.0.1:8000/'
 else:
-    BASE_URL = config('BASE_URL', default="https://msul.alwaysdata.net")
+    BASE_URL = config('BASE_URL', default="https://intermart-vouchers.alwaysdata.net")
 
 LOGIN_URL = '/vms/login/'
 MEDIA_URL = '/media/'
