@@ -1,0 +1,27 @@
+Voucher Management System (Backend API)
+License Type: Non-commercial, Personal Use Only
+
+Copyright (c) [2025] Anli omar
+
+Permission is hereby granted to any person obtaining a copy of this software and associated documentation files (the "Software"), to use the Software for personal, non-commercial educational purposes only.
+
+You may:
+- Use and run the Software on your local machine.
+- Modify the Software for personal experimentation and learning.
+
+You may not:
+- Use the Software or any part of it for commercial purposes.
+- Distribute, sublicense, publish, or resell the Software or any modified version.
+- Incorporate this Software into any product or service intended for public release or monetization.
+- Submit modifications or pull requests to the original repository.
+
+This software is provided "as is", without warranty of any kind.
+
+Contact the author for any exceptions or commercial licensing.
+
+For licensing inquiries or commercial use permission, contact:
+
+📧 **anliomar@outlook.com**
+
+Author: Omar Anli
+Contact: anliomar@outlook.com

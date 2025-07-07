@@ -37,7 +37,7 @@ else:
 if DEBUG:
     BASE_URL = 'http://127.0.0.1:8000/'
 else:
-    BASE_URL = config('BASE_URL', default="https://intermart-vouchers.alwaysdata.net")
+    BASE_URL = config('BASE_URL', default="localhost")
 
 LOGIN_URL = '/vms/login/'
 MEDIA_URL = '/media/'
@@ -106,9 +106,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'vms_api.wsgi.application'
 
-DB_NAME = config('DB_NAME') if DEBUG else config('DB_NAME')
-DB_USER = config('DB_USER') if DEBUG else config('DB_USER')
-DB_HOST = config('DB_HOST') if DEBUG else config('DB_HOST')
+DB_NAME = config('DB_NAME')
+DB_USER = config('DB_USER')
+DB_HOST = config('DB_HOST')
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 DATABASES = {
@@ -259,12 +259,12 @@ JAZZMIN_UI_TWEAKS = {
     "dark_mode_theme": "darkly",
 }
 JAZZMIN_SETTINGS = {
-    "site_title": "MSUL",
-    "site_header": "MSUL",
-    "site_brand": "intermart",
+    "site_title": "your_title_here",
+    "site_header": "your_site_header_here",
+    "site_brand": "your_site_brand_here",
     "site_logo": "images/logo.png",
-    "welcome_sign": "Welcom to Msul VMS",
-    "copyright": "msul",
+    "welcome_sign": "Welcom to VMS",
+    "copyright": "copyright",
     "show_sidebar": True,
     "navigation_expanded": True,
     "hide_apps": [],
@@ -300,7 +300,7 @@ JAZZMIN_SETTINGS = {
     "login_logo_width": "200px",
     "login_title": "Welcome",
     "login_show_sidebar": False,
-    "login_footer_text": "msul",
+    "login_footer_text": "you_footer_text_here",
 }
 
 LOGGING = {
